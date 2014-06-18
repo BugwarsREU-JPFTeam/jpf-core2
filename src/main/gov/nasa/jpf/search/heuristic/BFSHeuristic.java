@@ -26,7 +26,7 @@ import gov.nasa.jpf.vm.VM;
 /**
  * breadth first search
  */
-public class BFSHeuristic extends SimplePriorityHeuristic {
+public class BFSHeuristic extends SimplePriorityHeuristic {//put breakpoint here
   
   public BFSHeuristic (Config config, VM vm) {    
   	super(config,vm);
@@ -35,8 +35,8 @@ public class BFSHeuristic extends SimplePriorityHeuristic {
   
   protected int computeHeuristicValue () {
     int priority = vm.getPathLength();
-
-    return priority;
+    System.out.println("computed heuristic value is "+priority);
+    return priority;	//put breakpoint here
   }
   
 }

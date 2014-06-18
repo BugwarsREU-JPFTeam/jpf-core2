@@ -32,6 +32,7 @@ public class DFSHeuristic extends SimplePriorityHeuristic {
   }
 
   protected int computeHeuristicValue () {
-    return Integer.MAX_VALUE - vm.getPathLength();
+	  System.out.println("computed heuristic value is "+(Integer.MAX_VALUE-vm.getPathLength()));//put breakpoint here
+	  return Integer.MAX_VALUE - vm.getPathLength();
   }
 }

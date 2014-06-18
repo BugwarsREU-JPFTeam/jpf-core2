@@ -7,5 +7,6 @@
 	<classpathentry kind="src" output="build/examples" path="src/examples"/>
 	<classpathentry kind="src" output="build/tests" path="src/tests"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry exported="true" kind="lib" path="C:/Program Files/Java/jdk1.7.0_09/lib/tools.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>

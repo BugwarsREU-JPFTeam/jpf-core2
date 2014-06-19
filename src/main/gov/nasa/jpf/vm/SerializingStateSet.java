@@ -18,17 +18,18 @@
 //
 package gov.nasa.jpf.vm;
 
-
 public abstract class SerializingStateSet implements StateSet {
-  protected StateSerializer serializer;
-  
-  public void attach(VM vm) {
-    serializer = vm.getSerializer();
-  }
-  
-  public int addCurrent () {
-    return add(serializer.getStoringData());
-  }
-  
-  protected abstract int add(int[] state);
+	protected StateSerializer serializer;
+
+	@Override
+	public void attach(VM vm) {
+		serializer = vm.getSerializer();
+	}
+
+	@Override
+	public int addCurrent() {
+		return add(serializer.getStoringData());
+	}
+
+	protected abstract int add(int[] state);
 }

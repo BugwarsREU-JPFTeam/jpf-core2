@@ -29,56 +29,54 @@ import sun.net.www.protocol.http.Handler;
 
 /**
  * this is just a very rough abstraction at this point, which only supports
- * reading static URL contents. The data is cached for subsequent
- * access, to avoid DOS by means of model checking
+ * reading static URL contents. The data is cached for subsequent access, to
+ * avoid DOS by means of model checking
  */
 public class CachedROHttpConnection extends java.net.HttpURLConnection {
 
-  @Override
-  public void disconnect() {
-    //throw new UnsupportedOperationException("Not supported yet.");
-  }
+	@Override
+	public void disconnect() {
+		// throw new UnsupportedOperationException("Not supported yet.");
+	}
 
-  @Override
-  public boolean usingProxy() {
-    return false;
-  }
+	@Override
+	public boolean usingProxy() {
+		return false;
+	}
 
-  @Override
-  public void connect() throws IOException {
-    //throw new UnsupportedOperationException("Not supported yet.");
-  }
+	@Override
+	public void connect() throws IOException {
+		// throw new UnsupportedOperationException("Not supported yet.");
+	}
 
-  String host;
-  int port;
+	String host;
+	int port;
 
-  public CachedROHttpConnection(URL u, String host, int port){
-    super(u);
+	public CachedROHttpConnection(URL u, String host, int port) {
+		super(u);
 
-    this.host = host;
-    this.port = port;
-  }
+		this.host = host;
+		this.port = port;
+	}
 
-  public CachedROHttpConnection(URL u, Proxy p, Handler handler){
-    super(u);
-  }
+	public CachedROHttpConnection(URL u, Proxy p, Handler handler) {
+		super(u);
+	}
 
-  public CachedROHttpConnection(URL u, Proxy p) {
-    this (u, p, new Handler());
-  }
+	public CachedROHttpConnection(URL u, Proxy p) {
+		this(u, p, new Handler());
+	}
 
-  protected CachedROHttpConnection(URL u, Handler handler)  throws IOException {
-    this(u, null, handler);
-  }
+	protected CachedROHttpConnection(URL u, Handler handler) throws IOException {
+		this(u, null, handler);
+	}
 
+	private native byte[] getContents(String url);
 
-
-  private native byte[] getContents(String url);
-
-  public synchronized InputStream getInputStream() throws IOException {
-    byte[] data = getContents(url.toString());
-    return new ByteArrayInputStream(data);
-  }
-
+	@Override
+	public synchronized InputStream getInputStream() throws IOException {
+		byte[] data = getContents(url.toString());
+		return new ByteArrayInputStream(data);
+	}
 
 }

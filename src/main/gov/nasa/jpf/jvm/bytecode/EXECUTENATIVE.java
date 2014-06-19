@@ -29,68 +29,74 @@ import java.lang.reflect.Method;
 
 /**
  * this is a synthetic instruction to (re-)execute native methods
- *
- * Note that StackFrame and lock handling has to occur from within
- * the corresponding NativeMethodInfo
+ * 
+ * Note that StackFrame and lock handling has to occur from within the
+ * corresponding NativeMethodInfo
  */
 public class EXECUTENATIVE extends JVMInstruction {
 
-  // unfortunately we can't null this in cleanupTransients(), but it is
-  // a potential leak for stored traces
-  protected NativeMethodInfo executedMethod;
+	// unfortunately we can't null this in cleanupTransients(), but it is
+	// a potential leak for stored traces
+	protected NativeMethodInfo executedMethod;
 
-  public boolean isExtendedInstruction() {
-    return true;
-  }
+	@Override
+	public boolean isExtendedInstruction() {
+		return true;
+	}
 
-  public static final int OPCODE = 259;
+	public static final int OPCODE = 259;
 
-  public int getByteCode () {
-    return OPCODE;
-  }
+	@Override
+	public int getByteCode() {
+		return OPCODE;
+	}
 
-  public EXECUTENATIVE (){}
+	public EXECUTENATIVE() {
+	}
 
-  public EXECUTENATIVE (NativeMethodInfo mi){
-    executedMethod = mi;
-  }
+	public EXECUTENATIVE(NativeMethodInfo mi) {
+		executedMethod = mi;
+	}
 
-  public void setExecutedMethod (NativeMethodInfo mi){
-    executedMethod = mi;
-  }
+	public void setExecutedMethod(NativeMethodInfo mi) {
+		executedMethod = mi;
+	}
 
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 
-  public Instruction execute (ThreadInfo ti) {
+	@Override
+	public Instruction execute(ThreadInfo ti) {
 
-    // we don't have to enter/leave or push/pop a frame, that's all done
-    // in NativeMethodInfo.execute()
-    // !! don't re-enter if this is reexecuted !!
-    return executedMethod.executeNative(ti);
-  }
+		// we don't have to enter/leave or push/pop a frame, that's all done
+		// in NativeMethodInfo.execute()
+		// !! don't re-enter if this is reexecuted !!
+		return executedMethod.executeNative(ti);
+	}
 
-  public MethodInfo getExecutedMethod() {
-    return executedMethod;
-  }
+	public MethodInfo getExecutedMethod() {
+		return executedMethod;
+	}
 
-  public String getExecutedMethodName(){
-    return executedMethod.getName();
-  }
+	public String getExecutedMethodName() {
+		return executedMethod.getName();
+	}
 
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("executenative");
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("executenative");
 
-    if (executedMethod != null){
-      Method m = executedMethod.getMethod();
-      sb.append(' ');
-      sb.append( m.getDeclaringClass().getSimpleName());
-      sb.append('.');
-      sb.append( m.getName());
-    }
+		if (executedMethod != null) {
+			Method m = executedMethod.getMethod();
+			sb.append(' ');
+			sb.append(m.getDeclaringClass().getSimpleName());
+			sb.append('.');
+			sb.append(m.getName());
+		}
 
-    return sb.toString();
-  }
+		return sb.toString();
+	}
 }

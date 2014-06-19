@@ -23,25 +23,27 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
  * DOCUMENT ME!
  */
 public class DUP2_X1 extends JVMInstruction {
 
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
-    
-    frame.dup2_x1();
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    return getNext(ti);
-  }
+		frame.dup2_x1();
 
-  public int getByteCode () {
-    return 0x5D;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		return getNext(ti);
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0x5D;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

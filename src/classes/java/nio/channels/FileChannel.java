@@ -26,26 +26,30 @@ import java.nio.ByteBuffer;
 //This class uses the methods from FileDescriptor in order to access files
 public class FileChannel {
 
-	public int read(ByteBuffer dst) throws IOException{
-		return fd.read(dst.array(),0,dst.array().length);
+	public int read(ByteBuffer dst) throws IOException {
+		return fd.read(dst.array(), 0, dst.array().length);
 	}
 
-	public int write(ByteBuffer src) throws IOException{
-		fd.write(src.array(),0,src.array().length);
+	public int write(ByteBuffer src) throws IOException {
+		fd.write(src.array(), 0, src.array().length);
 		return src.array().length;
 	}
 
-	public void close() throws IOException{
+	public void close() throws IOException {
 		fd.close();
 	}
 
-	public FileChannel(FileDescriptor fd){
+	public FileChannel(FileDescriptor fd) {
 		this.fd = fd;
 	}
 
 	private FileDescriptor fd = null;
 
-	public long position() { return 0; } // Stub for Eclipse
+	public long position() {
+		return 0;
+	} // Stub for Eclipse
 
-	public FileChannel position(long p) { return null; } // Stub for Eclipse
+	public FileChannel position(long p) {
+		return null;
+	} // Stub for Eclipse
 }

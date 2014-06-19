@@ -29,132 +29,142 @@ import org.junit.Test;
  */
 @SuppressWarnings("null")
 public class ExceptionHandlingTest extends TestJPF {
-  int data;
+	int data;
 
-  void foo () {
-  }
-  
-  static void bar () {
-    ExceptionHandlingTest o = null;
-    o.foo();
-  }
-  
-  @Test public void testNPE () {
-    if (verifyUnhandledException("java.lang.NullPointerException")){
-      ExceptionHandlingTest o = null;
-      o.data = -1;
+	void foo() {
+	}
 
-      assert false : "should never get here";
-    }
-  }
-  
-  @Test public void testNPECall () {
-    if (verifyUnhandledException("java.lang.NullPointerException")){
-      ExceptionHandlingTest o = null;
-      o.foo();
+	static void bar() {
+		ExceptionHandlingTest o = null;
+		o.foo();
+	}
 
-      assert false : "should never get here";
-    }
-  }
+	@Test
+	public void testNPE() {
+		if (verifyUnhandledException("java.lang.NullPointerException")) {
+			ExceptionHandlingTest o = null;
+			o.data = -1;
 
-  @Test public void testArrayIndexOutOfBoundsLow () {
-    if (verifyUnhandledException("java.lang.ArrayIndexOutOfBoundsException")){
-      int[] a = new int[10];
-      a[-1] = 0;
+			assert false : "should never get here";
+		}
+	}
 
-      assert false : "should never get here";
-    }
-  }
+	@Test
+	public void testNPECall() {
+		if (verifyUnhandledException("java.lang.NullPointerException")) {
+			ExceptionHandlingTest o = null;
+			o.foo();
 
-  @Test public void testArrayIndexOutOfBoundsHigh () {
-    if (verifyUnhandledException("java.lang.ArrayIndexOutOfBoundsException")){
-      int[] a = new int[10];
-      a[10] = 0;
+			assert false : "should never get here";
+		}
+	}
 
-      assert false : "should never get here";
-    }
-  }
+	@Test
+	public void testArrayIndexOutOfBoundsLow() {
+		if (verifyUnhandledException("java.lang.ArrayIndexOutOfBoundsException")) {
+			int[] a = new int[10];
+			a[-1] = 0;
 
-  @Test public void testLocalHandler () {
-    if (verifyNoPropertyViolation()){
-      try {
-        ExceptionHandlingTest o = null;
-        o.data = 0;
-      } catch (IllegalArgumentException iax) {
-        assert false : "should never get here";
-      } catch (NullPointerException npe) {
-        return;
-      } catch (Exception x) {
-        assert false : "should never get here";
-      }
+			assert false : "should never get here";
+		}
+	}
 
-      assert false : "should never get here";
-    }
-  }
+	@Test
+	public void testArrayIndexOutOfBoundsHigh() {
+		if (verifyUnhandledException("java.lang.ArrayIndexOutOfBoundsException")) {
+			int[] a = new int[10];
+			a[10] = 0;
 
-  @Test public void testCallerHandler () {
-    if (verifyNoPropertyViolation()){
-      try {
-        bar();
-      } catch (Throwable t) {
-        return;
-      }
+			assert false : "should never get here";
+		}
+	}
 
-      assert false : "should never get here";
-    }
-  }
-  
-  @Test public void testEmptyHandler () {
-    if (verifyNoPropertyViolation()){
-      try {
-        throw new RuntimeException("should be empty-handled");
-      } catch (Throwable t) {
-        // nothing
-      }
-    }
-  }
-  
-  @Test public void testEmptyTryBlock () {
-    if (verifyNoPropertyViolation()){
-      try {
-        // nothing
-      } catch (Throwable t) {
-        assert false : "should never get here";
-      }
-    }
-  }
-  
-  @Test public void testStackTrace() {
-    if (verifyNoPropertyViolation()){
+	@Test
+	public void testLocalHandler() {
+		if (verifyNoPropertyViolation()) {
+			try {
+				ExceptionHandlingTest o = null;
+				o.data = 0;
+			} catch (IllegalArgumentException iax) {
+				assert false : "should never get here";
+			} catch (NullPointerException npe) {
+				return;
+			} catch (Exception x) {
+				assert false : "should never get here";
+			}
 
-      Throwable x = new Throwable();
-      StackTraceElement[] st = x.getStackTrace();
+			assert false : "should never get here";
+		}
+	}
 
-      //x.printStackTrace();
-      for (int i=0; i<st.length; i++){
-        System.out.print("\t at ");
-        System.out.print(st[i].getClassName());
-        System.out.print('.');
-        System.out.print(st[i].getMethodName());
-        System.out.print('(');
-        System.out.print(st[i].getFileName());
-        System.out.print(':');
-        System.out.print(st[i].getLineNumber());
-        System.out.println(')');
-      }
+	@Test
+	public void testCallerHandler() {
+		if (verifyNoPropertyViolation()) {
+			try {
+				bar();
+			} catch (Throwable t) {
+				return;
+			}
 
-      // note - direct call stackframes should not show up here, they are JPF internal
-      assert st.length == 3 : "wrong stack trace depth";
+			assert false : "should never get here";
+		}
+	}
 
-      assert st[0].getClassName().equals(ExceptionHandlingTest.class.getName());
-      assert st[0].getMethodName().equals("testStackTrace");
+	@Test
+	public void testEmptyHandler() {
+		if (verifyNoPropertyViolation()) {
+			try {
+				throw new RuntimeException("should be empty-handled");
+			} catch (Throwable t) {
+				// nothing
+			}
+		}
+	}
 
-      assert st[1].getClassName().equals(Method.class.getName());
-      assert st[1].getMethodName().equals("invoke");
+	@Test
+	public void testEmptyTryBlock() {
+		if (verifyNoPropertyViolation()) {
+			try {
+				// nothing
+			} catch (Throwable t) {
+				assert false : "should never get here";
+			}
+		}
+	}
 
-      assert st[2].getClassName().equals(TestJPF.class.getName());
-      assert st[2].getMethodName().equals("runTestMethod");
-    }
-  }  
+	@Test
+	public void testStackTrace() {
+		if (verifyNoPropertyViolation()) {
+
+			Throwable x = new Throwable();
+			StackTraceElement[] st = x.getStackTrace();
+
+			// x.printStackTrace();
+			for (int i = 0; i < st.length; i++) {
+				System.out.print("\t at ");
+				System.out.print(st[i].getClassName());
+				System.out.print('.');
+				System.out.print(st[i].getMethodName());
+				System.out.print('(');
+				System.out.print(st[i].getFileName());
+				System.out.print(':');
+				System.out.print(st[i].getLineNumber());
+				System.out.println(')');
+			}
+
+			// note - direct call stackframes should not show up here, they are
+			// JPF internal
+			assert st.length == 3 : "wrong stack trace depth";
+
+			assert st[0].getClassName().equals(
+					ExceptionHandlingTest.class.getName());
+			assert st[0].getMethodName().equals("testStackTrace");
+
+			assert st[1].getClassName().equals(Method.class.getName());
+			assert st[1].getMethodName().equals("invoke");
+
+			assert st[2].getClassName().equals(TestJPF.class.getName());
+			assert st[2].getMethodName().equals("runTestMethod");
+		}
+	}
 }
-

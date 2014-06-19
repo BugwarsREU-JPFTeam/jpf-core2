@@ -35,350 +35,361 @@ import gov.nasa.jpf.vm.Types;
 import java.util.HashMap;
 
 /**
- * listener to inject exceptions according to user specifications. This
- * tool is meant to be used for exception handler verification, esp. if
- * exceptions thrown by 3rd party code would be hard to produce.
- *
+ * listener to inject exceptions according to user specifications. This tool is
+ * meant to be used for exception handler verification, esp. if exceptions
+ * thrown by 3rd party code would be hard to produce.
+ * 
  * Exceptions are specified as a list of xSpec'@'location pairs.
- *
- * ExceptionSpec is specified as a class name, with optional details parameter. If no
- * package is specified, either java.lang or default package are assumed
- *
- * Location can be 
- *   - class:line
- *   - fully qualified method (callee that is supposed to throw, which is
- *     NOT executed in this case)
- *   - fully qualified method ':' lineOffset
- *
+ * 
+ * ExceptionSpec is specified as a class name, with optional details parameter.
+ * If no package is specified, either java.lang or default package are assumed
+ * 
+ * Location can be - class:line - fully qualified method (callee that is
+ * supposed to throw, which is NOT executed in this case) - fully qualified
+ * method ':' lineOffset
+ * 
  * for line/offest based locations, either the first or last insn associated
- * with this line (depending on ei.throwFirst=true|false) is not executed
- * but replaced with throwing the exception.
- *
- * Method body line offsets count from the first statement line in the method body
- *
- * Examples:
- *   IOException@x.Foobar:42
- *   NullPointerException@x.SomeClass.computeSomething(Ljava/lang/String;I)
- *   y.MyException("something went wrong")@x.SomeClass.foo(D):10
+ * with this line (depending on ei.throwFirst=true|false) is not executed but
+ * replaced with throwing the exception.
+ * 
+ * Method body line offsets count from the first statement line in the method
+ * body
+ * 
+ * Examples: IOException@x.Foobar:42
+ * NullPointerException@x.SomeClass.computeSomething(Ljava/lang/String;I)
+ * y.MyException("something went wrong")@x.SomeClass.foo(D):10
  */
 
 public class ExceptionInjector extends ListenerAdapter {
 
-  boolean throwFirst; // for location targets, throw on first insn associated with line
+	boolean throwFirst; // for location targets, throw on first insn associated
+						// with line
 
-  static class ExceptionEntry {
-    Instruction insn;
-    ExceptionSpec xSpec;
-    Location loc;
+	static class ExceptionEntry {
+		Instruction insn;
+		ExceptionSpec xSpec;
+		Location loc;
 
-    ExceptionEntry next;  // there might be more than one for one class
+		ExceptionEntry next; // there might be more than one for one class
 
-    ExceptionEntry (ExceptionSpec xSpec, Location loc, ExceptionEntry next){
-      this.xSpec = xSpec;
-      this.loc = loc;
-      this.next = next;
-    }
+		ExceptionEntry(ExceptionSpec xSpec, Location loc, ExceptionEntry next) {
+			this.xSpec = xSpec;
+			this.loc = loc;
+			this.next = next;
+		}
 
-    String getLocationClassName() {
-      return loc.className;
-    }
+		String getLocationClassName() {
+			return loc.className;
+		}
 
-    String getMethod() {
-      return loc.method;
-    }
+		String getMethod() {
+			return loc.method;
+		}
 
-    int getLine() {
-      return loc.line;
-    }
+		int getLine() {
+			return loc.line;
+		}
 
-    ClassInfo getExceptionClassInfo(ThreadInfo ti) {
-      return ClassLoaderInfo.getCurrentResolvedClassInfo(xSpec.xClsName);
-    }
+		ClassInfo getExceptionClassInfo(ThreadInfo ti) {
+			return ClassLoaderInfo.getCurrentResolvedClassInfo(xSpec.xClsName);
+		}
 
-    String getExceptionDetails() {
-      return xSpec.details;
-    }
+		String getExceptionDetails() {
+			return xSpec.details;
+		}
 
-    public String toString() {
-      return xSpec.toString() + '@' + loc.toString();
-    }
-  }
+		@Override
+		public String toString() {
+			return xSpec.toString() + '@' + loc.toString();
+		}
+	}
 
-  static class ExceptionSpec {
-    String xClsName;
-    String details;
+	static class ExceptionSpec {
+		String xClsName;
+		String details;
 
-    ExceptionSpec (String xClsName, String details){
-      this.xClsName = xClsName;
-      this.details = details;
-    }
-    
-    public String toString() {
-      if (details == null){
-        return xClsName;
-      } else {
-        StringBuilder sb = new StringBuilder(xClsName);
-        sb.append('(');
-        if (!details.isEmpty()){
-          sb.append('"');
-          sb.append(details);
-          sb.append('"');
-        }
-        sb.append(')');
-        return sb.toString();
-      }
-    }
-  }
+		ExceptionSpec(String xClsName, String details) {
+			this.xClsName = xClsName;
+			this.details = details;
+		}
 
-  static class Location {
-    String className;
-    String method; // name + signature
-    int line;
+		@Override
+		public String toString() {
+			if (details == null) {
+				return xClsName;
+			} else {
+				StringBuilder sb = new StringBuilder(xClsName);
+				sb.append('(');
+				if (!details.isEmpty()) {
+					sb.append('"');
+					sb.append(details);
+					sb.append('"');
+				}
+				sb.append(')');
+				return sb.toString();
+			}
+		}
+	}
 
-    Location (String className, String method, int line){
-      this.className = className;
-      this.method = method;
-      this.line = line;
-    }
+	static class Location {
+		String className;
+		String method; // name + signature
+		int line;
 
-    public String toString() {
-      StringBuilder sb = new StringBuilder(className);
-      if (method != null){
-        sb.append('.');
-        sb.append(method);
-      }
-      if (line >= 0){
-        sb.append(':');
-        sb.append(line);
-      }
-      return sb.toString();
-    }
-  }
+		Location(String className, String method, int line) {
+			this.className = className;
+			this.method = method;
+			this.line = line;
+		}
 
-  // these two are used to process classes at loadtime
-  HashMap<String,ExceptionEntry> targetClasses = new HashMap<String,ExceptionEntry>();
-  HashMap<String,ExceptionEntry> targetBases = new HashMap<String,ExceptionEntry>();
-  
-  // methods and instructions to watch for at runtime will have ExceptionEntry attrs
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder(className);
+			if (method != null) {
+				sb.append('.');
+				sb.append(method);
+			}
+			if (line >= 0) {
+				sb.append(':');
+				sb.append(line);
+			}
+			return sb.toString();
+		}
+	}
 
+	// these two are used to process classes at loadtime
+	HashMap<String, ExceptionEntry> targetClasses = new HashMap<String, ExceptionEntry>();
+	HashMap<String, ExceptionEntry> targetBases = new HashMap<String, ExceptionEntry>();
 
-  public ExceptionInjector (Config config, JPF jpf){
-    throwFirst = config.getBoolean("ei.throw_first", false);
-    String[] xSpecs = config.getStringArray("ei.exception", new char[] {';'});
+	// methods and instructions to watch for at runtime will have ExceptionEntry
+	// attrs
 
-    if (xSpecs != null){
-      for (String xSpec : xSpecs){
-        if (!parseException(xSpec)){
-          throw new JPFConfigException("invalid exception spec: " + xSpec);
-        }
-      }
-    }
+	public ExceptionInjector(Config config, JPF jpf) {
+		throwFirst = config.getBoolean("ei.throw_first", false);
+		String[] xSpecs = config.getStringArray("ei.exception",
+				new char[] { ';' });
 
-    printEntries();
-  }
+		if (xSpecs != null) {
+			for (String xSpec : xSpecs) {
+				if (!parseException(xSpec)) {
+					throw new JPFConfigException("invalid exception spec: "
+							+ xSpec);
+				}
+			}
+		}
 
-  boolean parseException (String xSpec){
-    int i = xSpec.indexOf('@');
-    if (i > 0){
-      String typeSpec = xSpec.substring(0, i).trim();
-      String locSpec = xSpec.substring(i+1).trim();
+		printEntries();
+	}
 
-      ExceptionSpec type = parseType(typeSpec);
-      if (type != null){
-        Location loc = parseLocation(locSpec);
-        if (loc != null){
-          String cls = loc.className;
-          int line = loc.line;
-          if (line >= 0){
-            targetClasses.put(cls, new ExceptionEntry(type,loc,targetClasses.get(cls)));
-          } else {
-            targetBases.put(cls, new ExceptionEntry(type,loc,targetBases.get(cls)));
-          }
-          return true;
-        }
-      }
-    }
+	boolean parseException(String xSpec) {
+		int i = xSpec.indexOf('@');
+		if (i > 0) {
+			String typeSpec = xSpec.substring(0, i).trim();
+			String locSpec = xSpec.substring(i + 1).trim();
 
-    return false;
-  }
+			ExceptionSpec type = parseType(typeSpec);
+			if (type != null) {
+				Location loc = parseLocation(locSpec);
+				if (loc != null) {
+					String cls = loc.className;
+					int line = loc.line;
+					if (line >= 0) {
+						targetClasses.put(cls, new ExceptionEntry(type, loc,
+								targetClasses.get(cls)));
+					} else {
+						targetBases.put(cls, new ExceptionEntry(type, loc,
+								targetBases.get(cls)));
+					}
+					return true;
+				}
+			}
+		}
 
-  ExceptionSpec parseType (String spec){
-    String cls = null;
-    String details = null;
+		return false;
+	}
 
-    int i = spec.indexOf('(');
-    if (i > 0){
-      cls = spec.substring(0, i);
+	ExceptionSpec parseType(String spec) {
+		String cls = null;
+		String details = null;
 
-      int j = spec.lastIndexOf(')');
-      if (spec.charAt(i+1) == '"'){
-        i++;
-      }
-      if (spec.charAt(j-1) == '"'){
-        j--;
-      }
-      details = spec.substring(i+1, j);
-      if (details.isEmpty()){
-        details = null;
-      }
+		int i = spec.indexOf('(');
+		if (i > 0) {
+			cls = spec.substring(0, i);
 
-    } else if (i < 0) {  // no details
-      cls = spec;
-    }
+			int j = spec.lastIndexOf(')');
+			if (spec.charAt(i + 1) == '"') {
+				i++;
+			}
+			if (spec.charAt(j - 1) == '"') {
+				j--;
+			}
+			details = spec.substring(i + 1, j);
+			if (details.isEmpty()) {
+				details = null;
+			}
 
-    if (cls != null){
-      return new ExceptionSpec( cls,details);
-    }
+		} else if (i < 0) { // no details
+			cls = spec;
+		}
 
-    return null;
-  }
+		if (cls != null) {
+			return new ExceptionSpec(cls, details);
+		}
 
-  Location parseLocation (String spec){
-    int i = spec.indexOf('(');
-    if (i > 0){  // we have a method name
-      int j = spec.lastIndexOf('.', i);  // get class part
-      if (j > 0){
-        String cls = spec.substring(0, j).trim();
-        i = spec.indexOf(':');
-        if (i > 0){
+		return null;
+	}
 
-          String mth = Types.getSignatureName(spec.substring(j+1, i));
+	Location parseLocation(String spec) {
+		int i = spec.indexOf('(');
+		if (i > 0) { // we have a method name
+			int j = spec.lastIndexOf('.', i); // get class part
+			if (j > 0) {
+				String cls = spec.substring(0, j).trim();
+				i = spec.indexOf(':');
+				if (i > 0) {
 
-          try {
-            int line = Integer.parseInt(spec.substring(i + 1));
-            if (!cls.isEmpty() && !mth.isEmpty() && line >= 0){
-              return new Location(cls, mth, line);
-            }
-          } catch (NumberFormatException nfx) {
-            return null;
-          }
-        } else {
-          String mth = Types.getSignatureName(spec.substring(j+1));
-          return new Location(cls,mth, -1);
-        }
-      }
+					String mth = Types.getSignatureName(spec
+							.substring(j + 1, i));
 
-    } else { // no method
-      i = spec.indexOf(':');  // but we need a line number
-      if (i > 0){
-        String cls = spec.substring(0, i).trim();
-        try {
-          int line = Integer.parseInt(spec.substring(i+1));
-          if (!cls.isEmpty() && line >= 0){
-            return new Location (cls, null, line);
-          }
-        } catch (NumberFormatException nfx){
-          return null;
-        }
-      }
-    }
+					try {
+						int line = Integer.parseInt(spec.substring(i + 1));
+						if (!cls.isEmpty() && !mth.isEmpty() && line >= 0) {
+							return new Location(cls, mth, line);
+						}
+					} catch (NumberFormatException nfx) {
+						return null;
+					}
+				} else {
+					String mth = Types.getSignatureName(spec.substring(j + 1));
+					return new Location(cls, mth, -1);
+				}
+			}
 
-    return null;
-  }
+		} else { // no method
+			i = spec.indexOf(':'); // but we need a line number
+			if (i > 0) {
+				String cls = spec.substring(0, i).trim();
+				try {
+					int line = Integer.parseInt(spec.substring(i + 1));
+					if (!cls.isEmpty() && line >= 0) {
+						return new Location(cls, null, line);
+					}
+				} catch (NumberFormatException nfx) {
+					return null;
+				}
+			}
+		}
 
-  boolean checkTargetInsn (ExceptionEntry e, MethodInfo mi, int[] ln, int line){
-    if ((ln[0] <= line) && (ln[ln.length - 1] >= line)) {
-      for (int i = 0; i < ln.length; i++) {
-        if (ln[i] == line) {
-          if (!throwFirst) {
-            while ((i++ < ln.length) && (ln[i] == line));
-            i--;
-          }
+		return null;
+	}
 
-          mi.getInstruction(i).addAttr(e);
-          return true;
-        }
-      }
-    }
+	boolean checkTargetInsn(ExceptionEntry e, MethodInfo mi, int[] ln, int line) {
+		if ((ln[0] <= line) && (ln[ln.length - 1] >= line)) {
+			for (int i = 0; i < ln.length; i++) {
+				if (ln[i] == line) {
+					if (!throwFirst) {
+						while ((i++ < ln.length) && (ln[i] == line))
+							;
+						i--;
+					}
 
-    return false;
-  }
+					mi.getInstruction(i).addAttr(e);
+					return true;
+				}
+			}
+		}
 
-  /**
-   * get the target insns/methods
-   */
-  @Override
-  public void classLoaded (VM vm, ClassInfo loadedClass){
+		return false;
+	}
 
-    nextClassEntry:
-    for (ExceptionEntry e = targetClasses.get(loadedClass.getName()); e != null; e = e.next){
-      String method = e.getMethod();
-      int line = e.getLine();
+	/**
+	 * get the target insns/methods
+	 */
+	@Override
+	public void classLoaded(VM vm, ClassInfo loadedClass) {
 
-      if (method != null){  // method or method/line-offset
-        for (MethodInfo mi : loadedClass.getDeclaredMethodInfos()){
-          if (mi.getUniqueName().startsWith(method)){
-            if (line >= 0){ // line offset
-              int[] ln = mi.getLineNumbers();
-              line += ln[0];
-              if (checkTargetInsn(e,mi,ln,line)){
-                continue nextClassEntry;
-              }
-            }
-          }
-        }
+		nextClassEntry: for (ExceptionEntry e = targetClasses.get(loadedClass
+				.getName()); e != null; e = e.next) {
+			String method = e.getMethod();
+			int line = e.getLine();
 
-      } else { // absolute line number
-        if (line >= 0){
-          for (MethodInfo mi : loadedClass.getDeclaredMethodInfos()) {
-            int[] ln = mi.getLineNumbers();
-            if (checkTargetInsn(e, mi, ln, line)) {
-              continue nextClassEntry;
-            }
-          }
-        }
-      }
-    }
+			if (method != null) { // method or method/line-offset
+				for (MethodInfo mi : loadedClass.getDeclaredMethodInfos()) {
+					if (mi.getUniqueName().startsWith(method)) {
+						if (line >= 0) { // line offset
+							int[] ln = mi.getLineNumbers();
+							line += ln[0];
+							if (checkTargetInsn(e, mi, ln, line)) {
+								continue nextClassEntry;
+							}
+						}
+					}
+				}
 
-    if (targetBases != null){
-      for (; loadedClass != null; loadedClass = loadedClass.getSuperClass()) {
-        nextBaseEntry:
-        for (ExceptionEntry e = targetBases.get(loadedClass.getName()); e != null; e = e.next){
-          String method = e.getMethod();
-          for (MethodInfo mi : loadedClass.getDeclaredMethodInfos()){
-            if (mi.getUniqueName().startsWith(method)){
-              mi.addAttr(e);
-              continue nextBaseEntry;
-            }
-          }
-        }
-      }
-    }
-  }
+			} else { // absolute line number
+				if (line >= 0) {
+					for (MethodInfo mi : loadedClass.getDeclaredMethodInfos()) {
+						int[] ln = mi.getLineNumbers();
+						if (checkTargetInsn(e, mi, ln, line)) {
+							continue nextClassEntry;
+						}
+					}
+				}
+			}
+		}
 
-  @Override
-  public void executeInstruction (VM vm, ThreadInfo ti, Instruction insnToExecute){
+		if (targetBases != null) {
+			for (; loadedClass != null; loadedClass = loadedClass
+					.getSuperClass()) {
+				nextBaseEntry: for (ExceptionEntry e = targetBases
+						.get(loadedClass.getName()); e != null; e = e.next) {
+					String method = e.getMethod();
+					for (MethodInfo mi : loadedClass.getDeclaredMethodInfos()) {
+						if (mi.getUniqueName().startsWith(method)) {
+							mi.addAttr(e);
+							continue nextBaseEntry;
+						}
+					}
+				}
+			}
+		}
+	}
 
-    ExceptionEntry e = insnToExecute.getAttr(ExceptionEntry.class);
-    if ((e == null) && insnToExecute instanceof InvokeInstruction){
-      MethodInfo mi = ((InvokeInstruction) insnToExecute).getInvokedMethod();
-      e = mi.getAttr(ExceptionEntry.class);
-    }
+	@Override
+	public void executeInstruction(VM vm, ThreadInfo ti,
+			Instruction insnToExecute) {
 
-    if (e != null){
-      Instruction nextInsn = ti.createAndThrowException(e.getExceptionClassInfo(ti), e.getExceptionDetails());
-      ti.skipInstruction(nextInsn);
-      return;
-    }
-  }
-  
-  // for debugging purposes
-  void printEntries () {
-    for (ExceptionEntry e : targetClasses.values()){
-      System.out.println(e);
-    }
-    for (ExceptionEntry e : targetBases.values()){
-      System.out.println(e);
-    }
-  }
+		ExceptionEntry e = insnToExecute.getAttr(ExceptionEntry.class);
+		if ((e == null) && insnToExecute instanceof InvokeInstruction) {
+			MethodInfo mi = ((InvokeInstruction) insnToExecute)
+					.getInvokedMethod();
+			e = mi.getAttr(ExceptionEntry.class);
+		}
 
-  /**
-  public static void main (String[] args){
-    Config conf = JPF.createConfig(args);
-    ExceptionInjector ei = new ExceptionInjector(conf,null);
+		if (e != null) {
+			Instruction nextInsn = ti.createAndThrowException(
+					e.getExceptionClassInfo(ti), e.getExceptionDetails());
+			ti.skipInstruction(nextInsn);
+			return;
+		}
+	}
 
-    ei.parseException("x.y.Zang(\"bang\")@z.Foo.doit(Ljava/lang/Object;I)");
-    ei.printEntries();
-  }
-  **/
+	// for debugging purposes
+	void printEntries() {
+		for (ExceptionEntry e : targetClasses.values()) {
+			System.out.println(e);
+		}
+		for (ExceptionEntry e : targetBases.values()) {
+			System.out.println(e);
+		}
+	}
+
+	/**
+	 * public static void main (String[] args){ Config conf =
+	 * JPF.createConfig(args); ExceptionInjector ei = new
+	 * ExceptionInjector(conf,null);
+	 * 
+	 * ei.parseException("x.y.Zang(\"bang\")@z.Foo.doit(Ljava/lang/Object;I)");
+	 * ei.printEntries(); }
+	 **/
 }

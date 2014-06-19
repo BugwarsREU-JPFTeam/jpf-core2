@@ -29,51 +29,49 @@ import gov.nasa.jpf.vm.Verify;
 import org.junit.Test;
 
 /**
- *
+ * 
  * @author Ivan Mushketik
  */
 public class CGCreatorFactoryTest extends TestJPF {
-static class TestBoolCGCreator implements CGCreator {
+	static class TestBoolCGCreator implements CGCreator {
 
-    public ChoiceGenerator createCG(String id, Value[] values) {
-      return new BooleanChoiceGenerator(id);
-    }
+		@Override
+		public ChoiceGenerator createCG(String id, Value[] values) {
+			return new BooleanChoiceGenerator(id);
+		}
 
-  }
+	}
 
-  class B {
+	class B {
 
-    boolean b;
+		boolean b;
 
-    public B(boolean b) {
-      this.b = b;
-    }
+		public B(boolean b) {
+			this.b = b;
+		}
 
-    @Override
-    public boolean equals(Object o) {
-      B other = (B) o;
+		@Override
+		public boolean equals(Object o) {
+			B other = (B) o;
 
-      return this.b == other.b;
-    }
+			return this.b == other.b;
+		}
 
-  }
+	}
 
-  @Test
-  public void testAddUserDefinedCGCreator() {
-    if (verifyNoPropertyViolation("+jpf-core.native_classpath+=;${jpf-core}/build/tests",
-            "+jpf-core.test_classpath+=;${jpf-core.native_classpath}",
-            "+cg-creators=TF:" + TestBoolCGCreator.class.getName())) {
+	@Test
+	public void testAddUserDefinedCGCreator() {
+		if (verifyNoPropertyViolation(
+				"+jpf-core.native_classpath+=;${jpf-core}/build/tests",
+				"+jpf-core.test_classpath+=;${jpf-core.native_classpath}",
+				"+cg-creators=TF:" + TestBoolCGCreator.class.getName())) {
 
-      String json = "{"
-              + "'b' : TF()"
-              + "}";
+			String json = "{" + "'b' : TF()" + "}";
 
-      Object[] expected = {
-        new B(true), new B(false)
-      };
+			Object[] expected = { new B(true), new B(false) };
 
-      B b = Verify.createFromJSON(B.class, json);
-      JSONTest.checkValue(expected, b);
-    }
-  }
+			B b = Verify.createFromJSON(B.class, json);
+			JSONTest.checkValue(expected, b);
+		}
+	}
 }

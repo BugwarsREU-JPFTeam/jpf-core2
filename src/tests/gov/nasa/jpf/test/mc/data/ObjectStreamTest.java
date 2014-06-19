@@ -29,181 +29,184 @@ import org.junit.After;
 import org.junit.Test;
 
 /**
- *
+ * 
  * @author Ivan Mushketik
  */
 public class ObjectStreamTest extends TestJPF {
-  static String osFileName = "file";
+	static String osFileName = "file";
 
-  @After
-  public void deleteFile(){
-    File osFile = new File(osFileName);
+	@After
+	public void deleteFile() {
+		File osFile = new File(osFileName);
 
-    if (osFile.exists()) {
-      osFile.delete();
-    }
-  }
+		if (osFile.exists()) {
+			osFile.delete();
+		}
+	}
 
+	@Test
+	public void testWriteReadInteger() {
+		if (!isJPFRun()) {
+			Verify.writeObjectToFile(new Integer(123), osFileName);
+		}
 
-  @Test
-  public void testWriteReadInteger() {
-    if (!isJPFRun()) {
-      Verify.writeObjectToFile(new Integer(123), osFileName);
-    }
+		if (verifyNoPropertyViolation()) {
+			Integer i = Verify.readObjectFromFile(Integer.class, osFileName);
 
-    if (verifyNoPropertyViolation()) {
-      Integer i = Verify.readObjectFromFile(Integer.class, osFileName);
+			assert i == 123;
+		}
+	}
 
-      assert i == 123;
-    }
-  }
+	@Test
+	public void testWriteReadString() {
+		if (!isJPFRun()) {
+			Verify.writeObjectToFile(new String("hello"), osFileName);
+		}
 
-  @Test
-  public void testWriteReadString() {
-    if (!isJPFRun()) {
-      Verify.writeObjectToFile(new String("hello"), osFileName);
-    }
+		if (verifyNoPropertyViolation()) {
+			String s = Verify.readObjectFromFile(String.class, osFileName);
+			assert s.equals("hello");
+		}
+	}
 
-    if (verifyNoPropertyViolation()) {
-      String s = Verify.readObjectFromFile(String.class, osFileName);
-      assert s.equals("hello");
-    }
-  }
-  
-  static class Sup implements Serializable {
-    int s;
-  }
-  
-  static class Inherited extends Sup{
-    int i;
-  }
-  
-  @Test
-  public void testWriteReadInheritedClass() {
-    if (!isJPFRun()) {
-      Inherited inh = new Inherited();
-      inh.s = 1;
-      inh.i = 2;
+	static class Sup implements Serializable {
+		int s;
+	}
 
-      Verify.writeObjectToFile(inh, osFileName);
-    }
+	static class Inherited extends Sup {
+		int i;
+	}
 
-    if (verifyNoPropertyViolation("+jpf-core.native_classpath+=;${jpf-core}/build/tests")) {
-      Inherited inh = Verify.readObjectFromFile(Inherited.class, osFileName);
+	@Test
+	public void testWriteReadInheritedClass() {
+		if (!isJPFRun()) {
+			Inherited inh = new Inherited();
+			inh.s = 1;
+			inh.i = 2;
 
-      assert inh.s == 1;
-      assert inh.i == 2;
-    }
+			Verify.writeObjectToFile(inh, osFileName);
+		}
 
-  }
+		if (verifyNoPropertyViolation("+jpf-core.native_classpath+=;${jpf-core}/build/tests")) {
+			Inherited inh = Verify.readObjectFromFile(Inherited.class,
+					osFileName);
 
-  static class WithTransient implements Serializable {
-    int i;
-    transient int t;
-  }
+			assert inh.s == 1;
+			assert inh.i == 2;
+		}
 
-  @Test
-  public void testWriteReadTransientField() {
-    if (!isJPFRun()) {
-      WithTransient wt = new WithTransient();
-      wt.i = 10;
-      wt.t = 10;
-      Verify.writeObjectToFile(wt, osFileName);
-    }
+	}
 
-    if (verifyNoPropertyViolation("+jpf-core.native_classpath+=;${jpf-core}/build/tests")) {
-      WithTransient wt = Verify.readObjectFromFile(WithTransient.class, osFileName);
+	static class WithTransient implements Serializable {
+		int i;
+		transient int t;
+	}
 
-      assert wt.i == 10;
-      // t is transient
-      assert wt.t == 0;
-    }
-  }
+	@Test
+	public void testWriteReadTransientField() {
+		if (!isJPFRun()) {
+			WithTransient wt = new WithTransient();
+			wt.i = 10;
+			wt.t = 10;
+			Verify.writeObjectToFile(wt, osFileName);
+		}
 
-  class SerializableArrayList<T> extends ArrayList<T> implements Serializable {}
+		if (verifyNoPropertyViolation("+jpf-core.native_classpath+=;${jpf-core}/build/tests")) {
+			WithTransient wt = Verify.readObjectFromFile(WithTransient.class,
+					osFileName);
 
-  @Test
-  public void testWriteReadArrayList() {
-    if (!isJPFRun()) {
-      ArrayList<Integer> al = new ArrayList<Integer>();
-      al.add(1);
-      al.add(2);
-      al.add(3);
-      Verify.writeObjectToFile(al, osFileName);
-    }
+			assert wt.i == 10;
+			// t is transient
+			assert wt.t == 0;
+		}
+	}
 
-    if (verifyNoPropertyViolation()) {
-      ArrayList al = Verify.readObjectFromFile(ArrayList.class, osFileName);
+	class SerializableArrayList<T> extends ArrayList<T> implements Serializable {
+	}
 
-      assert al.size() == 3;
-      assert al.get(0).equals(1);
-      assert al.get(1).equals(2);
-      assert al.get(2).equals(3);
-    }
-  }
+	@Test
+	public void testWriteReadArrayList() {
+		if (!isJPFRun()) {
+			ArrayList<Integer> al = new ArrayList<Integer>();
+			al.add(1);
+			al.add(2);
+			al.add(3);
+			Verify.writeObjectToFile(al, osFileName);
+		}
 
-  static class MultiDimArr implements Serializable {
-    int arr [][];
-  }
+		if (verifyNoPropertyViolation()) {
+			ArrayList al = Verify.readObjectFromFile(ArrayList.class,
+					osFileName);
 
-  @Test
-  public void tsetWriteReadObjectWithMultiDimArray() {
-    if (!isJPFRun()) {
-      MultiDimArr mda = new MultiDimArr();
-      mda.arr = new int[2][];
-      mda.arr[0] = new int[3];
-      mda.arr[1] = new int[3];
+			assert al.size() == 3;
+			assert al.get(0).equals(1);
+			assert al.get(1).equals(2);
+			assert al.get(2).equals(3);
+		}
+	}
 
-      mda.arr[0][0] = 1;
-      mda.arr[0][1] = 2;
-      mda.arr[0][2] = 3;
+	static class MultiDimArr implements Serializable {
+		int arr[][];
+	}
 
-      mda.arr[1][0] = 4;
-      mda.arr[1][1] = 5;
-      mda.arr[1][2] = 6;
+	@Test
+	public void tsetWriteReadObjectWithMultiDimArray() {
+		if (!isJPFRun()) {
+			MultiDimArr mda = new MultiDimArr();
+			mda.arr = new int[2][];
+			mda.arr[0] = new int[3];
+			mda.arr[1] = new int[3];
 
-      Verify.writeObjectToFile(mda, osFileName);
-    }
+			mda.arr[0][0] = 1;
+			mda.arr[0][1] = 2;
+			mda.arr[0][2] = 3;
 
-    if (verifyNoPropertyViolation("+jpf-core.native_classpath+=;${jpf-core}/build/tests")) {
-      MultiDimArr mda = Verify.readObjectFromFile(MultiDimArr.class, osFileName);
+			mda.arr[1][0] = 4;
+			mda.arr[1][1] = 5;
+			mda.arr[1][2] = 6;
 
-      assert mda.arr[0][0] == 1;
-      assert mda.arr[0][1] == 2;
-      assert mda.arr[0][2] == 3;
+			Verify.writeObjectToFile(mda, osFileName);
+		}
 
-      assert mda.arr[1][0] == 4;
-      assert mda.arr[1][1] == 5;
-      assert mda.arr[1][2] == 6;
-    }
-  }
+		if (verifyNoPropertyViolation("+jpf-core.native_classpath+=;${jpf-core}/build/tests")) {
+			MultiDimArr mda = Verify.readObjectFromFile(MultiDimArr.class,
+					osFileName);
 
-  static class Inner implements Serializable {
-    int i;
-  }
+			assert mda.arr[0][0] == 1;
+			assert mda.arr[0][1] == 2;
+			assert mda.arr[0][2] == 3;
 
-  static class Outer implements Serializable {
-    Inner inner;
-    int o;
-  }
+			assert mda.arr[1][0] == 4;
+			assert mda.arr[1][1] == 5;
+			assert mda.arr[1][2] == 6;
+		}
+	}
 
+	static class Inner implements Serializable {
+		int i;
+	}
 
-  @Test
-  public void testReadWriteObjectWithReference() {
-    if (!isJPFRun()) {
-      Outer out = new Outer();
-      out.o = 1;
-      out.inner = new Inner();
-      out.inner.i = 2;
+	static class Outer implements Serializable {
+		Inner inner;
+		int o;
+	}
 
-      Verify.writeObjectToFile(out, osFileName);
-    }
+	@Test
+	public void testReadWriteObjectWithReference() {
+		if (!isJPFRun()) {
+			Outer out = new Outer();
+			out.o = 1;
+			out.inner = new Inner();
+			out.inner.i = 2;
 
-    if (verifyNoPropertyViolation("+jpf-core.native_classpath+=;${jpf-core}/build/tests")) {
-      Outer out = Verify.readObjectFromFile(Outer.class, osFileName);
+			Verify.writeObjectToFile(out, osFileName);
+		}
 
-      assert out.o == 1;
-      assert out.inner.i == 2;
-    }
-  }
+		if (verifyNoPropertyViolation("+jpf-core.native_classpath+=;${jpf-core}/build/tests")) {
+			Outer out = Verify.readObjectFromFile(Outer.class, osFileName);
+
+			assert out.o == 1;
+			assert out.inner.i == 2;
+		}
+	}
 }

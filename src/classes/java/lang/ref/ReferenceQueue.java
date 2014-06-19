@@ -22,23 +22,23 @@ package java.lang.ref;
  * MJI model class for java.lang.ref.ReferenceQueue library abstraction
  */
 public class ReferenceQueue<T> {
-  Reference<? extends T> head;
+	Reference<? extends T> head;
 
-  public ReferenceQueue () {
-  }
+	public ReferenceQueue() {
+	}
 
-  public Reference<? extends T> poll () {
-    // <2do>
-    return null;
-  }
+	public Reference<? extends T> poll() {
+		// <2do>
+		return null;
+	}
 
-  public Reference<? extends T> remove () {
-    // <2do>
-    return null;
-  }
+	public Reference<? extends T> remove() {
+		// <2do>
+		return null;
+	}
 
-  public Reference<? extends T> remove (long timeout) {
-    // <2do>
-    return null;
-  }
+	public Reference<? extends T> remove(long timeout) {
+		// <2do>
+		return null;
+	}
 }

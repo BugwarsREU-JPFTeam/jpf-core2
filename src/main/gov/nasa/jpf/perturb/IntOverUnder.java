@@ -30,43 +30,48 @@ import gov.nasa.jpf.vm.choice.IntChoiceFromSet;
  */
 public class IntOverUnder implements OperandPerturbator {
 
-  protected int delta;
-  protected int offset;
+	protected int delta;
+	protected int offset;
 
-  public IntOverUnder (Config conf, String keyPrefix) {
-    delta = conf.getInt(keyPrefix + ".delta", 0);
-    offset = 0;
-  }
+	public IntOverUnder(Config conf, String keyPrefix) {
+		delta = conf.getInt(keyPrefix + ".delta", 0);
+		offset = 0;
+	}
 
-  public IntOverUnder (int delta){
-    this.delta = delta;
-    offset = 0;
-  }
-  
-  public ChoiceGenerator<?> createChoiceGenerator (String id, StackFrame frame, Object refObject){
-    int val = frame.peek(offset);
+	public IntOverUnder(int delta) {
+		this.delta = delta;
+		offset = 0;
+	}
 
-    int[] values = new int[3];
+	@Override
+	public ChoiceGenerator<?> createChoiceGenerator(String id,
+			StackFrame frame, Object refObject) {
+		int val = frame.peek(offset);
 
-    values[0] = val + delta;
-    values[1] = val;
-    values[2] = val - delta;
-    
-    // set offset from refObject
-    offset = (Integer)refObject;
+		int[] values = new int[3];
 
-    return new IntChoiceFromSet(id, values);
-  }
+		values[0] = val + delta;
+		values[1] = val;
+		values[2] = val - delta;
 
-  public boolean perturb(ChoiceGenerator<?>cg, StackFrame frame) {
-  	assert cg instanceof IntChoiceGenerator : "wrong choice generator type for IntOverUnder: " + cg.getClass().getName();
+		// set offset from refObject
+		offset = (Integer) refObject;
 
-    int val = ((IntChoiceGenerator)cg).getNextChoice();
-  	frame.setOperand(offset, val, false);
-  	return cg.hasMoreChoices();
-  }
-  
-  public Class<? extends ChoiceGenerator<?>> getChoiceGeneratorType(){
-    return IntChoiceFromSet.class;
-  }
+		return new IntChoiceFromSet(id, values);
+	}
+
+	@Override
+	public boolean perturb(ChoiceGenerator<?> cg, StackFrame frame) {
+		assert cg instanceof IntChoiceGenerator : "wrong choice generator type for IntOverUnder: "
+				+ cg.getClass().getName();
+
+		int val = ((IntChoiceGenerator) cg).getNextChoice();
+		frame.setOperand(offset, val, false);
+		return cg.hasMoreChoices();
+	}
+
+	@Override
+	public Class<? extends ChoiceGenerator<?>> getChoiceGeneratorType() {
+		return IntChoiceFromSet.class;
+	}
 }

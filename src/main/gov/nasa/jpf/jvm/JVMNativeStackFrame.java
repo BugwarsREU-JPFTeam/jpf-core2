@@ -30,99 +30,98 @@ import gov.nasa.jpf.vm.Types;
  */
 public class JVMNativeStackFrame extends NativeStackFrame {
 
-  public JVMNativeStackFrame (NativeMethodInfo callee){
-    super(callee);
-  }
-  
-  public void setArguments (ThreadInfo ti){
-    StackFrame callerFrame = ti.getTopFrame(); // we are not going to modify it
-    NativeMethodInfo nmi = (NativeMethodInfo) mi;
-    int      nArgs = nmi.getNumberOfArguments();
-    byte[]   argTypes = nmi.getArgumentTypes();
+	public JVMNativeStackFrame(NativeMethodInfo callee) {
+		super(callee);
+	}
 
-    Object[] a = new Object[nArgs+2];
+	public void setArguments(ThreadInfo ti) {
+		StackFrame callerFrame = ti.getTopFrame(); // we are not going to modify
+													// it
+		NativeMethodInfo nmi = (NativeMethodInfo) mi;
+		int nArgs = nmi.getNumberOfArguments();
+		byte[] argTypes = nmi.getArgumentTypes();
 
-    int      stackOffset;
-    int      i, j, k;
-    int      ival;
-    long     lval;
+		Object[] a = new Object[nArgs + 2];
 
-    for (i = 0, stackOffset = 0, j = nArgs + 1, k = nArgs - 1;
-         i < nArgs;
-         i++, j--, k--) {
-      switch (argTypes[k]) {
-      case Types.T_BOOLEAN:
-        ival = callerFrame.peek(stackOffset);
-        a[j] = Boolean.valueOf(Types.intToBoolean(ival));
+		int stackOffset;
+		int i, j, k;
+		int ival;
+		long lval;
 
-        break;
+		for (i = 0, stackOffset = 0, j = nArgs + 1, k = nArgs - 1; i < nArgs; i++, j--, k--) {
+			switch (argTypes[k]) {
+			case Types.T_BOOLEAN:
+				ival = callerFrame.peek(stackOffset);
+				a[j] = Boolean.valueOf(Types.intToBoolean(ival));
 
-      case Types.T_BYTE:
-        ival = callerFrame.peek(stackOffset);
-        a[j] = Byte.valueOf((byte) ival);
+				break;
 
-        break;
+			case Types.T_BYTE:
+				ival = callerFrame.peek(stackOffset);
+				a[j] = Byte.valueOf((byte) ival);
 
-      case Types.T_CHAR:
-        ival = callerFrame.peek(stackOffset);
-        a[j] = Character.valueOf((char) ival);
+				break;
 
-        break;
+			case Types.T_CHAR:
+				ival = callerFrame.peek(stackOffset);
+				a[j] = Character.valueOf((char) ival);
 
-      case Types.T_SHORT:
-        ival = callerFrame.peek(stackOffset);
-        a[j] = new Short((short) ival);
+				break;
 
-        break;
+			case Types.T_SHORT:
+				ival = callerFrame.peek(stackOffset);
+				a[j] = new Short((short) ival);
 
-      case Types.T_INT:
-        ival = callerFrame.peek(stackOffset);
-        a[j] = new Integer(ival);
+				break;
 
-        break;
+			case Types.T_INT:
+				ival = callerFrame.peek(stackOffset);
+				a[j] = new Integer(ival);
 
-      case Types.T_LONG:
-        lval = callerFrame.peekLong(stackOffset);
-        stackOffset++; // 2 stack words
-        a[j] = new Long(lval);
+				break;
 
-        break;
+			case Types.T_LONG:
+				lval = callerFrame.peekLong(stackOffset);
+				stackOffset++; // 2 stack words
+				a[j] = new Long(lval);
 
-      case Types.T_FLOAT:
-        ival = callerFrame.peek(stackOffset);
-        a[j] = new Float(Types.intToFloat(ival));
+				break;
 
-        break;
+			case Types.T_FLOAT:
+				ival = callerFrame.peek(stackOffset);
+				a[j] = new Float(Types.intToFloat(ival));
 
-      case Types.T_DOUBLE:
-        lval = callerFrame.peekLong(stackOffset);
-        stackOffset++; // 2 stack words
-        a[j] = new Double(Types.longToDouble(lval));
+				break;
 
-        break;
+			case Types.T_DOUBLE:
+				lval = callerFrame.peekLong(stackOffset);
+				stackOffset++; // 2 stack words
+				a[j] = new Double(Types.longToDouble(lval));
 
-      default:
-        // NOTE - we have to store T_REFERENCE as an Integer, because
-        // it shows up in our native method as an 'int'
-        ival = callerFrame.peek(stackOffset);
-        a[j] = new Integer(ival);
-      }
+				break;
 
-      stackOffset++;
-    }
+			default:
+				// NOTE - we have to store T_REFERENCE as an Integer, because
+				// it shows up in our native method as an 'int'
+				ival = callerFrame.peek(stackOffset);
+				a[j] = new Integer(ival);
+			}
 
-    //--- set  our standard MJI header arguments
-    a[0] = ti.getMJIEnv();
-    
-    if (nmi.isStatic()) {
-      a[1] = new Integer( nmi.getClassInfo().getClassObjectRef());
-    } else {
-      int thisRef = callerFrame.getCalleeThis(nmi);
-      a[1] = new Integer( thisRef);
-      
-      setThis(thisRef);
-    }
+			stackOffset++;
+		}
 
-    setArgs(a);
-  }
+		// --- set our standard MJI header arguments
+		a[0] = ti.getMJIEnv();
+
+		if (nmi.isStatic()) {
+			a[1] = new Integer(nmi.getClassInfo().getClassObjectRef());
+		} else {
+			int thisRef = callerFrame.getCalleeThis(nmi);
+			a[1] = new Integer(thisRef);
+
+			setThis(thisRef);
+		}
+
+		setArgs(a);
+	}
 }

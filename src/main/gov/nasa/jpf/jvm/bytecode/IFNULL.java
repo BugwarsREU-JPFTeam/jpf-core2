@@ -26,20 +26,22 @@ import gov.nasa.jpf.vm.StackFrame;
  */
 public class IFNULL extends IfInstruction {
 
-  public IFNULL(int targetPc) {
-    super(targetPc);
-  }
+	public IFNULL(int targetPc) {
+		super(targetPc);
+	}
 
+	@Override
+	public boolean popConditionValue(StackFrame frame) {
+		return (frame.pop() == MJIEnv.NULL);
+	}
 
-  public boolean popConditionValue (StackFrame frame) {
-    return (frame.pop() == MJIEnv.NULL);
-  }
+	@Override
+	public int getByteCode() {
+		return 0xC6;
+	}
 
-  public int getByteCode () {
-    return 0xC6;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

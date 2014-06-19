@@ -25,12 +25,15 @@ public final class ByteOrder {
 		this.name = name;
 	}
 
-	public static final ByteOrder BIG_ENDIAN    = new ByteOrder("BIG_ENDIAN");
+	public static final ByteOrder BIG_ENDIAN = new ByteOrder("BIG_ENDIAN");
 	public static final ByteOrder LITTLE_ENDIAN = new ByteOrder("LITTLE_ENDIAN");
 
+	@Override
 	public String toString() {
 		return name;
 	}
 
-	public static ByteOrder nativeOrder() { return null; } // stub for Eclipse
+	public static ByteOrder nativeOrder() {
+		return null;
+	} // stub for Eclipse
 }

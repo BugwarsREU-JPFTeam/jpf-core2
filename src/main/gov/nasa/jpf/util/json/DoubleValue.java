@@ -20,19 +20,20 @@ package gov.nasa.jpf.util.json;
 
 /**
  * Double value from JSON document
+ * 
  * @author Ivan Mushketik
  */
 public class DoubleValue extends AbstractValue {
 
-  Double value;
+	Double value;
 
-  public DoubleValue(String strValue) {
-    super(strValue);
-    value = Double.parseDouble(strValue);
-  }
+	public DoubleValue(String strValue) {
+		super(strValue);
+		value = Double.parseDouble(strValue);
+	}
 
-  @Override
-  public Double getDouble() {
-    return value;
-  }
+	@Override
+	public Double getDouble() {
+		return value;
+	}
 }

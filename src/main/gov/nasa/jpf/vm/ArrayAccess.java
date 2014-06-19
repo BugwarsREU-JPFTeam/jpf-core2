@@ -23,25 +23,25 @@ package gov.nasa.jpf.vm;
  * CG attribute to store array references of aload/astore operations
  */
 public class ArrayAccess {
-  int aref;        // the array reference
-  int index;       // the index of the reference
-  boolean isRead;
+	int aref; // the array reference
+	int index; // the index of the reference
+	boolean isRead;
 
-  public ArrayAccess (int aref, int index, boolean isRead){
-    this.aref = aref;
-    this.index = index;
-    this.isRead = isRead;
-  }
+	public ArrayAccess(int aref, int index, boolean isRead) {
+		this.aref = aref;
+		this.index = index;
+		this.isRead = isRead;
+	}
 
-  public int getAref() {
-    return aref;
-  }
+	public int getAref() {
+		return aref;
+	}
 
-  public int getIndex() {
-    return index;
-  }
+	public int getIndex() {
+		return index;
+	}
 
-  public boolean isRead() {
-    return isRead;
-  }
+	public boolean isRead() {
+		return isRead;
+	}
 }

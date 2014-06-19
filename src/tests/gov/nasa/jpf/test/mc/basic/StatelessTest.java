@@ -21,7 +21,6 @@ package gov.nasa.jpf.test.mc.basic;
 
 import org.junit.Test;
 
-import gov.nasa.jpf.annotation.FilterField;
 import gov.nasa.jpf.util.test.TestJPF;
 import gov.nasa.jpf.vm.Verify;
 
@@ -30,23 +29,27 @@ import gov.nasa.jpf.vm.Verify;
  */
 public class StatelessTest extends TestJPF {
 
-  @Test
-  public void testNumberOfPaths(){
-    
-    if (!isJPFRun()){
-      Verify.resetCounter(0);
-    }
-    
-    if (verifyNoPropertyViolation("+vm.storage.class=null")){
-      int d = Verify.getInt(0, 5);
-      d = 0;
-      Verify.breakTransition("testNumberOfPaths"); // just to give the serializer something to chew on (if there is any)
-      System.out.println("got here");
-      Verify.incrementCounter(0);
-    }
-    
-    if (!isJPFRun()){
-      assert Verify.getCounter(0) == 6;
-    }
-  }
+	@Test
+	public void testNumberOfPaths() {
+
+		if (!isJPFRun()) {
+			Verify.resetCounter(0);
+		}
+
+		if (verifyNoPropertyViolation("+vm.storage.class=null")) {
+			int d = Verify.getInt(0, 5);
+			d = 0;
+			Verify.breakTransition("testNumberOfPaths"); // just to give the
+															// serializer
+															// something to chew
+															// on (if there is
+															// any)
+			System.out.println("got here");
+			Verify.incrementCounter(0);
+		}
+
+		if (!isJPFRun()) {
+			assert Verify.getCounter(0) == 6;
+		}
+	}
 }

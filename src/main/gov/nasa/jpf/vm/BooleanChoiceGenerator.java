@@ -21,129 +21,140 @@ package gov.nasa.jpf.vm;
 import gov.nasa.jpf.Config;
 
 /**
- * a pretty simple ChoiceGenerator that returns a boolean
- * there is not much use in having a CG type interface (such as
- * IntChoiceGenerator) since there is hardly a need for a generic type hierarchy
- * of BooleanChoiceGenerator subtypes - what else can you do with true/false
+ * a pretty simple ChoiceGenerator that returns a boolean there is not much use
+ * in having a CG type interface (such as IntChoiceGenerator) since there is
+ * hardly a need for a generic type hierarchy of BooleanChoiceGenerator subtypes
+ * - what else can you do with true/false
  */
 public class BooleanChoiceGenerator extends ChoiceGeneratorBase<Boolean> {
 
-  // do we evaluate [false, true] or [true, false]
-  protected boolean falseFirst = true;
+	// do we evaluate [false, true] or [true, false]
+	protected boolean falseFirst = true;
 
-  protected int count = -1;
-  protected boolean next;
-  
-  public BooleanChoiceGenerator(Config conf, String id) {
-    super(id);
+	protected int count = -1;
+	protected boolean next;
 
-    falseFirst = conf.getBoolean("cg.boolean.false_first", true);
-    next = falseFirst;
-  }
+	public BooleanChoiceGenerator(Config conf, String id) {
+		super(id);
 
-  public BooleanChoiceGenerator (String id) {
-    super(id);
-    next = falseFirst;
-  }
+		falseFirst = conf.getBoolean("cg.boolean.false_first", true);
+		next = falseFirst;
+	}
 
-  public BooleanChoiceGenerator( String id, boolean falseFirst ){
-    super(id);
-    
-    this.falseFirst = falseFirst;
-    next = falseFirst;
-  }
+	public BooleanChoiceGenerator(String id) {
+		super(id);
+		next = falseFirst;
+	}
 
-  public boolean hasMoreChoices () {
-    return !isDone && (count < 1);
-  }
+	public BooleanChoiceGenerator(String id, boolean falseFirst) {
+		super(id);
 
-  public Boolean getNextChoice () {
-    return next ? Boolean.TRUE : Boolean.FALSE;
-  }
-  
-  public Class<Boolean> getChoiceType() {
-    return Boolean.class;
-  }
+		this.falseFirst = falseFirst;
+		next = falseFirst;
+	}
 
-  public void advance () {
-    if (count < 1) {
-      count++;
-      next = !next;
-    }
-  }
+	@Override
+	public boolean hasMoreChoices() {
+		return !isDone && (count < 1);
+	}
 
-  public void reset () {
-    count = -1;
-    next = falseFirst;
+	@Override
+	public Boolean getNextChoice() {
+		return next ? Boolean.TRUE : Boolean.FALSE;
+	}
 
-    isDone = false;
-  }
-  
-  public int getTotalNumberOfChoices () {
-    return 2;
-  }
+	@Override
+	public Class<Boolean> getChoiceType() {
+		return Boolean.class;
+	}
 
-  public int getProcessedNumberOfChoices () {
-    return (count+1);
-  }
-  
-  // that is pretty stupid, but for the sake of consistency we make it available
-  Boolean[] getChoices(){
-    Boolean[] vals = new Boolean[2];
-    vals[0] = !falseFirst;
-    vals[1] = falseFirst;
-    
-    return vals;
-  }
+	@Override
+	public void advance() {
+		if (count < 1) {
+			count++;
+			next = !next;
+		}
+	}
 
-  // not much use to support reordering, we just have two elements so reverse() will do
-  
-  public boolean isFalseFirst(){
-    return falseFirst;
-  }
-  
-  /**
-   *  note this should only be called before the first advance since it resets
-   *  the enumeration state 
-   */
-  public void reverse(){
-    falseFirst = !falseFirst;
-    reset();
-  }
-  
-  public String toString () {
-    StringBuilder sb = new StringBuilder(getClass().getName());
-    sb.append('[');
-    sb.append("[id=\"");
-    sb.append(id);
-    sb.append('"');
+	@Override
+	public void reset() {
+		count = -1;
+		next = falseFirst;
 
-    sb.append(",isCascaded:");
-    sb.append(isCascaded);
+		isDone = false;
+	}
 
-    sb.append(",{");
+	@Override
+	public int getTotalNumberOfChoices() {
+		return 2;
+	}
 
-    if (count < 0){
-      sb.append(!next);
-      sb.append(',');
-      sb.append(next);
-    } else if (count == 0) {
-      sb.append(MARKER);
-      sb.append(next);
-      sb.append(',');
-      sb.append(!next);
-    } else {
-      sb.append(!next);
-      sb.append(',');
-      sb.append(MARKER);
-      sb.append(next);
-    }
-    sb.append("}]");
-    return sb.toString();
-  }
-  
-  public BooleanChoiceGenerator randomize () {
-    next = random.nextBoolean();
-    return this;
-  }
+	@Override
+	public int getProcessedNumberOfChoices() {
+		return (count + 1);
+	}
+
+	// that is pretty stupid, but for the sake of consistency we make it
+	// available
+	Boolean[] getChoices() {
+		Boolean[] vals = new Boolean[2];
+		vals[0] = !falseFirst;
+		vals[1] = falseFirst;
+
+		return vals;
+	}
+
+	// not much use to support reordering, we just have two elements so
+	// reverse() will do
+
+	public boolean isFalseFirst() {
+		return falseFirst;
+	}
+
+	/**
+	 * note this should only be called before the first advance since it resets
+	 * the enumeration state
+	 */
+	public void reverse() {
+		falseFirst = !falseFirst;
+		reset();
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder(getClass().getName());
+		sb.append('[');
+		sb.append("[id=\"");
+		sb.append(id);
+		sb.append('"');
+
+		sb.append(",isCascaded:");
+		sb.append(isCascaded);
+
+		sb.append(",{");
+
+		if (count < 0) {
+			sb.append(!next);
+			sb.append(',');
+			sb.append(next);
+		} else if (count == 0) {
+			sb.append(MARKER);
+			sb.append(next);
+			sb.append(',');
+			sb.append(!next);
+		} else {
+			sb.append(!next);
+			sb.append(',');
+			sb.append(MARKER);
+			sb.append(next);
+		}
+		sb.append("}]");
+		return sb.toString();
+	}
+
+	@Override
+	public BooleanChoiceGenerator randomize() {
+		next = random.nextBoolean();
+		return this;
+	}
 }

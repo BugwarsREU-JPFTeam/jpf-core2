@@ -19,78 +19,79 @@
 package gov.nasa.jpf.jvm.bytecode;
 
 import gov.nasa.jpf.jvm.JVMInstruction;
-import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.LocalVarInfo;
 
 /**
- * class abstracting instructions that access local variables, to keep
- * track of slot/varname mapping
+ * class abstracting instructions that access local variables, to keep track of
+ * slot/varname mapping
  */
-public abstract class LocalVariableInstruction extends JVMInstruction
-  implements VariableAccessor {
+public abstract class LocalVariableInstruction extends JVMInstruction implements
+		VariableAccessor {
 
-  protected int index;
-  protected LocalVarInfo lv;
+	protected int index;
+	protected LocalVarInfo lv;
 
+	protected LocalVariableInstruction(int index) {
+		this.index = index;
+	}
 
-  protected LocalVariableInstruction(int index){
-    this.index = index;
-  }
+	public int getLocalVariableIndex() {
+		return index;
+	}
 
-  public int getLocalVariableIndex() {
-    return index;
-  }
-  
-  public LocalVarInfo getLocalVarInfo(){
-    if (lv == null){
-     lv = mi.getLocalVar(index, position+getLength());
-    }
-    return lv;
-  }
-  
-  public String getLocalVariableName () {
-    LocalVarInfo lv = getLocalVarInfo();
-    return (lv == null) ? "?" : lv.getName();
-  }
-  
-  public String getLocalVariableType () {
-    LocalVarInfo lv = getLocalVarInfo();
-    return (lv == null) ? "?" : lv.getType();
-  }
-  
-  /**
-   * return the fully qualified class/method/var name
-   * (don't use this for top-level filtering since it dynamically constructs the name)
-   */
-  public String getVariableId () {
-    return mi.getClassInfo().getName() + '.' + mi.getUniqueName() + '.' + getLocalVariableName();
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
-  
-  public abstract String getBaseMnemonic();
-  
-  public String getMnemonic(){
-    String baseMnemonic = getBaseMnemonic();
-    
-    if (index <= 3){
-      return baseMnemonic + '_' + index;
-    } else {
-      return baseMnemonic;
-    }
-  }
-  
-  public String toString(){
-    String baseMnemonic = getBaseMnemonic();
-    
-    if (index <= 3){
-      return baseMnemonic + '_' + index;
-    } else {
-      return baseMnemonic + " " + index;
-    }
-  }
+	public LocalVarInfo getLocalVarInfo() {
+		if (lv == null) {
+			lv = mi.getLocalVar(index, position + getLength());
+		}
+		return lv;
+	}
+
+	public String getLocalVariableName() {
+		LocalVarInfo lv = getLocalVarInfo();
+		return (lv == null) ? "?" : lv.getName();
+	}
+
+	public String getLocalVariableType() {
+		LocalVarInfo lv = getLocalVarInfo();
+		return (lv == null) ? "?" : lv.getType();
+	}
+
+	/**
+	 * return the fully qualified class/method/var name (don't use this for
+	 * top-level filtering since it dynamically constructs the name)
+	 */
+	@Override
+	public String getVariableId() {
+		return mi.getClassInfo().getName() + '.' + mi.getUniqueName() + '.'
+				+ getLocalVariableName();
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
+
+	public abstract String getBaseMnemonic();
+
+	@Override
+	public String getMnemonic() {
+		String baseMnemonic = getBaseMnemonic();
+
+		if (index <= 3) {
+			return baseMnemonic + '_' + index;
+		} else {
+			return baseMnemonic;
+		}
+	}
+
+	@Override
+	public String toString() {
+		String baseMnemonic = getBaseMnemonic();
+
+		if (index <= 3) {
+			return baseMnemonic + '_' + index;
+		} else {
+			return baseMnemonic + " " + index;
+		}
+	}
 }
-
-

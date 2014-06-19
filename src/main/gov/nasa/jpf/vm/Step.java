@@ -24,77 +24,107 @@ import java.util.WeakHashMap;
 
 /**
  * this corresponds to an executed instruction. Note that we can have a
- * potentially huge number of Steps, hence we want to save objects here
- * (e.g. Collection overhead)
+ * potentially huge number of Steps, hence we want to save objects here (e.g.
+ * Collection overhead)
  */
 public class Step {
 
-  private static WeakHashMap<Step, String> s_comments = new WeakHashMap<Step, String>();  // Not every Step gets a comment.  So save memory and put comments in a global comment HashMap.  Make this a WeakHashMap so that old Step objects can be GCed.
+	private static WeakHashMap<Step, String> s_comments = new WeakHashMap<Step, String>(); // Not
+																							// every
+																							// Step
+																							// gets
+																							// a
+																							// comment.
+																							// So
+																							// save
+																							// memory
+																							// and
+																							// put
+																							// comments
+																							// in
+																							// a
+																							// global
+																							// comment
+																							// HashMap.
+																							// Make
+																							// this
+																							// a
+																							// WeakHashMap
+																							// so
+																							// that
+																							// old
+																							// Step
+																							// objects
+																							// can
+																							// be
+																							// GCed.
 
-  private final Instruction insn;
-  Step next;
+	private final Instruction insn;
+	Step next;
 
-  public Step (Instruction insn) {
-    if (insn == null)
-      throw new IllegalArgumentException("insn == null");
+	public Step(Instruction insn) {
+		if (insn == null)
+			throw new IllegalArgumentException("insn == null");
 
-    this.insn = insn;
-  }
+		this.insn = insn;
+	}
 
-  public Step getNext() {
-    return next;
-  }
+	public Step getNext() {
+		return next;
+	}
 
-  public Instruction getInstruction() {
-    return insn;
-  }
+	public Instruction getInstruction() {
+		return insn;
+	}
 
-  public void setComment (String s) {
-    s_comments.put(this, s);
-  }
+	public void setComment(String s) {
+		s_comments.put(this, s);
+	}
 
-  public String getComment () {
-    return s_comments.get(this);
-  }
+	public String getComment() {
+		return s_comments.get(this);
+	}
 
-  public String getLineString () {
-    MethodInfo mi = insn.getMethodInfo();
-    if (mi != null) {
-      Source source = Source.getSource(mi.getSourceFileName());
-      if (source != null) {
-        int line = mi.getLineNumber(insn);
-        if (line > 0) {
-          return source.getLine(line);
-        }
-      }
-    }
+	public String getLineString() {
+		MethodInfo mi = insn.getMethodInfo();
+		if (mi != null) {
+			Source source = Source.getSource(mi.getSourceFileName());
+			if (source != null) {
+				int line = mi.getLineNumber(insn);
+				if (line > 0) {
+					return source.getLine(line);
+				}
+			}
+		}
 
-    return null;
-  }
+		return null;
+	}
 
-  public boolean sameSourceLocation (Step other){
-    
-    if (other != null){
-      MethodInfo mi = insn.getMethodInfo();
-      MethodInfo miOther = other.insn.getMethodInfo();
-      if (mi == miOther){
-        return (mi.getLineNumber(insn) == miOther.getLineNumber(other.insn));
-      }
-    }
-    
-    return false;
-  }
-  
-  public String getLocationString() {
-    MethodInfo mi = insn.getMethodInfo();
-    if (mi != null) {
-      return mi.getSourceFileName() + ':' + mi.getLineNumber(insn);
-    }
+	public boolean sameSourceLocation(Step other) {
 
-    return "?:?";
-  }
+		if (other != null) {
+			MethodInfo mi = insn.getMethodInfo();
+			MethodInfo miOther = other.insn.getMethodInfo();
+			if (mi == miOther) {
+				return (mi.getLineNumber(insn) == miOther
+						.getLineNumber(other.insn));
+			}
+		}
 
-  public String toString() {
-    return getLocationString();
-  }
+		return false;
+	}
+
+	public String getLocationString() {
+		MethodInfo mi = insn.getMethodInfo();
+		if (mi != null) {
+			return mi.getSourceFileName() + ':' + mi.getLineNumber(insn);
+		}
+
+		return "?:?";
+	}
+
+	@Override
+	public String toString() {
+		return getLocationString();
+	}
 }

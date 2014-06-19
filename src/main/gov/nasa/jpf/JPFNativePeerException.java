@@ -23,8 +23,8 @@ package gov.nasa.jpf;
  */
 public class JPFNativePeerException extends JPFException {
 
-  public JPFNativePeerException(String details, Throwable cause) {
-    super(details, cause);
-  }
+	public JPFNativePeerException(String details, Throwable cause) {
+		super(details, cause);
+	}
 
 }

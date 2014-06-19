@@ -22,40 +22,38 @@ import gov.nasa.jpf.jvm.JVMInstruction;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
-import gov.nasa.jpf.vm.Types;
-
 
 /**
- * Remainder float
- * ..., value1, value2 => ..., result
+ * Remainder float ..., value1, value2 => ..., result
  */
 public class FREM extends JVMInstruction {
 
-  @Override
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    float v1 = frame.popFloat();
-    float v2 = frame.popFloat();
+		float v1 = frame.popFloat();
+		float v2 = frame.popFloat();
 
-    if (v1 == 0){
-      return ti.createAndThrowException("java.lang.ArithmeticException","division by zero");
-    }
+		if (v1 == 0) {
+			return ti.createAndThrowException("java.lang.ArithmeticException",
+					"division by zero");
+		}
 
-    float r = v2 % v1;
-    
-    frame.pushFloat(r);
+		float r = v2 % v1;
 
-    return getNext(ti);
-  }
+		frame.pushFloat(r);
 
-  @Override
-  public int getByteCode () {
-    return 0x72;
-  }
-  
-  @Override
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		return getNext(ti);
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0x72;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

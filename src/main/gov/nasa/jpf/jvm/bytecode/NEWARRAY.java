@@ -27,74 +27,79 @@ import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.Types;
 
-
 /**
- * Create new array
- * ..., count => ..., arrayref
+ * Create new array ..., count => ..., arrayref
  */
 public class NEWARRAY extends NewArrayInstruction {
 
-  public NEWARRAY(int typeCode) {
-    type = Types.getElementDescriptorOfType(typeCode);
-  }
+	public NEWARRAY(int typeCode) {
+		type = Types.getElementDescriptorOfType(typeCode);
+	}
 
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    arrayLength = frame.pop();
-    Heap heap = ti.getHeap();
+		arrayLength = frame.pop();
+		Heap heap = ti.getHeap();
 
-    if (arrayLength < 0){
-      return ti.createAndThrowException("java.lang.NegativeArraySizeException");
-    }
+		if (arrayLength < 0) {
+			return ti
+					.createAndThrowException("java.lang.NegativeArraySizeException");
+		}
 
-    // there is no clinit for array classes, but we still have  to create a class object
-    // since its a builtin class, we also don't have to bother with NoClassDefFoundErrors
-    String clsName = "[" + type;
-    ClassInfo ci = ClassLoaderInfo.getCurrentResolvedClassInfo(clsName);
+		// there is no clinit for array classes, but we still have to create a
+		// class object
+		// since its a builtin class, we also don't have to bother with
+		// NoClassDefFoundErrors
+		String clsName = "[" + type;
+		ClassInfo ci = ClassLoaderInfo.getCurrentResolvedClassInfo(clsName);
 
-    if (!ci.isRegistered()) {
-      ci.registerClass(ti);
-      ci.setInitialized();
-    }
-   
-    if (heap.isOutOfMemory()) { // simulate OutOfMemoryError
-      return ti.createAndThrowException("java.lang.OutOfMemoryError",
-                                        "trying to allocate new " +
-                                          getTypeName() +
-                                        "[" + arrayLength + "]");
-    }
-    
-    ElementInfo eiArray = heap.newArray(type, arrayLength, ti);
-    int arrayRef = eiArray.getObjectRef();
-    
-    frame.pushRef(arrayRef);
+		if (!ci.isRegistered()) {
+			ci.registerClass(ti);
+			ci.setInitialized();
+		}
 
-    return getNext(ti);
-  }
+		if (heap.isOutOfMemory()) { // simulate OutOfMemoryError
+			return ti.createAndThrowException("java.lang.OutOfMemoryError",
+					"trying to allocate new " + getTypeName() + "["
+							+ arrayLength + "]");
+		}
 
-  public int getLength() {
-    return 2; // opcode, atype
-  }
-  
-  public int getByteCode () {
-    return 0xBC;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		ElementInfo eiArray = heap.newArray(type, arrayLength, ti);
+		int arrayRef = eiArray.getObjectRef();
 
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("newarray ");
-    sb.append(getTypeName());
-    sb.append('[');
-    if (arrayLength >=0){
-      sb.append(arrayLength);
-    }
-    sb.append(']');
+		frame.pushRef(arrayRef);
 
-    return sb.toString();
-  }
+		return getNext(ti);
+	}
+
+	@Override
+	public int getLength() {
+		return 2; // opcode, atype
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0xBC;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("newarray ");
+		sb.append(getTypeName());
+		sb.append('[');
+		if (arrayLength >= 0) {
+			sb.append(arrayLength);
+		}
+		sb.append(']');
+
+		return sb.toString();
+	}
 }

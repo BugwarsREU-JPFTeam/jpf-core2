@@ -21,43 +21,43 @@ package gov.nasa.jpf.vm;
 import gov.nasa.jpf.util.OATHash;
 
 /**
- * helper class for search global object id (SGOID) computation. This
- * captures both allocation context and count.
+ * helper class for search global object id (SGOID) computation. This captures
+ * both allocation context and count.
  * 
- * NOTE: this is used as a key for associative arrays, but we do
- * allow destructive updates via init() in order to enable key
- * caching for lookups that don't lead to new entries. 
- * THE CALLER HAS TO MAKE SURE init() IS NEVER CALLED ON A STORED KEY !!
+ * NOTE: this is used as a key for associative arrays, but we do allow
+ * destructive updates via init() in order to enable key caching for lookups
+ * that don't lead to new entries. THE CALLER HAS TO MAKE SURE init() IS NEVER
+ * CALLED ON A STORED KEY !!
  */
 public class Allocation {
-  
-  final AllocationContext context;
-  final int count;
-  final int hash;
-  
-  public Allocation (AllocationContext context, int count){
-    this.context = context;
-    this.count = count;
-    this.hash = OATHash.hash(context.hashCode(), count);
-  }
-  
-  @Override
-  public boolean equals (Object o) {
-    if (o instanceof Allocation) {
-      Allocation other = (Allocation)o;
-      
-      if (other.hash == hash) {
-        if (other.context.equals(context)) {
-          return true;
-        }
-      }
-    }
-    
-    return false;
-  }
-  
-  @Override
-  public int hashCode() {
-    return hash;
-  }
+
+	final AllocationContext context;
+	final int count;
+	final int hash;
+
+	public Allocation(AllocationContext context, int count) {
+		this.context = context;
+		this.count = count;
+		this.hash = OATHash.hash(context.hashCode(), count);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof Allocation) {
+			Allocation other = (Allocation) o;
+
+			if (other.hash == hash) {
+				if (other.context.equals(context)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return hash;
+	}
 }

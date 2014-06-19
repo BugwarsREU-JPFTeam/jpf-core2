@@ -30,184 +30,196 @@ import gov.nasa.jpf.vm.SystemState;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.Types;
 
-
 /**
  * MJI NativePeer class for java.lang.Object library abstraction
  */
 public class JPF_java_lang_Object extends NativePeer {
-  
-  @MJI
-  public int getClass____Ljava_lang_Class_2 (MJIEnv env, int objref) {
-    ClassInfo oci = env.getClassInfo(objref);
 
-    return oci.getClassObjectRef();
-  }
+	@MJI
+	public int getClass____Ljava_lang_Class_2(MJIEnv env, int objref) {
+		ClassInfo oci = env.getClassInfo(objref);
 
-  @MJI
-  public int clone____Ljava_lang_Object_2 (MJIEnv env, int objref) {
-    Heap heap = env.getHeap();
-    ElementInfo ei = heap.get(objref);
-    ClassInfo ci = ei.getClassInfo();
-    ElementInfo eiClone = null;
-    
-    if (!ci.isInstanceOf("java.lang.Cloneable")) {
-      env.throwException("java.lang.CloneNotSupportedException",
-          ci.getName() + " does not implement java.lang.Cloneable.");
-      return MJIEnv.NULL;  // meaningless
-      
-    } else {
-      int newref;
-      if (ci.isArray()) {
-        ClassInfo cci = ci.getComponentClassInfo();
-        
-        String componentType;
-        if (cci.isPrimitive()){
-          componentType = Types.getTypeSignature(cci.getName(),false);
-        } else {
-          componentType = cci.getType();
-        }
+		return oci.getClassObjectRef();
+	}
 
-        eiClone = heap.newArray(componentType, ei.arrayLength(), env.getThreadInfo());
-        
-      } else {
-        eiClone = heap.newObject(ci, env.getThreadInfo());
-      }
-      
-      // Ok, this is nasty but efficient
-      eiClone.fields = ei.getFields().clone();
+	@MJI
+	public int clone____Ljava_lang_Object_2(MJIEnv env, int objref) {
+		Heap heap = env.getHeap();
+		ElementInfo ei = heap.get(objref);
+		ClassInfo ci = ei.getClassInfo();
+		ElementInfo eiClone = null;
 
-      return eiClone.getObjectRef();
-    }
-  }
+		if (!ci.isInstanceOf("java.lang.Cloneable")) {
+			env.throwException("java.lang.CloneNotSupportedException",
+					ci.getName() + " does not implement java.lang.Cloneable.");
+			return MJIEnv.NULL; // meaningless
 
-  @MJI
-  public int hashCode____I (MJIEnv env, int objref) {
-    return (objref ^ 0xABCD);
-  }
+		} else {
+			int newref;
+			if (ci.isArray()) {
+				ClassInfo cci = ci.getComponentClassInfo();
 
-  static void wait0(MJIEnv env, int objref, long timeout) {
-    // IllegalMonitorStateExceptions are checked in the MJIEnv methods
-    ThreadInfo ti = env.getThreadInfo();
-    SystemState ss = env.getSystemState();
-    ElementInfo ei = env.getModifiableElementInfo(objref);
+				String componentType;
+				if (cci.isPrimitive()) {
+					componentType = Types
+							.getTypeSignature(cci.getName(), false);
+				} else {
+					componentType = cci.getType();
+				}
 
-    if (ti.isFirstStepInsn()) { // we already have a CG
-      switch (ti.getState()) {
+				eiClone = heap.newArray(componentType, ei.arrayLength(),
+						env.getThreadInfo());
 
-        // we can get here by direct call from ...Unsafe.park__ZJ__V()
-        // which aquires the park lock and waits natively
-        case RUNNING:
+			} else {
+				eiClone = heap.newObject(ci, env.getThreadInfo());
+			}
 
-        // note that we can't get here if we are in NOTIFIED or INTERRUPTED state,
-        // since we still have to reacquire the lock
-        case UNBLOCKED:
-        case TIMEDOUT: // nobody else acquired the lock
-          // thread status set by explicit notify() call
-          env.lockNotified(objref);
+			// Ok, this is nasty but efficient
+			eiClone.fields = ei.getFields().clone();
 
-          if (ti.isInterrupted(true)) {
-            env.throwException("java.lang.InterruptedException");
-          }
-          break;
+			return eiClone.getObjectRef();
+		}
+	}
 
-        default:
-          throw new JPFException("invalid thread state of: " + ti.getName() + " is " + ti.getStateName() +
-                  " while waiting on " + ei);
-      }
-    } else { // first time, break the transition (if we don't have a pending interrupt)
+	@MJI
+	public int hashCode____I(MJIEnv env, int objref) {
+		return (objref ^ 0xABCD);
+	}
 
-      // no need for a CG if we got interrupted - don't give up locks, throw InterruptedException
-      if (ti.isInterrupted(true)) {
-        env.throwException("java.lang.InterruptedException");
+	static void wait0(MJIEnv env, int objref, long timeout) {
+		// IllegalMonitorStateExceptions are checked in the MJIEnv methods
+		ThreadInfo ti = env.getThreadInfo();
+		SystemState ss = env.getSystemState();
+		ElementInfo ei = env.getModifiableElementInfo(objref);
 
-      } else {
-        if (!ei.isLockedBy(ti)){
-          env.throwException("java.lang.IllegalMonitorStateException",
-                             "un-synchronized wait");
-          return;
-        }
-        // releases the lock and sets BLOCKED threads to UNBLOCKED
-        ei.wait(ti, timeout);
+		if (ti.isFirstStepInsn()) { // we already have a CG
+			switch (ti.getState()) {
 
-        // note we pass in the timeout value, since this might determine the type of CG that is created
-        ChoiceGenerator<?> cg = ss.getSchedulerFactory().createWaitCG(ei, ti, timeout);
-        ss.setMandatoryNextChoiceGenerator(cg, "wait without CG");
-        env.repeatInvocation(); // so that we can still see the wait on the callstack
-      }
-    }
-  }
-  
-  // we intercept them both so that we don't get the java.lang.Object.wait() location
-  // as the blocking insn
-  @MJI
-  public void wait____V (MJIEnv env, int objref){
-    wait0(env,objref,0);
-  }
-  
-  @MJI
-  public void wait__J__V (MJIEnv env, int objref, long timeout) {
-    wait0(env,objref,timeout);
-  }
+			// we can get here by direct call from ...Unsafe.park__ZJ__V()
+			// which aquires the park lock and waits natively
+			case RUNNING:
 
-  @MJI
-  public void wait__JI__V (MJIEnv env, int objref, long timeout, int nanos) {
-    wait0(env,objref,timeout);
-  }
+				// note that we can't get here if we are in NOTIFIED or
+				// INTERRUPTED state,
+				// since we still have to reacquire the lock
+			case UNBLOCKED:
+			case TIMEDOUT: // nobody else acquired the lock
+				// thread status set by explicit notify() call
+				env.lockNotified(objref);
 
-  
-  @MJI
-  public void notify____V (MJIEnv env, int objref) {
-    // IllegalMonitorStateExceptions are checked in the MJIEnv methods
+				if (ti.isInterrupted(true)) {
+					env.throwException("java.lang.InterruptedException");
+				}
+				break;
 
-    ThreadInfo ti = env.getThreadInfo();
-    SystemState ss = env.getSystemState();
-    ElementInfo ei = env.getModifiableElementInfo(objref);    
-    
-    if (!ti.isFirstStepInsn()) { // first time around
-      
-      ChoiceGenerator<?> cg = ss.getSchedulerFactory().createNotifyCG(ei, ti);
-      if (ss.setNextChoiceGenerator(cg)){
-        ti.skipInstructionLogging();
-        env.repeatInvocation();
-        return;
-      }
-    }
-        
-    // this is a bit cluttered throughout the whole system, with the actual thread
-    // notification (status change) taking place in the ElementInfo
-    env.notify(ei);
-  }
+			default:
+				throw new JPFException("invalid thread state of: "
+						+ ti.getName() + " is " + ti.getStateName()
+						+ " while waiting on " + ei);
+			}
+		} else { // first time, break the transition (if we don't have a pending
+					// interrupt)
 
-  @MJI
-  public void notifyAll____V (MJIEnv env, int objref) {
-    // IllegalMonitorStateExceptions are checked in the MJIEnv methods
+			// no need for a CG if we got interrupted - don't give up locks,
+			// throw InterruptedException
+			if (ti.isInterrupted(true)) {
+				env.throwException("java.lang.InterruptedException");
 
-    // usually, there is no non-determinism involved here, but
-    // we might have a SchedulerFactory policy that does want to
-    // break, so we have to give it a chance to interfere
-    ThreadInfo ti = env.getThreadInfo();
-    SystemState ss = env.getSystemState();
-    
-    if (!ti.isFirstStepInsn()) { // first time around
-      ElementInfo ei = env.getModifiableElementInfo(objref);
-      env.notifyAll(ei); // do that before we create a CG
-      
-      ChoiceGenerator<?> cg = ss.getSchedulerFactory().createNotifyAllCG(ei, ti);
-      if (ss.setNextChoiceGenerator(cg)){
-        ti.skipInstructionLogging();
-        env.repeatInvocation();
-        return;
-      }
-    }
-  }
+			} else {
+				if (!ei.isLockedBy(ti)) {
+					env.throwException(
+							"java.lang.IllegalMonitorStateException",
+							"un-synchronized wait");
+					return;
+				}
+				// releases the lock and sets BLOCKED threads to UNBLOCKED
+				ei.wait(ti, timeout);
 
-  @MJI
-  public int toString____Ljava_lang_String_2 (MJIEnv env, int objref) {
-    ClassInfo ci = env.getClassInfo(objref);
-    int hc = hashCode____I(env,objref);
-    
-    String s = ci.getName() + '@' + hc;
-    int sref = env.newString(s);
-    return sref;
-  }
+				// note we pass in the timeout value, since this might determine
+				// the type of CG that is created
+				ChoiceGenerator<?> cg = ss.getSchedulerFactory().createWaitCG(
+						ei, ti, timeout);
+				ss.setMandatoryNextChoiceGenerator(cg, "wait without CG");
+				env.repeatInvocation(); // so that we can still see the wait on
+										// the callstack
+			}
+		}
+	}
+
+	// we intercept them both so that we don't get the java.lang.Object.wait()
+	// location
+	// as the blocking insn
+	@MJI
+	public void wait____V(MJIEnv env, int objref) {
+		wait0(env, objref, 0);
+	}
+
+	@MJI
+	public void wait__J__V(MJIEnv env, int objref, long timeout) {
+		wait0(env, objref, timeout);
+	}
+
+	@MJI
+	public void wait__JI__V(MJIEnv env, int objref, long timeout, int nanos) {
+		wait0(env, objref, timeout);
+	}
+
+	@MJI
+	public void notify____V(MJIEnv env, int objref) {
+		// IllegalMonitorStateExceptions are checked in the MJIEnv methods
+
+		ThreadInfo ti = env.getThreadInfo();
+		SystemState ss = env.getSystemState();
+		ElementInfo ei = env.getModifiableElementInfo(objref);
+
+		if (!ti.isFirstStepInsn()) { // first time around
+
+			ChoiceGenerator<?> cg = ss.getSchedulerFactory().createNotifyCG(ei,
+					ti);
+			if (ss.setNextChoiceGenerator(cg)) {
+				ti.skipInstructionLogging();
+				env.repeatInvocation();
+				return;
+			}
+		}
+
+		// this is a bit cluttered throughout the whole system, with the actual
+		// thread
+		// notification (status change) taking place in the ElementInfo
+		env.notify(ei);
+	}
+
+	@MJI
+	public void notifyAll____V(MJIEnv env, int objref) {
+		// IllegalMonitorStateExceptions are checked in the MJIEnv methods
+
+		// usually, there is no non-determinism involved here, but
+		// we might have a SchedulerFactory policy that does want to
+		// break, so we have to give it a chance to interfere
+		ThreadInfo ti = env.getThreadInfo();
+		SystemState ss = env.getSystemState();
+
+		if (!ti.isFirstStepInsn()) { // first time around
+			ElementInfo ei = env.getModifiableElementInfo(objref);
+			env.notifyAll(ei); // do that before we create a CG
+
+			ChoiceGenerator<?> cg = ss.getSchedulerFactory().createNotifyAllCG(
+					ei, ti);
+			if (ss.setNextChoiceGenerator(cg)) {
+				ti.skipInstructionLogging();
+				env.repeatInvocation();
+				return;
+			}
+		}
+	}
+
+	@MJI
+	public int toString____Ljava_lang_String_2(MJIEnv env, int objref) {
+		ClassInfo ci = env.getClassInfo(objref);
+		int hc = hashCode____I(env, objref);
+
+		String s = ci.getName() + '@' + hc;
+		int sref = env.newString(s);
+		return sref;
+	}
 }

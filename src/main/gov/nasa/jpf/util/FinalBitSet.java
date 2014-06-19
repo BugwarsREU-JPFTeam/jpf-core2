@@ -24,49 +24,53 @@ import java.util.Arrays;
  * Faster version of BitSet for those that never change.
  */
 public class FinalBitSet {
-  final byte[] data;
-  
-  FinalBitSet(byte[] in) {
-    int len = in.length;
-    while (len > 0 && in[len - 1] == 0) len--;
-    this.data = new byte[len];
-    System.arraycopy(in, 0, this.data, 0, len);
-  }
-  
-  public final boolean get(int idx) {
-    int a = idx >> 3;
-    return a < data.length && a >= 0 && (data[a] & (1 << (idx & 7))) != 0;
-  }
-  
-  public int hashCode() {
-    return Arrays.hashCode(data);
-  }
-  
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (! (o instanceof FinalBitSet)) return false;
-    byte[] thatData = ((FinalBitSet)o).data;
-    byte[] thisData = this.data;
-    return Arrays.equals(thisData, thatData);
-  }
-  
-  
-  /*======= Static Stuff ========*/
-  static final SimplePool<FinalBitSet> pool = new SimplePool<FinalBitSet>();
-  
-  public static final FinalBitSet empty = create(BitArray.empty);
-  
-  /**
-   * Creates a pooled FinalBitSet.
-   */
-  public static FinalBitSet create(BitArray in) {
-    return pool.pool(new FinalBitSet(in.data));
-  }
+	final byte[] data;
 
-  /**
-   * Creates a pooled FinalBitSet.
-   */
-  public static FinalBitSet create(byte[] in) {
-    return pool.pool(new FinalBitSet(in));
-  }
+	FinalBitSet(byte[] in) {
+		int len = in.length;
+		while (len > 0 && in[len - 1] == 0)
+			len--;
+		this.data = new byte[len];
+		System.arraycopy(in, 0, this.data, 0, len);
+	}
+
+	public final boolean get(int idx) {
+		int a = idx >> 3;
+		return a < data.length && a >= 0 && (data[a] & (1 << (idx & 7))) != 0;
+	}
+
+	@Override
+	public int hashCode() {
+		return Arrays.hashCode(data);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (!(o instanceof FinalBitSet))
+			return false;
+		byte[] thatData = ((FinalBitSet) o).data;
+		byte[] thisData = this.data;
+		return Arrays.equals(thisData, thatData);
+	}
+
+	/* ======= Static Stuff ======== */
+	static final SimplePool<FinalBitSet> pool = new SimplePool<FinalBitSet>();
+
+	public static final FinalBitSet empty = create(BitArray.empty);
+
+	/**
+	 * Creates a pooled FinalBitSet.
+	 */
+	public static FinalBitSet create(BitArray in) {
+		return pool.pool(new FinalBitSet(in.data));
+	}
+
+	/**
+	 * Creates a pooled FinalBitSet.
+	 */
+	public static FinalBitSet create(byte[] in) {
+		return pool.pool(new FinalBitSet(in));
+	}
 }

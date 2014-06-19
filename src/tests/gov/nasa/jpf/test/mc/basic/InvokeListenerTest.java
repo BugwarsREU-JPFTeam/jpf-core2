@@ -32,108 +32,117 @@ import gov.nasa.jpf.vm.ThreadInfo;
 
 import org.junit.Test;
 
-
 /**
  * testing various aspects of listeners on INVOKE instructions
  */
 public class InvokeListenerTest extends TestJPF {
 
-  //--- this is only used outside JPF execution
-  public static class Listener extends ListenerAdapter {
+	// --- this is only used outside JPF execution
+	public static class Listener extends ListenerAdapter {
 
-    void checkArgs (ThreadInfo ti, Instruction insn, boolean isPostExec){
-      if (insn instanceof InvokeInstruction){
-        InvokeInstruction call = (InvokeInstruction)insn;
-        MethodInfo mi = call.getInvokedMethod(ti);
-        String miSignature = mi.getUniqueName();
-        String mname = mi.getName();
+		void checkArgs(ThreadInfo ti, Instruction insn, boolean isPostExec) {
+			if (insn instanceof InvokeInstruction) {
+				InvokeInstruction call = (InvokeInstruction) insn;
+				MethodInfo mi = call.getInvokedMethod(ti);
+				String miSignature = mi.getUniqueName();
+				String mname = mi.getName();
 
-        if (miSignature.equals("testInstanceMethod(DI)D")){
-          Object[] args = call.getArgumentValues(ti);
-          ElementInfo ei = getTarget(ti,call);
-          log(mname, ei, args, isPostExec);
-          assert ((Double)args[0]) == 42.0;
-          assert ((Integer)args[1]) == 1;
+				if (miSignature.equals("testInstanceMethod(DI)D")) {
+					Object[] args = call.getArgumentValues(ti);
+					ElementInfo ei = getTarget(ti, call);
+					log(mname, ei, args, isPostExec);
+					assert ((Double) args[0]) == 42.0;
+					assert ((Integer) args[1]) == 1;
 
-        } else if (miSignature.equals("testStaticMethod(I)I")){
-          Object[] args = call.getArgumentValues(ti);
-          ElementInfo ei = getTarget(ti,call);
-          log(mname, ei, args, isPostExec);
-          assert ((Integer)args[0]) == 42;
+				} else if (miSignature.equals("testStaticMethod(I)I")) {
+					Object[] args = call.getArgumentValues(ti);
+					ElementInfo ei = getTarget(ti, call);
+					log(mname, ei, args, isPostExec);
+					assert ((Integer) args[0]) == 42;
 
-        } else if (miSignature.equals("testNativeInstanceMethod(DI)D")){
-          Object[] args = call.getArgumentValues(ti);
-          ElementInfo ei = getTarget(ti,call);
-          log(mname, ei, args, isPostExec);
-          assert ((Double)args[0]) == 42.0;
-          assert ((Integer)args[1]) == 1;
+				} else if (miSignature.equals("testNativeInstanceMethod(DI)D")) {
+					Object[] args = call.getArgumentValues(ti);
+					ElementInfo ei = getTarget(ti, call);
+					log(mname, ei, args, isPostExec);
+					assert ((Double) args[0]) == 42.0;
+					assert ((Integer) args[1]) == 1;
 
-        }
-      }
-    }
+				}
+			}
+		}
 
-    ElementInfo getTarget (ThreadInfo ti, InvokeInstruction call){
-      if (call instanceof VirtualInvocation){
-        int objRef = ((VirtualInvocation)call).getCalleeThis(ti);
-        return ti.getElementInfo(objRef);
-      } else if (call instanceof INVOKESTATIC){
-        return ((INVOKESTATIC)call).getInvokedMethod().getClassInfo().getStaticElementInfo();
-      } else {
-        return null;
-      }
-    }
+		ElementInfo getTarget(ThreadInfo ti, InvokeInstruction call) {
+			if (call instanceof VirtualInvocation) {
+				int objRef = ((VirtualInvocation) call).getCalleeThis(ti);
+				return ti.getElementInfo(objRef);
+			} else if (call instanceof INVOKESTATIC) {
+				return ((INVOKESTATIC) call).getInvokedMethod().getClassInfo()
+						.getStaticElementInfo();
+			} else {
+				return null;
+			}
+		}
 
-    void log (String mname, ElementInfo ei, Object[] args, boolean isPostExec){
-      System.out.print(isPostExec ? "# instructionExecuted: " : "# executeInstruction: ");
+		void log(String mname, ElementInfo ei, Object[] args, boolean isPostExec) {
+			System.out.print(isPostExec ? "# instructionExecuted: "
+					: "# executeInstruction: ");
 
-      System.out.print(ei);
-      System.out.print('.');
-      System.out.print(mname);
+			System.out.print(ei);
+			System.out.print('.');
+			System.out.print(mname);
 
-      System.out.print(" (");
-      for (int i=0; i<args.length; i++) {
-        if (i >0) System.out.print(',');
-        System.out.print( args[i]);
-      }
-      System.out.println(")");
-    }
+			System.out.print(" (");
+			for (int i = 0; i < args.length; i++) {
+				if (i > 0)
+					System.out.print(',');
+				System.out.print(args[i]);
+			}
+			System.out.println(")");
+		}
 
-    @Override
-    public void executeInstruction (VM vm, ThreadInfo ti, Instruction insnToExecute){
-      checkArgs(ti, insnToExecute, false);
-    }
+		@Override
+		public void executeInstruction(VM vm, ThreadInfo ti,
+				Instruction insnToExecute) {
+			checkArgs(ti, insnToExecute, false);
+		}
 
-    @Override
-    public void instructionExecuted (VM vm, ThreadInfo ti, Instruction nextInsn, Instruction executedInsn){
-      checkArgs(ti, executedInsn, true);
-    }
+		@Override
+		public void instructionExecuted(VM vm, ThreadInfo ti,
+				Instruction nextInsn, Instruction executedInsn) {
+			checkArgs(ti, executedInsn, true);
+		}
 
-  }
+	}
 
-  double testInstanceMethod (double d, int c){
-    return d + c;
-  }
-  @Test public void testInstanceMethod (){
-    if (verifyNoPropertyViolation("+listener=.test.mc.basic.InvokeListenerTest$Listener")){
-      testInstanceMethod(42.0, 1);
-    }
-  }
-  
-  int testStaticMethod (int a){
-    return a + 1;
-  }
-  @Test public void testStaticMethod (){
-    if (verifyNoPropertyViolation("+listener=.test.mc.basic.InvokeListenerTest$Listener")){
-      testStaticMethod(42);
-    }
-  }
+	double testInstanceMethod(double d, int c) {
+		return d + c;
+	}
 
-  native double testNativeInstanceMethod (double d, int c);
-  @Test public void testNativeInstanceMethod (){
-    if (verifyNoPropertyViolation("+listener=.test.mc.basic.InvokeListenerTest$Listener")){
-      testNativeInstanceMethod(42.0, 1);
-    }
-  }
+	@Test
+	public void testInstanceMethod() {
+		if (verifyNoPropertyViolation("+listener=.test.mc.basic.InvokeListenerTest$Listener")) {
+			testInstanceMethod(42.0, 1);
+		}
+	}
 
+	int testStaticMethod(int a) {
+		return a + 1;
+	}
+
+	@Test
+	public void testStaticMethod() {
+		if (verifyNoPropertyViolation("+listener=.test.mc.basic.InvokeListenerTest$Listener")) {
+			testStaticMethod(42);
+		}
+	}
+
+	native double testNativeInstanceMethod(double d, int c);
+
+	@Test
+	public void testNativeInstanceMethod() {
+		if (verifyNoPropertyViolation("+listener=.test.mc.basic.InvokeListenerTest$Listener")) {
+			testNativeInstanceMethod(42.0, 1);
+		}
+	}
 
 }

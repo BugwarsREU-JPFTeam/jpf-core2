@@ -24,8 +24,10 @@ package gov.nasa.jpf.vm;
  */
 public interface FieldsFactory {
 
-  public Fields createInstanceFields (ClassInfo ci);
-  public Fields createStaticFields (ClassInfo ci);
-  public Fields createArrayFields (String type, ClassInfo ci, int nElements,
-                                   int typeSize, boolean isReferenceArray);
+	public Fields createInstanceFields(ClassInfo ci);
+
+	public Fields createStaticFields(ClassInfo ci);
+
+	public Fields createArrayFields(String type, ClassInfo ci, int nElements,
+			int typeSize, boolean isReferenceArray);
 }

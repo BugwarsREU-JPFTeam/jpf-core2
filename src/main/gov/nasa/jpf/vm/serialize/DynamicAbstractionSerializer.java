@@ -44,325 +44,348 @@ import java.util.List;
 
 /**
  * a serializer that uses Abstraction objects stored as field attributes to
- * obtain the values to hash. 
+ * obtain the values to hash.
  */
 public class DynamicAbstractionSerializer extends FilteringSerializer {
 
-  static JPFLogger logger = JPF.getLogger("gov.nasa.jpf.vm.serialize.DynamicAbstractionSerializer");
+	static JPFLogger logger = JPF
+			.getLogger("gov.nasa.jpf.vm.serialize.DynamicAbstractionSerializer");
 
-  static class FieldAbstraction {
-    FieldSpec fspec;
-    Abstraction abstraction;
+	static class FieldAbstraction {
+		FieldSpec fspec;
+		Abstraction abstraction;
 
-    FieldAbstraction(FieldSpec f, Abstraction a) {
-      fspec = f;
-      abstraction = a;
-    }
-  }
+		FieldAbstraction(FieldSpec f, Abstraction a) {
+			fspec = f;
+			abstraction = a;
+		}
+	}
 
-  public class Attributor extends ListenerAdapter {
+	public class Attributor extends ListenerAdapter {
 
-    @Override
-    public void classLoaded(VM vm, ClassInfo loadedClass) {
+		@Override
+		public void classLoaded(VM vm, ClassInfo loadedClass) {
 
-      if (!loadedClass.isArray() && !loadedClass.isPrimitive()) {
+			if (!loadedClass.isArray() && !loadedClass.isPrimitive()) {
 
-        if (!fieldAbstractions.isEmpty()) {
-          for (FieldInfo fi : loadedClass.getDeclaredInstanceFields()) {
-            for (FieldAbstraction fabs : fieldAbstractions) {
-              if (fabs.fspec.matches(fi)) {
-                logger.info("setting instance field abstraction ", fabs.abstraction.getClass().getName(),
-                        " for field ", fi.getFullName());
-                fi.addAttr(fabs.abstraction);
-              }
-            }
-          }
+				if (!fieldAbstractions.isEmpty()) {
+					for (FieldInfo fi : loadedClass.getDeclaredInstanceFields()) {
+						for (FieldAbstraction fabs : fieldAbstractions) {
+							if (fabs.fspec.matches(fi)) {
+								logger.info(
+										"setting instance field abstraction ",
+										fabs.abstraction.getClass().getName(),
+										" for field ", fi.getFullName());
+								fi.addAttr(fabs.abstraction);
+							}
+						}
+					}
 
-          for (FieldInfo fi : loadedClass.getDeclaredStaticFields()) {
-            for (FieldAbstraction fabs : fieldAbstractions) {
-              if (fabs.fspec.matches(fi)) {
-                logger.info("setting static field abstraction ", fabs.abstraction.getClass().getName(),
-                        " for field ", fi.getFullName());
-                fi.addAttr(fabs.abstraction);
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  
-  protected StringSetMatcher includeClasses = null; //  means all
-  protected StringSetMatcher excludeClasses = null; //  means none
-  protected StringSetMatcher includeMethods = null;
-  protected StringSetMatcher excludeMethods = null;
+					for (FieldInfo fi : loadedClass.getDeclaredStaticFields()) {
+						for (FieldAbstraction fabs : fieldAbstractions) {
+							if (fabs.fspec.matches(fi)) {
+								logger.info(
+										"setting static field abstraction ",
+										fabs.abstraction.getClass().getName(),
+										" for field ", fi.getFullName());
+								fi.addAttr(fabs.abstraction);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 
-  List<FieldAbstraction> fieldAbstractions;
+	protected StringSetMatcher includeClasses = null; // means all
+	protected StringSetMatcher excludeClasses = null; // means none
+	protected StringSetMatcher includeMethods = null;
+	protected StringSetMatcher excludeMethods = null;
 
-  protected boolean processAllObjects;
-  protected boolean declaredFieldsOnly;
+	List<FieldAbstraction> fieldAbstractions;
 
-  
-  public DynamicAbstractionSerializer(Config conf) {
-    processAllObjects = conf.getBoolean("das.all_objects", true);
-    declaredFieldsOnly = conf.getBoolean("das.declared_fields", false);
+	protected boolean processAllObjects;
+	protected boolean declaredFieldsOnly;
 
-    includeClasses = StringSetMatcher.getNonEmpty(conf.getStringArray("das.classes.include"));
-    excludeClasses = StringSetMatcher.getNonEmpty(conf.getStringArray("das.classes.exclude"));
+	public DynamicAbstractionSerializer(Config conf) {
+		processAllObjects = conf.getBoolean("das.all_objects", true);
+		declaredFieldsOnly = conf.getBoolean("das.declared_fields", false);
 
-    includeMethods = StringSetMatcher.getNonEmpty(conf.getStringArray("das.methods.include"));
-    excludeMethods = StringSetMatcher.getNonEmpty(conf.getStringArray("das.methods.exclude"));
+		includeClasses = StringSetMatcher.getNonEmpty(conf
+				.getStringArray("das.classes.include"));
+		excludeClasses = StringSetMatcher.getNonEmpty(conf
+				.getStringArray("das.classes.exclude"));
 
-    fieldAbstractions = getFieldAbstractions(conf);
-  }
+		includeMethods = StringSetMatcher.getNonEmpty(conf
+				.getStringArray("das.methods.include"));
+		excludeMethods = StringSetMatcher.getNonEmpty(conf
+				.getStringArray("das.methods.exclude"));
 
-  
-  protected List<FieldAbstraction> getFieldAbstractions(Config conf){
-    List<FieldAbstraction> list = null;
-    
-    String[] fids = conf.getCompactTrimmedStringArray("das.fields");
-    for (String id : fids) {
-      String keyPrefix = "das." + id;
-      String fs = conf.getString(keyPrefix + ".field");
-      if (fs != null) {
-        FieldSpec fspec = FieldSpec.createFieldSpec(fs);
-        if (fspec != null) {
-          String aKey = keyPrefix + ".abstraction";
-          Abstraction abstraction = conf.getInstance(aKey, Abstraction.class);
+		fieldAbstractions = getFieldAbstractions(conf);
+	}
 
-          logger.info("found field abstraction for ", fspec, " = ", abstraction.getClass().getName());
-          
-          if (list == null){
-            list = new LinkedList<FieldAbstraction>();
-          }
-          
-          list.add(new FieldAbstraction(fspec, abstraction));
-        }
-      } else {
-        logger.warning("no field spec for id: " + id);
-      }
-    }
-    
-    return list;
-  }
-  
-  @Override
-  public void attach (VM vm){
-    super.attach(vm);
-    
-    if (fieldAbstractions != null){
-      Attributor attributor = new Attributor();
-      vm.addListener(attributor);
-    }
-  }
-  
-  
-  // note that we don't add the reference value here
-  public void processReference(int objref) {
-    if (objref != MJIEnv.NULL) {
-      ElementInfo ei = heap.get(objref);
-      if (!ei.isMarked()) { // only add objects once
-        ei.setMarked();
-        refQueue.add(ei);
-      }
-    }
-    
-    // we DON'T add the reference value to the buffer here
-  }
+	protected List<FieldAbstraction> getFieldAbstractions(Config conf) {
+		List<FieldAbstraction> list = null;
 
-  protected void processField(Fields fields, int[] slotValues, FieldInfo fi, FinalBitSet filtered) {
-    int off = fi.getStorageOffset();
-    if (!filtered.get(off)) {
-      Abstraction a = fi.getAttr(Abstraction.class);
-      if (a != null) {
-        if (fi.is1SlotField()) {
-          if (fi.isReference()) {
-            int ref = fields.getReferenceValue(off);
-            buf.add(a.getAbstractObject(ref));
+		String[] fids = conf.getCompactTrimmedStringArray("das.fields");
+		for (String id : fids) {
+			String keyPrefix = "das." + id;
+			String fs = conf.getString(keyPrefix + ".field");
+			if (fs != null) {
+				FieldSpec fspec = FieldSpec.createFieldSpec(fs);
+				if (fspec != null) {
+					String aKey = keyPrefix + ".abstraction";
+					Abstraction abstraction = conf.getInstance(aKey,
+							Abstraction.class);
 
-            if (a.traverseObject(ref)) {
-              processReference(ref);
-            }
+					logger.info("found field abstraction for ", fspec, " = ",
+							abstraction.getClass().getName());
 
-          } else if (fi.isFloatField()) {
-            buf.add(a.getAbstractValue(fields.getFloatValue(off)));
-          } else {
-            buf.add(a.getAbstractValue(fields.getIntValue(off)));
-          }
-        } else { // double or long
-          if (fi.isLongField()) {
-            buf.add(a.getAbstractValue(fields.getLongValue(off)));
-          } else { // got to be double
-            buf.add(a.getAbstractValue(fields.getDoubleValue(off)));
-          }
-        }
+					if (list == null) {
+						list = new LinkedList<FieldAbstraction>();
+					}
 
-      } else { // no abstraction, fall back to concrete values
-        if (fi.is1SlotField()) {
-          if (fi.isReference()) {
-            int ref = slotValues[off];
-            buf.add(ref);
-            processReference(ref);
+					list.add(new FieldAbstraction(fspec, abstraction));
+				}
+			} else {
+				logger.warning("no field spec for id: " + id);
+			}
+		}
 
-          } else {
-            buf.add(slotValues[off]);
-          }
+		return list;
+	}
 
-        } else { // double or long
-          buf.add(slotValues[off]);
-          buf.add(slotValues[off + 1]);
-        }
-      }
-    }
-  }
+	@Override
+	public void attach(VM vm) {
+		super.attach(vm);
 
-  // non-ignored class
-  protected void processArrayFields(ArrayFields fields) {
-    buf.add(fields.arrayLength());
+		if (fieldAbstractions != null) {
+			Attributor attributor = new Attributor();
+			vm.addListener(attributor);
+		}
+	}
 
-    if (fields.isReferenceArray()) {
-      int[] values = fields.asReferenceArray();
-      for (int i = 0; i < values.length; i++) {
-        processReference(values[i]);
-        buf.add(values[i]);
-      }
-    } else {
-      fields.appendTo(buf);
-    }
-  }
+	// note that we don't add the reference value here
+	@Override
+	public void processReference(int objref) {
+		if (objref != MJIEnv.NULL) {
+			ElementInfo ei = heap.get(objref);
+			if (!ei.isMarked()) { // only add objects once
+				ei.setMarked();
+				refQueue.add(ei);
+			}
+		}
 
-  // for ignored class, to get all live objects
-  protected void processNamedInstanceReferenceFields(ClassInfo ci, Fields fields) {
-    FinalBitSet filtered = getInstanceFilterMask(ci);
-    FinalBitSet refs = getInstanceRefMask(ci);
-    int[] slotValues = fields.asFieldSlots(); // for non-attributed fields
+		// we DON'T add the reference value to the buffer here
+	}
 
-    for (int i = 0; i < slotValues.length; i++) {
-      if (!filtered.get(i)) {
-        if (refs.get(i)) {
-          processReference(slotValues[i]);
-        }
-      }
-    }
-  }
+	protected void processField(Fields fields, int[] slotValues, FieldInfo fi,
+			FinalBitSet filtered) {
+		int off = fi.getStorageOffset();
+		if (!filtered.get(off)) {
+			Abstraction a = fi.getAttr(Abstraction.class);
+			if (a != null) {
+				if (fi.is1SlotField()) {
+					if (fi.isReference()) {
+						int ref = fields.getReferenceValue(off);
+						buf.add(a.getAbstractObject(ref));
 
-  // for ignored class, to get all live objects
-  protected void processNamedStaticReferenceFields(ClassInfo ci, Fields fields) {
-    FinalBitSet filtered = getStaticFilterMask(ci);
-    FinalBitSet refs = getStaticRefMask(ci);
-    int[] slotValues = fields.asFieldSlots(); // for non-attributed fields
+						if (a.traverseObject(ref)) {
+							processReference(ref);
+						}
 
-    for (int i = 0; i < slotValues.length; i++) {
-      if (!filtered.get(i)) {
-        if (refs.get(i)) {
-          processReference(slotValues[i]);
-        }
-      }
-    }
-  }
+					} else if (fi.isFloatField()) {
+						buf.add(a.getAbstractValue(fields.getFloatValue(off)));
+					} else {
+						buf.add(a.getAbstractValue(fields.getIntValue(off)));
+					}
+				} else { // double or long
+					if (fi.isLongField()) {
+						buf.add(a.getAbstractValue(fields.getLongValue(off)));
+					} else { // got to be double
+						buf.add(a.getAbstractValue(fields.getDoubleValue(off)));
+					}
+				}
 
-  // for ignored class, to get all live objects
-  protected void processReferenceArray(ReferenceArrayFields fields) {
-    int[] slotValues = fields.asReferenceArray();
-    for (int i = 0; i < slotValues.length; i++) {
-      processReference(slotValues[i]);
-    }
-  }
+			} else { // no abstraction, fall back to concrete values
+				if (fi.is1SlotField()) {
+					if (fi.isReference()) {
+						int ref = slotValues[off];
+						buf.add(ref);
+						processReference(ref);
 
-  // non-ignored class
-  protected void processNamedFields(ClassInfo ci, Fields fields) {
-    FinalBitSet filtered = getInstanceFilterMask(ci);
-    int nFields = ci.getNumberOfInstanceFields();
-    int[] slotValues = fields.asFieldSlots(); // for non-attributed fields
+					} else {
+						buf.add(slotValues[off]);
+					}
 
-    for (int i = 0; i < nFields; i++) {
-      FieldInfo fi = ci.getInstanceField(i);
+				} else { // double or long
+					buf.add(slotValues[off]);
+					buf.add(slotValues[off + 1]);
+				}
+			}
+		}
+	}
 
-      if (declaredFieldsOnly && fi.getClassInfo() != ci) {
-        continue;
-      }
+	// non-ignored class
+	@Override
+	protected void processArrayFields(ArrayFields fields) {
+		buf.add(fields.arrayLength());
 
-      processField(fields, slotValues, fi, filtered);
-    }
-  }
+		if (fields.isReferenceArray()) {
+			int[] values = fields.asReferenceArray();
+			for (int i = 0; i < values.length; i++) {
+				processReference(values[i]);
+				buf.add(values[i]);
+			}
+		} else {
+			fields.appendTo(buf);
+		}
+	}
 
-  // <2do> this should also allow abstraction of whole objects, so that
-  // we can hash combinations/relations of field values
-  public void process (ElementInfo ei) {
-    Fields fields = ei.getFields();
-    ClassInfo ci = ei.getClassInfo();
+	// for ignored class, to get all live objects
+	protected void processNamedInstanceReferenceFields(ClassInfo ci,
+			Fields fields) {
+		FinalBitSet filtered = getInstanceFilterMask(ci);
+		FinalBitSet refs = getInstanceRefMask(ci);
+		int[] slotValues = fields.asFieldSlots(); // for non-attributed fields
 
-    if (StringSetMatcher.isMatch(ci.getName(), includeClasses, excludeClasses)) {
-      buf.add(ci.getUniqueId());
+		for (int i = 0; i < slotValues.length; i++) {
+			if (!filtered.get(i)) {
+				if (refs.get(i)) {
+					processReference(slotValues[i]);
+				}
+			}
+		}
+	}
 
-      if (fields instanceof ArrayFields) { // not filtered
-        processArrayFields((ArrayFields) fields);
-      } else { // named fields, potentially filtered & abstracted via attributes
-        processNamedFields(ci, fields);
-      }
+	// for ignored class, to get all live objects
+	protected void processNamedStaticReferenceFields(ClassInfo ci, Fields fields) {
+		FinalBitSet filtered = getStaticFilterMask(ci);
+		FinalBitSet refs = getStaticRefMask(ci);
+		int[] slotValues = fields.asFieldSlots(); // for non-attributed fields
 
-    } else { // ignored class
-      // we check for live non-ignored objects along all stack frames, so we should do the same for all objects
-      if (fields instanceof ArrayFields) {
-        if (fields instanceof ReferenceArrayFields) {
-          processReferenceArray((ReferenceArrayFields) fields);
-        }
-      } else {
-        processNamedInstanceReferenceFields(ci, fields);
-      }
-    }
-  }
+		for (int i = 0; i < slotValues.length; i++) {
+			if (!filtered.get(i)) {
+				if (refs.get(i)) {
+					processReference(slotValues[i]);
+				}
+			}
+		}
+	}
 
-  @Override
-  protected void serializeFrame (StackFrame frame) {
-    MethodInfo mi = frame.getMethodInfo();
-    
-    if (StringSetMatcher.isMatch(mi.getFullName(), includeMethods, excludeMethods)){
-      // <2do> should do frame abstraction here
-      super.serializeFrame(frame);
+	// for ignored class, to get all live objects
+	protected void processReferenceArray(ReferenceArrayFields fields) {
+		int[] slotValues = fields.asReferenceArray();
+		for (int i = 0; i < slotValues.length; i++) {
+			processReference(slotValues[i]);
+		}
+	}
 
-    } else {
-      if (processAllObjects) {
-        frame.visitReferenceSlots(this);
-      }
-    }
-  }
+	// non-ignored class
+	@Override
+	protected void processNamedFields(ClassInfo ci, Fields fields) {
+		FinalBitSet filtered = getInstanceFilterMask(ci);
+		int nFields = ci.getNumberOfInstanceFields();
+		int[] slotValues = fields.asFieldSlots(); // for non-attributed fields
 
-  protected void serializeClass (StaticElementInfo sei) {
-    ClassInfo ci = sei.getClassInfo();
-    Fields fields = sei.getFields();
+		for (int i = 0; i < nFields; i++) {
+			FieldInfo fi = ci.getInstanceField(i);
 
-    if (StringSetMatcher.isMatch(ci.getName(), includeClasses, excludeClasses)) {
-      buf.add(sei.getStatus());
+			if (declaredFieldsOnly && fi.getClassInfo() != ci) {
+				continue;
+			}
 
-      FinalBitSet filtered = getStaticFilterMask(ci);
-      int[] slotValues = fields.asFieldSlots();
+			processField(fields, slotValues, fi, filtered);
+		}
+	}
 
-      for (FieldInfo fi : ci.getDeclaredStaticFields()) {
-        processField(fields, slotValues, fi, filtered);
-      }
+	// <2do> this should also allow abstraction of whole objects, so that
+	// we can hash combinations/relations of field values
+	@Override
+	public void process(ElementInfo ei) {
+		Fields fields = ei.getFields();
+		ClassInfo ci = ei.getClassInfo();
 
-    } else {
-      // ignored class, but still process references to extract live objects
-      processNamedStaticReferenceFields(ci, fields);
-    }
-  }
+		if (StringSetMatcher.isMatch(ci.getName(), includeClasses,
+				excludeClasses)) {
+			buf.add(ci.getUniqueId());
 
-  protected void serializeClassLoaders(){
-    // we don't care about the number of classloaders
-    
-    for (ClassLoaderInfo cl : ks.classLoaders) {
-      if(cl.isAlive()) {
-        serializeStatics( cl.getStatics());
-      }
-    }
-  }
+			if (fields instanceof ArrayFields) { // not filtered
+				processArrayFields((ArrayFields) fields);
+			} else { // named fields, potentially filtered & abstracted via
+						// attributes
+				processNamedFields(ci, fields);
+			}
 
-  protected void serializeStatics(Statics statics){
-    // we don't care about the number of statics entries
+		} else { // ignored class
+			// we check for live non-ignored objects along all stack frames, so
+			// we should do the same for all objects
+			if (fields instanceof ArrayFields) {
+				if (fields instanceof ReferenceArrayFields) {
+					processReferenceArray((ReferenceArrayFields) fields);
+				}
+			} else {
+				processNamedInstanceReferenceFields(ci, fields);
+			}
+		}
+	}
 
-    for (StaticElementInfo sei : statics.liveStatics()) {
-      serializeClass(sei);
-    }
-  }
+	@Override
+	protected void serializeFrame(StackFrame frame) {
+		MethodInfo mi = frame.getMethodInfo();
+
+		if (StringSetMatcher.isMatch(mi.getFullName(), includeMethods,
+				excludeMethods)) {
+			// <2do> should do frame abstraction here
+			super.serializeFrame(frame);
+
+		} else {
+			if (processAllObjects) {
+				frame.visitReferenceSlots(this);
+			}
+		}
+	}
+
+	@Override
+	protected void serializeClass(StaticElementInfo sei) {
+		ClassInfo ci = sei.getClassInfo();
+		Fields fields = sei.getFields();
+
+		if (StringSetMatcher.isMatch(ci.getName(), includeClasses,
+				excludeClasses)) {
+			buf.add(sei.getStatus());
+
+			FinalBitSet filtered = getStaticFilterMask(ci);
+			int[] slotValues = fields.asFieldSlots();
+
+			for (FieldInfo fi : ci.getDeclaredStaticFields()) {
+				processField(fields, slotValues, fi, filtered);
+			}
+
+		} else {
+			// ignored class, but still process references to extract live
+			// objects
+			processNamedStaticReferenceFields(ci, fields);
+		}
+	}
+
+	@Override
+	protected void serializeClassLoaders() {
+		// we don't care about the number of classloaders
+
+		for (ClassLoaderInfo cl : ks.classLoaders) {
+			if (cl.isAlive()) {
+				serializeStatics(cl.getStatics());
+			}
+		}
+	}
+
+	@Override
+	protected void serializeStatics(Statics statics) {
+		// we don't care about the number of statics entries
+
+		for (StaticElementInfo sei : statics.liveStatics()) {
+			serializeClass(sei);
+		}
+	}
 }

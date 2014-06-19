@@ -29,137 +29,142 @@ import gov.nasa.jpf.vm.VM;
 import gov.nasa.jpf.vm.ThreadInfo;
 
 /**
- * tool to save traces upon various conditions like
- *  - property violation
- *  - call of a certain method
- *  - reaching a certain search depth
- *  - creating a certain thread
+ * tool to save traces upon various conditions like - property violation - call
+ * of a certain method - reaching a certain search depth - creating a certain
+ * thread
  */
 public class TraceStorer extends ListenerAdapter {
 
-  int nTrace = 1; 
+	int nTrace = 1;
 
-  String traceFileName;
-  
-  // do we store to the same file? (i.e. overwrite previously stored traces)
-  // if set to 'true', store all traces (in <traceFileName>.n)
-  boolean storeMultiple;
-  
-  // do we want to terminate after first store, even if it's triggered by a
-  // property violation?
-  boolean terminateOnStore;
-  
-  boolean storeOnConstraintHit;
-  
-  // search depth at what we store the tace 
-  int storeDepth;
-  
-  // calls that should trigger a store
-  StringSetMatcher storeCalls;
-  
-  // thread starts that should trigger a store
-  StringSetMatcher storeThreads;
-  
-  // do we want verbose output
-  boolean verbose;
-  
-  Search search;
-  VM vm;
-  
-  public TraceStorer (Config config, JPF jpf){
-    
-    traceFileName = config.getString("trace.file", "trace");
-    storeMultiple = config.getBoolean("trace.multiple", false);    
-    storeDepth = config.getInt("trace.depth", Integer.MAX_VALUE);
-    verbose = config.getBoolean("trace.verbose", false);
-    
-    terminateOnStore = config.getBoolean("trace.terminate", false);
-    storeOnConstraintHit = config.getBoolean("trace.store_constraint", false);
-    
-    storeCalls = StringSetMatcher.getNonEmpty(config.getStringArray("trace.store_calls"));
-    storeThreads = StringSetMatcher.getNonEmpty(config.getStringArray("trace.store_threads"));
-    
-    vm = jpf.getVM();
-    search = jpf.getSearch();
-  }
-  
-  void storeTrace(String reason) {
-    String fname = traceFileName;
-    
-    if (storeMultiple){
-      fname = fname  + '.' + nTrace++;
-    }
-    
-    vm.storeTrace(fname, reason, verbose); // <2do> maybe some comment would be in order
-  }
-  
-  @Override
-  public void propertyViolated (Search search){
-    // Ok, this is unconditional
-    storeTrace("violated property: " + search.getLastError().getDetails());
-    
-    // no need to terminate (and we don't want to interfere with search.multiple_errors)
-  }
- 
-  @Override
-  public void stateAdvanced (Search search){
-    if (search.getDepth() == storeDepth){
-      storeTrace("search depth reached: " + storeDepth);
-      checkSearchTermination();
-    }
-  }
-  
-  @Override
-  public void searchConstraintHit (Search search){
-    if (storeOnConstraintHit){
-      storeTrace("search constraint hit: " + search.getLastSearchConstraint());      
-    }
-  }
-  
-  @Override
-  public void instructionExecuted (VM vm, ThreadInfo ti, Instruction nextInsn, Instruction executedInsn){
-    if (storeCalls != null){
-      if (executedInsn instanceof InvokeInstruction) {
-        InvokeInstruction iinsn = (InvokeInstruction)executedInsn;
-        String clsName = iinsn.getInvokedMethodClassName();
-        String mthName = iinsn.getInvokedMethodName();
-        String mn = clsName + '.' + mthName;
-        
-        if (storeCalls.matchesAny(mn)){
-          storeTrace("call: " + mn);
-          checkVMTermination(ti);
-        }
-      }
-    }
-  }
-  
-  @Override
-  public void threadStarted(VM vm, ThreadInfo ti) {
-    if (storeThreads != null){
-      String tname = ti.getName();
-      if (storeThreads.matchesAny( tname)){
-        storeTrace("thread started: " + tname);
-        checkVMTermination(ti);
-      }
-    } 
-  }
+	String traceFileName;
 
-  boolean checkVMTermination(ThreadInfo ti) {
-    if (terminateOnStore){
-      ti.breakTransition("storeTraceTermination");
-      search.terminate();
-      return true;
-    }
-    
-    return false;
-  }
-  
-  boolean checkSearchTermination() {
-    if (terminateOnStore){
-      search.terminate();
-      return true;
-    }
-    
-    return false;
-  }
+	// do we store to the same file? (i.e. overwrite previously stored traces)
+	// if set to 'true', store all traces (in <traceFileName>.n)
+	boolean storeMultiple;
+
+	// do we want to terminate after first store, even if it's triggered by a
+	// property violation?
+	boolean terminateOnStore;
+
+	boolean storeOnConstraintHit;
+
+	// search depth at what we store the tace
+	int storeDepth;
+
+	// calls that should trigger a store
+	StringSetMatcher storeCalls;
+
+	// thread starts that should trigger a store
+	StringSetMatcher storeThreads;
+
+	// do we want verbose output
+	boolean verbose;
+
+	Search search;
+	VM vm;
+
+	public TraceStorer(Config config, JPF jpf) {
+
+		traceFileName = config.getString("trace.file", "trace");
+		storeMultiple = config.getBoolean("trace.multiple", false);
+		storeDepth = config.getInt("trace.depth", Integer.MAX_VALUE);
+		verbose = config.getBoolean("trace.verbose", false);
+
+		terminateOnStore = config.getBoolean("trace.terminate", false);
+		storeOnConstraintHit = config.getBoolean("trace.store_constraint",
+				false);
+
+		storeCalls = StringSetMatcher.getNonEmpty(config
+				.getStringArray("trace.store_calls"));
+		storeThreads = StringSetMatcher.getNonEmpty(config
+				.getStringArray("trace.store_threads"));
+
+		vm = jpf.getVM();
+		search = jpf.getSearch();
+	}
+
+	void storeTrace(String reason) {
+		String fname = traceFileName;
+
+		if (storeMultiple) {
+			fname = fname + '.' + nTrace++;
+		}
+
+		vm.storeTrace(fname, reason, verbose); // <2do> maybe some comment would
+												// be in order
+	}
+
+	@Override
+	public void propertyViolated(Search search) {
+		// Ok, this is unconditional
+		storeTrace("violated property: " + search.getLastError().getDetails());
+
+		// no need to terminate (and we don't want to interfere with
+		// search.multiple_errors)
+	}
+
+	@Override
+	public void stateAdvanced(Search search) {
+		if (search.getDepth() == storeDepth) {
+			storeTrace("search depth reached: " + storeDepth);
+			checkSearchTermination();
+		}
+	}
+
+	@Override
+	public void searchConstraintHit(Search search) {
+		if (storeOnConstraintHit) {
+			storeTrace("search constraint hit: "
+					+ search.getLastSearchConstraint());
+		}
+	}
+
+	@Override
+	public void instructionExecuted(VM vm, ThreadInfo ti, Instruction nextInsn,
+			Instruction executedInsn) {
+		if (storeCalls != null) {
+			if (executedInsn instanceof InvokeInstruction) {
+				InvokeInstruction iinsn = (InvokeInstruction) executedInsn;
+				String clsName = iinsn.getInvokedMethodClassName();
+				String mthName = iinsn.getInvokedMethodName();
+				String mn = clsName + '.' + mthName;
+
+				if (storeCalls.matchesAny(mn)) {
+					storeTrace("call: " + mn);
+					checkVMTermination(ti);
+				}
+			}
+		}
+	}
+
+	@Override
+	public void threadStarted(VM vm, ThreadInfo ti) {
+		if (storeThreads != null) {
+			String tname = ti.getName();
+			if (storeThreads.matchesAny(tname)) {
+				storeTrace("thread started: " + tname);
+				checkVMTermination(ti);
+			}
+		}
+	}
+
+	boolean checkVMTermination(ThreadInfo ti) {
+		if (terminateOnStore) {
+			ti.breakTransition("storeTraceTermination");
+			search.terminate();
+			return true;
+		}
+
+		return false;
+	}
+
+	boolean checkSearchTermination() {
+		if (terminateOnStore) {
+			search.terminate();
+			return true;
+		}
+
+		return false;
+	}
 }

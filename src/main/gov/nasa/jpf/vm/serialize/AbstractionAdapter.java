@@ -25,29 +25,35 @@ import gov.nasa.jpf.vm.MJIEnv;
  */
 public class AbstractionAdapter implements Abstraction {
 
-  public int getAbstractValue(int v) {
-    return v;
-  }
+	@Override
+	public int getAbstractValue(int v) {
+		return v;
+	}
 
-  public int getAbstractValue(float v) {
-    return Float.floatToIntBits(v);
-  }
+	@Override
+	public int getAbstractValue(float v) {
+		return Float.floatToIntBits(v);
+	}
 
-  public int getAbstractValue(long v) {
-    return (int)(v^(v>>>32));  // Long.hashValue
-  }
+	@Override
+	public int getAbstractValue(long v) {
+		return (int) (v ^ (v >>> 32)); // Long.hashValue
+	}
 
-  public int getAbstractValue(double v) {
-    long l = Double.doubleToLongBits(v);
-    return (int)(l^(l>>>32)); // Double.hashValue
-  }
+	@Override
+	public int getAbstractValue(double v) {
+		long l = Double.doubleToLongBits(v);
+		return (int) (l ^ (l >>> 32)); // Double.hashValue
+	}
 
-  public int getAbstractObject(int ref) {
-    return ref;
-  }
+	@Override
+	public int getAbstractObject(int ref) {
+		return ref;
+	}
 
-  public boolean traverseObject(int ref) {
-    return (ref != MJIEnv.NULL);
-  }
-  
+	@Override
+	public boolean traverseObject(int ref) {
+		return (ref != MJIEnv.NULL);
+	}
+
 }

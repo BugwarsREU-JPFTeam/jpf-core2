@@ -18,22 +18,24 @@
 //
 package gov.nasa.jpf.jvm.bytecode;
 
-
 public class GOTO_W extends GOTO {
 
-  public GOTO_W(int targetPos){
-    super(targetPos);
-  }
+	public GOTO_W(int targetPos) {
+		super(targetPos);
+	}
 
-  public int getLength() {
-    return 5; // opcode, bb1, bb2, bb3, bb4
-  }
-  
-  public int getByteCode() {
-    return 0xc8;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public int getLength() {
+		return 5; // opcode, bb1, bb2, bb3, bb4
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0xc8;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

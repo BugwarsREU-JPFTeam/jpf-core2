@@ -24,31 +24,31 @@ import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.Types;
 
-
 /**
- * Multiply float
- * ..., value1, value2 => ..., result
+ * Multiply float ..., value1, value2 => ..., result
  */
 public class FMUL extends JVMInstruction {
 
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    float v1 = frame.popFloat();
-    float v2 = frame.popFloat();
-    
-    float r = v1 * v2;    
-    frame.push(Types.floatToInt(r), false);
+		float v1 = frame.popFloat();
+		float v2 = frame.popFloat();
 
-    return getNext(ti);
-  }
+		float r = v1 * v2;
+		frame.push(Types.floatToInt(r), false);
 
+		return getNext(ti);
+	}
 
-  public int getByteCode () {
-    return 0x6A;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public int getByteCode() {
+		return 0x6A;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

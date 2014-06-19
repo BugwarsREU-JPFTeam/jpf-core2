@@ -27,75 +27,76 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class JPF_java_security_MessageDigest extends NativePeer {
-  
-  MessageDigest[] digests;
-  
-  public JPF_java_security_MessageDigest (Config conf){
-    digests = new MessageDigest[32];
-  }
-  
-  int getNewIndex() {
-    int n = digests.length;
-    for (int i=0; i<n; i++){
-      if (digests[i] == null){
-        return i;
-      }
-    }
-    
-    MessageDigest[] newd = new MessageDigest[n + 32];
-    System.arraycopy(digests,0,newd,0,digests.length);
-    digests = newd;
-    return n;
-  }
-  
-  MessageDigest getDigest (MJIEnv env, int objRef){
-    int id = env.getIntField(objRef, "id");
-    return digests[id];
-  }
-  
-  @MJI
-  public int init0__Ljava_lang_String_2__I (MJIEnv env, int objRef, int algRef) {
-    String algorithm = env.getStringObject(algRef);
-    
-    try {
-      MessageDigest md = MessageDigest.getInstance(algorithm);
-    
-      int id = getNewIndex();
-      digests[id] = md;
-    
-      return id;
-    } catch (NoSuchAlgorithmException x){
-      env.throwException("java.security.NoSuchAlgorithmException", algorithm);
-      return -1;
-    }
-  }
-  
-  @MJI
-  public int digest___3B___3B (MJIEnv env, int objRef, int inputRef){
-    MessageDigest md = getDigest(env, objRef);
-    byte[] input = env.getByteArrayObject(inputRef);
-    
-    byte[] res = md.digest(input);
-    return env.newByteArray(res);
-  }
 
-  @MJI
-  public int digest_____3B (MJIEnv env, int objRef){
-    MessageDigest md = getDigest(env, objRef);    
-    byte[] res = md.digest();
-    return env.newByteArray(res);
-  }
-  
-  @MJI
-  public void finalize____ (MJIEnv env, int objRef){
-    int id = env.getIntField(objRef, "id");
-    digests[id] = null;
-  }
+	MessageDigest[] digests;
 
-  @MJI
-  public void update___3B__V (MJIEnv env, int objRef, int inputRef){
-    MessageDigest md = getDigest(env, objRef);
-    byte[] input = env.getByteArrayObject(inputRef);
-    md.update(input);
-  }
+	public JPF_java_security_MessageDigest(Config conf) {
+		digests = new MessageDigest[32];
+	}
+
+	int getNewIndex() {
+		int n = digests.length;
+		for (int i = 0; i < n; i++) {
+			if (digests[i] == null) {
+				return i;
+			}
+		}
+
+		MessageDigest[] newd = new MessageDigest[n + 32];
+		System.arraycopy(digests, 0, newd, 0, digests.length);
+		digests = newd;
+		return n;
+	}
+
+	MessageDigest getDigest(MJIEnv env, int objRef) {
+		int id = env.getIntField(objRef, "id");
+		return digests[id];
+	}
+
+	@MJI
+	public int init0__Ljava_lang_String_2__I(MJIEnv env, int objRef, int algRef) {
+		String algorithm = env.getStringObject(algRef);
+
+		try {
+			MessageDigest md = MessageDigest.getInstance(algorithm);
+
+			int id = getNewIndex();
+			digests[id] = md;
+
+			return id;
+		} catch (NoSuchAlgorithmException x) {
+			env.throwException("java.security.NoSuchAlgorithmException",
+					algorithm);
+			return -1;
+		}
+	}
+
+	@MJI
+	public int digest___3B___3B(MJIEnv env, int objRef, int inputRef) {
+		MessageDigest md = getDigest(env, objRef);
+		byte[] input = env.getByteArrayObject(inputRef);
+
+		byte[] res = md.digest(input);
+		return env.newByteArray(res);
+	}
+
+	@MJI
+	public int digest_____3B(MJIEnv env, int objRef) {
+		MessageDigest md = getDigest(env, objRef);
+		byte[] res = md.digest();
+		return env.newByteArray(res);
+	}
+
+	@MJI
+	public void finalize____(MJIEnv env, int objRef) {
+		int id = env.getIntField(objRef, "id");
+		digests[id] = null;
+	}
+
+	@MJI
+	public void update___3B__V(MJIEnv env, int objRef, int inputRef) {
+		MessageDigest md = getDigest(env, objRef);
+		byte[] input = env.getByteArrayObject(inputRef);
+		md.update(input);
+	}
 }

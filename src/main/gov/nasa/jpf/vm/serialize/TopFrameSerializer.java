@@ -27,46 +27,45 @@ import gov.nasa.jpf.vm.ThreadInfo;
  * only looks at the top frame of each thread, and only serializes objects
  * referenced from there. It ignores static fields and deeper heap objects that
  * are not directly referenced.
- *
+ * 
  * While this seems too aggressive, it actually finds a lot of concurrency
- * defects in real world applications. This is esp. true if there are
- * a lot of field access CGs, i.e. shared objects. In this case, the
- * TopFrameSerializer can behave an order of magnitude better than CFSerializer
+ * defects in real world applications. This is esp. true if there are a lot of
+ * field access CGs, i.e. shared objects. In this case, the TopFrameSerializer
+ * can behave an order of magnitude better than CFSerializer
  */
 public class TopFrameSerializer extends CFSerializer {
 
-  boolean traverseObjects;
+	boolean traverseObjects;
 
-  @Override
-  protected void initReferenceQueue() {
-    super.initReferenceQueue();
+	@Override
+	protected void initReferenceQueue() {
+		super.initReferenceQueue();
 
-    traverseObjects = true;
-  }
+		traverseObjects = true;
+	}
 
-  @Override
-  protected void serializeStackFrames(ThreadInfo ti){
-    // we just look at the top frame
-    serializeFrame(ti.getTopFrame());
-  }
+	@Override
+	protected void serializeStackFrames(ThreadInfo ti) {
+		// we just look at the top frame
+		serializeFrame(ti.getTopFrame());
+	}
 
+	@Override
+	protected void queueReference(ElementInfo ei) {
+		if (traverseObjects) {
+			refQueue.add(ei);
+		}
+	}
 
-  @Override
-  protected void queueReference(ElementInfo ei){
-    if (traverseObjects){
-      refQueue.add(ei);
-    }
-  }
+	@Override
+	protected void processReferenceQueue() {
+		// we only go one level deep
+		traverseObjects = false;
+		refQueue.process(this);
+	}
 
-  @Override
-  protected void processReferenceQueue() {
-    // we only go one level deep
-    traverseObjects = false;
-    refQueue.process(this);
-  }
-
-  @Override
-  protected void serializeClassLoaders(){
-    // totally ignore statics
-  }
+	@Override
+	protected void serializeClassLoaders() {
+		// totally ignore statics
+	}
 }

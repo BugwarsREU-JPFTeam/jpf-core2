@@ -23,26 +23,27 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * duplicate topmost stack entry
- * .., value -> .., value, value
+ * duplicate topmost stack entry .., value -> .., value, value
  */
 public class DUP extends JVMInstruction {
 
-  public Instruction execute (ThreadInfo th) {
-    StackFrame frame = th.getModifiableTopFrame();
-    
-    frame.dup();
+	@Override
+	public Instruction execute(ThreadInfo th) {
+		StackFrame frame = th.getModifiableTopFrame();
 
-    return getNext(th);
-  }
+		frame.dup();
 
-  public int getByteCode () {
-    return 0x59;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		return getNext(th);
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0x59;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

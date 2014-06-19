@@ -23,39 +23,38 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Increment local variable by constant
- * No change
+ * Increment local variable by constant No change
  */
 public class IINC extends JVMInstruction {
 
 	protected int index;
 	protected int increment;
 
-	public IINC(int localVarIndex, int increment){
+	public IINC(int localVarIndex, int increment) {
 		this.index = localVarIndex;
 		this.increment = increment;
 	}
 
 	@Override
-	public Instruction execute (ThreadInfo ti) {
-	  StackFrame frame = ti.getModifiableTopFrame();
-	  
-	  int v = frame.getLocalVariable(index);
-	  v += increment;
-	  
-	  frame.setLocalVariable(index, v, false);
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
+
+		int v = frame.getLocalVariable(index);
+		v += increment;
+
+		frame.setLocalVariable(index, v, false);
 
 		return getNext(ti);
 	}
 
+	@Override
 	public int getLength() {
 		return 3; // opcode, index, const
 	}
 
 	@Override
-	public int getByteCode () {
+	public int getByteCode() {
 		return 0x84; // ?? wide
 	}
 

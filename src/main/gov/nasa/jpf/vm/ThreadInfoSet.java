@@ -21,8 +21,8 @@ package gov.nasa.jpf.vm;
 
 /**
  * interface to abstract the referencing set of threadinfos per object/class
- * Used to detect shared objects/classes 
- * Instances are created through a configured factory (SharedObjectPolicy)
+ * Used to detect shared objects/classes Instances are created through a
+ * configured factory (SharedObjectPolicy)
  * 
  * We abstract the container so that the way we identify threads is not exposed
  * to the client, and implementations can use either ThreadInfo references or
@@ -30,22 +30,22 @@ package gov.nasa.jpf.vm;
  */
 public interface ThreadInfoSet extends Cloneable {
 
-  /**
-   * @return true if the thread wasn't in the set yet and was added
-   */
-  ThreadInfoSet add (ThreadInfo ti);
-  
-  ThreadInfoSet remove (ThreadInfo ti);
-  
-  boolean contains (ThreadInfo ti);
-  
-  boolean isShared (ThreadInfo ti, ElementInfo ei);
-  
-  
-  boolean hasMultipleLiveThreads ();
-  boolean hasMultipleRunnableThreads ();
-  
-  Memento<ThreadInfoSet> getMemento();
-  
-  int size();
+	/**
+	 * @return true if the thread wasn't in the set yet and was added
+	 */
+	ThreadInfoSet add(ThreadInfo ti);
+
+	ThreadInfoSet remove(ThreadInfo ti);
+
+	boolean contains(ThreadInfo ti);
+
+	boolean isShared(ThreadInfo ti, ElementInfo ei);
+
+	boolean hasMultipleLiveThreads();
+
+	boolean hasMultipleRunnableThreads();
+
+	Memento<ThreadInfoSet> getMemento();
+
+	int size();
 }

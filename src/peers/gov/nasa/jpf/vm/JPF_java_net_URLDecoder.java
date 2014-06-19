@@ -31,20 +31,21 @@ import java.net.URLDecoder;
  */
 public class JPF_java_net_URLDecoder extends NativePeer {
 
-  @MJI
-  public int decode__Ljava_lang_String_2Ljava_lang_String_2__Ljava_lang_String_2(MJIEnv env, int clsObjRef,
-          int sRef, int encRef){
-    String s = env.getStringObject(sRef);
-    String enc = env.getStringObject(encRef);
+	@MJI
+	public int decode__Ljava_lang_String_2Ljava_lang_String_2__Ljava_lang_String_2(
+			MJIEnv env, int clsObjRef, int sRef, int encRef) {
+		String s = env.getStringObject(sRef);
+		String enc = env.getStringObject(encRef);
 
-    try {
-      String e = URLDecoder.decode(s, enc);
-      return env.newString(e);
+		try {
+			String e = URLDecoder.decode(s, enc);
+			return env.newString(e);
 
-    } catch (UnsupportedEncodingException x){
-      env.throwException("java.io.UnsupportedEncodingException", x.getMessage());
-      return MJIEnv.NULL;
-    }
-  }
+		} catch (UnsupportedEncodingException x) {
+			env.throwException("java.io.UnsupportedEncodingException",
+					x.getMessage());
+			return MJIEnv.NULL;
+		}
+	}
 
 }

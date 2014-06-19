@@ -22,23 +22,23 @@ import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.util.Printable;
 import gov.nasa.jpf.vm.VM;
 
-
 /**
- * abstraction that is used by Search objects to determine if program
- * properties have been violated (e.g. NoUncaughtExceptions)
+ * abstraction that is used by Search objects to determine if program properties
+ * have been violated (e.g. NoUncaughtExceptions)
  */
 public interface Property extends Printable {
 
-  /**
-   * return true if property is NOT violated
-   */
-  boolean check (Search search, VM vm);
+	/**
+	 * return true if property is NOT violated
+	 */
+	boolean check(Search search, VM vm);
 
-  String getErrorMessage ();
-  
-  String getExplanation();
-  
-  void reset (); // required for search.multiple_errors
-  
-  Property clone() throws CloneNotSupportedException; // so that we can store multiple errors
+	String getErrorMessage();
+
+	String getExplanation();
+
+	void reset(); // required for search.multiple_errors
+
+	Property clone() throws CloneNotSupportedException; // so that we can store
+														// multiple errors
 }

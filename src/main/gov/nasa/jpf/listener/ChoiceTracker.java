@@ -15,179 +15,184 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 
 /**
- * generic choice tracker tool, to produce a list of choice values that
- * can be used to create readable replay scripts etc.
+ * generic choice tracker tool, to produce a list of choice values that can be
+ * used to create readable replay scripts etc.
  */
-public class ChoiceTracker extends ListenerAdapter implements PublisherExtension {
+public class ChoiceTracker extends ListenerAdapter implements
+		PublisherExtension {
 
-  enum Format { CG, CHOICE };
+	enum Format {
+		CG, CHOICE
+	};
 
-  Config config;
-  VM vm;
-  Search search;
-  
-  protected PrintWriter pw;
-  Class<?>[] cgClasses;
-  boolean isReportExtension;
+	Config config;
+	VM vm;
+	Search search;
 
-  boolean showLocation;
-  Format format = Format.CHOICE;
-  String[] excludes;
+	protected PrintWriter pw;
+	Class<?>[] cgClasses;
+	boolean isReportExtension;
 
-  // <2do> hardwired type specific tracker for use with some shells - check if
-  // we can get rid of it
-  public ChoiceTracker (JPF jpf, String traceFileName, Class<?> cgClass){
-    config = jpf.getConfig();
-    vm = jpf.getVM();
-    search = jpf.getSearch();
-    
-    cgClasses = new Class<?>[1];
-    cgClasses[0] = cgClass;
-    
-    try {
-      pw = new PrintWriter(traceFileName);
-    } catch (FileNotFoundException fnfx) {
-      System.err.println("cannot write choice trace to file: " + traceFileName);
-      pw = new PrintWriter(System.out);
-    }
-  }
+	boolean showLocation;
+	Format format = Format.CHOICE;
+	String[] excludes;
 
-  public ChoiceTracker (Config config, JPF jpf) {
-    this.config = config;
-    vm = jpf.getVM();
-    search = jpf.getSearch();
-    
-    String fname = config.getString("choice.trace");
-    if (fname == null) {
-      isReportExtension = true;
-      jpf.addPublisherExtension(ConsolePublisher.class, this);
-      // pw is going to be set later
-    } else {
-      try {
-        pw = new PrintWriter(fname);
-      } catch (FileNotFoundException fnfx) {
-        System.err.println("cannot write choice trace to file: " + fname);
-        pw = new PrintWriter(System.out);
-      }
-    }
-    
-    excludes = config.getStringArray("choice.exclude");
-    cgClasses = config.getClasses("choice.class");
+	// <2do> hardwired type specific tracker for use with some shells - check if
+	// we can get rid of it
+	public ChoiceTracker(JPF jpf, String traceFileName, Class<?> cgClass) {
+		config = jpf.getConfig();
+		vm = jpf.getVM();
+		search = jpf.getSearch();
 
-    format = config.getEnum("choice.format", Format.values(), Format.CG);
-    showLocation = config.getBoolean("choice.show_location", true);
-  }
+		cgClasses = new Class<?>[1];
+		cgClasses[0] = cgClass;
 
-  public void setExcludes (String... ex) {
-    excludes=ex;
-  }
-  
-  boolean isRelevantCG (ChoiceGenerator cg){
-    if (cgClasses == null){
-      return true;
-    } else {
-      for (Class<?> cls : cgClasses){
-        if (cls.isAssignableFrom(cg.getClass())){
-          return true;
-        }
-      }
-      
-      return false;
-    }
-  }
+		try {
+			pw = new PrintWriter(traceFileName);
+		} catch (FileNotFoundException fnfx) {
+			System.err.println("cannot write choice trace to file: "
+					+ traceFileName);
+			pw = new PrintWriter(System.out);
+		}
+	}
 
-  @Override
-  public void propertyViolated (Search search) {
-        
-    if (!isReportExtension) {
+	public ChoiceTracker(Config config, JPF jpf) {
+		this.config = config;
+		vm = jpf.getVM();
+		search = jpf.getSearch();
 
-      pw.print("// application: ");
-      pw.println( search.getVM().getSUTDescription());
+		String fname = config.getString("choice.trace");
+		if (fname == null) {
+			isReportExtension = true;
+			jpf.addPublisherExtension(ConsolePublisher.class, this);
+			// pw is going to be set later
+		} else {
+			try {
+				pw = new PrintWriter(fname);
+			} catch (FileNotFoundException fnfx) {
+				System.err.println("cannot write choice trace to file: "
+						+ fname);
+				pw = new PrintWriter(System.out);
+			}
+		}
 
-      if (cgClasses == null) {
-        pw.println("// trace over all CG classes");
-      } else {
-        pw.print("// trace over CG types: ");
-        for (Class<?> cls : cgClasses){
-          pw.print(cls.getName());
-          pw.print(' ');
-        }
-        pw.println();
-      }
+		excludes = config.getStringArray("choice.exclude");
+		cgClasses = config.getClasses("choice.class");
 
-      pw.println("//------------------------- choice trace");
-      printChoices();
-      
-      pw.println("//------------------------- end choice trace");
-      pw.flush();
-    }
-  }
+		format = config.getEnum("choice.format", Format.values(), Format.CG);
+		showLocation = config.getBoolean("choice.show_location", true);
+	}
 
-  void printChoices () {
-    int i = 0;
-    SystemState ss = vm.getSystemState();
-    ChoiceGenerator<?>[] cgStack = ss.getChoiceGenerators();
+	public void setExcludes(String... ex) {
+		excludes = ex;
+	}
 
-    nextChoice:
-    for (ChoiceGenerator<?> cg : cgStack) {
-      if (isRelevantCG(cg) && !cg.isDone()){
+	boolean isRelevantCG(ChoiceGenerator cg) {
+		if (cgClasses == null) {
+			return true;
+		} else {
+			for (Class<?> cls : cgClasses) {
+				if (cls.isAssignableFrom(cg.getClass())) {
+					return true;
+				}
+			}
 
-        Object choice = cg.getNextChoice();
-        if (choice == null) {
-          continue;
-        } else {
-          if (excludes != null) {
-            for (String e : excludes) {
-              if (choice.toString().startsWith(e)) {
-                continue nextChoice;
-              }
-            }
-          }
-        }
+			return false;
+		}
+	}
 
-        String line = null;
+	@Override
+	public void propertyViolated(Search search) {
 
-        switch (format){
-          case CHOICE:
-            line = choice.toString();
-            if (line.startsWith("gov.nasa.jpf.vm.")){
-              line = line.substring(17);
-            }
-            break;
-          case CG:
-            line = cg.toString();
-            if (line.startsWith("gov.nasa.jpf.vm.choice.")){
-              line = line.substring(24);
-            }
-            break;
-        }
+		if (!isReportExtension) {
 
-        if (line != null){
-          pw.print(String.format("%4d: ", i++));
+			pw.print("// application: ");
+			pw.println(search.getVM().getSUTDescription());
 
-          pw.print(line);
+			if (cgClasses == null) {
+				pw.println("// trace over all CG classes");
+			} else {
+				pw.print("// trace over CG types: ");
+				for (Class<?> cls : cgClasses) {
+					pw.print(cls.getName());
+					pw.print(' ');
+				}
+				pw.println();
+			}
 
-          if (showLocation) {
-            String loc = cg.getSourceLocation();
-            if (loc != null) {
-              pw.println();
-              pw.print(" \tat ");
-              pw.print(loc);
-            }
-          }
-          pw.println();
-        }
-      }
-    }
-  }
+			pw.println("//------------------------- choice trace");
+			printChoices();
 
-  //--- the PublisherExtension interface
+			pw.println("//------------------------- end choice trace");
+			pw.flush();
+		}
+	}
 
-  @Override
-  public void publishPropertyViolation (Publisher publisher) {
-    pw = publisher.getOut();
-    publisher.publishTopicStart("choice trace " + publisher.getLastErrorId());
-    printChoices();
-  }
+	void printChoices() {
+		int i = 0;
+		SystemState ss = vm.getSystemState();
+		ChoiceGenerator<?>[] cgStack = ss.getChoiceGenerators();
+
+		nextChoice: for (ChoiceGenerator<?> cg : cgStack) {
+			if (isRelevantCG(cg) && !cg.isDone()) {
+
+				Object choice = cg.getNextChoice();
+				if (choice == null) {
+					continue;
+				} else {
+					if (excludes != null) {
+						for (String e : excludes) {
+							if (choice.toString().startsWith(e)) {
+								continue nextChoice;
+							}
+						}
+					}
+				}
+
+				String line = null;
+
+				switch (format) {
+				case CHOICE:
+					line = choice.toString();
+					if (line.startsWith("gov.nasa.jpf.vm.")) {
+						line = line.substring(17);
+					}
+					break;
+				case CG:
+					line = cg.toString();
+					if (line.startsWith("gov.nasa.jpf.vm.choice.")) {
+						line = line.substring(24);
+					}
+					break;
+				}
+
+				if (line != null) {
+					pw.print(String.format("%4d: ", i++));
+
+					pw.print(line);
+
+					if (showLocation) {
+						String loc = cg.getSourceLocation();
+						if (loc != null) {
+							pw.println();
+							pw.print(" \tat ");
+							pw.print(loc);
+						}
+					}
+					pw.println();
+				}
+			}
+		}
+	}
+
+	// --- the PublisherExtension interface
+
+	@Override
+	public void publishPropertyViolation(Publisher publisher) {
+		pw = publisher.getOut();
+		publisher.publishTopicStart("choice trace "
+				+ publisher.getLastErrorId());
+		printChoices();
+	}
 
 }

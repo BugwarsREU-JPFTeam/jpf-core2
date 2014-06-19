@@ -26,46 +26,50 @@ import gov.nasa.jpf.vm.MJIEnv;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Store into reference array
- * ..., arrayref, index, value  => ...
+ * Store into reference array ..., arrayref, index, value => ...
  */
 public class AASTORE extends ArrayStoreInstruction {
 
-  int value;
+	int value;
 
-  protected void popValue(StackFrame frame){
-    value = frame.pop();
-  }
+	@Override
+	protected void popValue(StackFrame frame) {
+		value = frame.pop();
+	}
 
-  protected void setField (ElementInfo ei, int index) throws ArrayIndexOutOfBoundsExecutiveException {
-    ei.checkArrayBounds(index);
-    ei.setReferenceElement(index, value);
-  }
+	@Override
+	protected void setField(ElementInfo ei, int index)
+			throws ArrayIndexOutOfBoundsExecutiveException {
+		ei.checkArrayBounds(index);
+		ei.setReferenceElement(index, value);
+	}
 
-  protected Instruction checkArrayStoreException(ThreadInfo ti, ElementInfo ei){
-    ClassInfo c = ei.getClassInfo();
+	@Override
+	protected Instruction checkArrayStoreException(ThreadInfo ti, ElementInfo ei) {
+		ClassInfo c = ei.getClassInfo();
 
-    if (value != MJIEnv.NULL) { // no checks for storing 'null'
-      ClassInfo elementCi = ti.getClassInfo(value);
-      ClassInfo arrayElementCi = c.getComponentClassInfo();
-      if (!elementCi.isInstanceOf(arrayElementCi)) {
-        String exception = "java.lang.ArrayStoreException";
-        String exceptionDescription = elementCi.getName();
-        return ti.createAndThrowException(exception, exceptionDescription);
-      }
-    }
+		if (value != MJIEnv.NULL) { // no checks for storing 'null'
+			ClassInfo elementCi = ti.getClassInfo(value);
+			ClassInfo arrayElementCi = c.getComponentClassInfo();
+			if (!elementCi.isInstanceOf(arrayElementCi)) {
+				String exception = "java.lang.ArrayStoreException";
+				String exceptionDescription = elementCi.getName();
+				return ti.createAndThrowException(exception,
+						exceptionDescription);
+			}
+		}
 
-    return null;
-  }
+		return null;
+	}
 
+	@Override
+	public int getByteCode() {
+		return 0x53;
+	}
 
-  public int getByteCode () {
-    return 0x53;
-  }
-
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

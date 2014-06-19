@@ -20,8 +20,11 @@
 package gov.nasa.jpf.util.script;
 
 public interface ElementProcessor {
-  void process (Section s);
-  void process (Event e);
-  void process (Alternative a);
-  void process (Repetition r);
+	void process(Section s);
+
+	void process(Event e);
+
+	void process(Alternative a);
+
+	void process(Repetition r);
 }

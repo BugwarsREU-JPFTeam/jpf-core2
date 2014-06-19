@@ -21,30 +21,29 @@ package gov.nasa.jpf.jvm.bytecode;
 import gov.nasa.jpf.jvm.JVMInstruction;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
  * abstraction for all array instructions
  */
 public abstract class ArrayInstruction extends JVMInstruction {
 
-  protected int arrayRef;
+	protected int arrayRef;
 
-  /**
-   * only makes sense from an executeInstruction() or instructionExecuted() listener,
-   * it is undefined outside of insn exec notifications
-   */
-  public int getArrayRef (ThreadInfo ti){
-    if (ti.isPreExec()){
-      return peekArrayRef(ti);
-    } else {
-      return arrayRef;
-    }
-  }
+	/**
+	 * only makes sense from an executeInstruction() or instructionExecuted()
+	 * listener, it is undefined outside of insn exec notifications
+	 */
+	public int getArrayRef(ThreadInfo ti) {
+		if (ti.isPreExec()) {
+			return peekArrayRef(ti);
+		} else {
+			return arrayRef;
+		}
+	}
 
-  abstract protected int peekArrayRef (ThreadInfo ti);
+	abstract protected int peekArrayRef(ThreadInfo ti);
 
-  @Override
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

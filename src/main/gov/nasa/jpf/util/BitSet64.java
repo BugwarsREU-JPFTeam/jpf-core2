@@ -28,274 +28,304 @@ import gov.nasa.jpf.JPFException;
  */
 public class BitSet64 implements FixedBitSet, Cloneable, IntSet {
 
-  static final int INDEX_MASK = 0xffffffc0; // ( i>=0 && i<64)
+	static final int INDEX_MASK = 0xffffffc0; // ( i>=0 && i<64)
 
-  long l0;
-  int cardinality;
+	long l0;
+	int cardinality;
 
-  public BitSet64 (){
-    // nothing in here
-  }
+	public BitSet64() {
+		// nothing in here
+	}
 
-  public BitSet64 (int i){
-    set(i);
-  }
+	public BitSet64(int i) {
+		set(i);
+	}
 
-  public BitSet64 (int... idx){
-    for (int i : idx){
-      set(i);
-    }
-  }
+	public BitSet64(int... idx) {
+		for (int i : idx) {
+			set(i);
+		}
+	}
 
-  public int longSize(){
-    return  1;
-  }
-  public long getLong(int i){
-    if (i==0) {
-      return l0;
-    } else {
-      throw new IndexOutOfBoundsException("BitSet64 has no long index " + i);
-    }
-  }
+	@Override
+	public int longSize() {
+		return 1;
+	}
 
-  public BitSet64 clone() {
-    try {
-      return (BitSet64) super.clone();
-    } catch (CloneNotSupportedException ex) {
-      throw new JPFException("BitSet64 clone failed");
-    }
-  }
+	@Override
+	public long getLong(int i) {
+		if (i == 0) {
+			return l0;
+		} else {
+			throw new IndexOutOfBoundsException("BitSet64 has no long index "
+					+ i);
+		}
+	}
 
-  private final int computeCardinality (){
-    return Long.bitCount(l0);
-  }
+	@Override
+	public BitSet64 clone() {
+		try {
+			return (BitSet64) super.clone();
+		} catch (CloneNotSupportedException ex) {
+			throw new JPFException("BitSet64 clone failed");
+		}
+	}
 
-  //--- public interface (much like java.util.BitSet)
+	private final int computeCardinality() {
+		return Long.bitCount(l0);
+	}
 
-  public void set (int i){
-    if ((i & INDEX_MASK) == 0){
-      long bitPattern = (1L << i);
-      if ((l0 & bitPattern) == 0L) {
-        cardinality++;
-        l0 |= bitPattern;
-      }
-    } else {
-      throw new IndexOutOfBoundsException("BitSet64 index out of range: " + i);
-    }
-  }
+	// --- public interface (much like java.util.BitSet)
 
-  public void clear (int i){
-    if ((i & INDEX_MASK) == 0){
-      long bitPattern = (1L << i);
-      if ((l0 & bitPattern) != 0L) { // bit is set
-        cardinality--;
-        l0 &= ~bitPattern;
-      }
-    } else {
-      throw new IndexOutOfBoundsException("BitSet64 index out of range: " + i);
-    }
-  }
+	@Override
+	public void set(int i) {
+		if ((i & INDEX_MASK) == 0) {
+			long bitPattern = (1L << i);
+			if ((l0 & bitPattern) == 0L) {
+				cardinality++;
+				l0 |= bitPattern;
+			}
+		} else {
+			throw new IndexOutOfBoundsException("BitSet64 index out of range: "
+					+ i);
+		}
+	}
 
-  public void set (int i, boolean val){
-    if (val) {
-      set(i);
-    } else {
-      clear(i);
-    }
-  }
+	@Override
+	public void clear(int i) {
+		if ((i & INDEX_MASK) == 0) {
+			long bitPattern = (1L << i);
+			if ((l0 & bitPattern) != 0L) { // bit is set
+				cardinality--;
+				l0 &= ~bitPattern;
+			}
+		} else {
+			throw new IndexOutOfBoundsException("BitSet64 index out of range: "
+					+ i);
+		}
+	}
 
-  public boolean get (int i){
-    if ((i & INDEX_MASK) == 0){
-      long bitPattern = (1L << i);
-      return ((l0 & bitPattern) != 0);
-    } else {
-      throw new IndexOutOfBoundsException("BitSet64 index out of range: " + i);
-    }
-  }
+	@Override
+	public void set(int i, boolean val) {
+		if (val) {
+			set(i);
+		} else {
+			clear(i);
+		}
+	}
 
-  public int cardinality() {
-    return cardinality;
-  }
+	@Override
+	public boolean get(int i) {
+		if ((i & INDEX_MASK) == 0) {
+			long bitPattern = (1L << i);
+			return ((l0 & bitPattern) != 0);
+		} else {
+			throw new IndexOutOfBoundsException("BitSet64 index out of range: "
+					+ i);
+		}
+	}
 
-  public int capacity(){
-    return 64;
-  }
-  
-  /**
-   * number of bits we can store
-   */
-  public int size() {
-    return cardinality;
-  }
+	@Override
+	public int cardinality() {
+		return cardinality;
+	}
 
-  /**
-   * index of highest set bit + 1
-   */
-  public int length() {
-    return 64 - Long.numberOfLeadingZeros(l0);
-  }
+	@Override
+	public int capacity() {
+		return 64;
+	}
 
-  public boolean isEmpty() {
-    return (cardinality == 0);
-  }
+	/**
+	 * number of bits we can store
+	 */
+	@Override
+	public int size() {
+		return cardinality;
+	}
 
-  public void clear() {
-    l0 = 0L;
-    cardinality = 0;
-  }
+	/**
+	 * index of highest set bit + 1
+	 */
+	@Override
+	public int length() {
+		return 64 - Long.numberOfLeadingZeros(l0);
+	}
 
-  public int nextSetBit (int fromIdx){
-    if ((fromIdx & INDEX_MASK) == 0){
-      //int n = Long.numberOfTrailingZeros(l0 & (0xffffffffffffffffL << fromIdx));
-      int n = Long.numberOfTrailingZeros(l0 >> fromIdx) + fromIdx;
-      if (n < 64) {
-        return n;
-      } else {
-        return -1;
-      }
-    } else {
-      //throw new IndexOutOfBoundsException("BitSet64 index out of range: " + fromIdx);
-      return -1;
-    }
-  }
+	@Override
+	public boolean isEmpty() {
+		return (cardinality == 0);
+	}
 
-  public int nextClearBit (int fromIdx){
-    if ((fromIdx & INDEX_MASK) == 0){
-      //int n = Long.numberOfTrailingZeros(~l0 & (0xffffffffffffffffL << fromIdx));
-      int n = Long.numberOfTrailingZeros(~l0 >> fromIdx) + fromIdx;
-      if (n < 64) {
-        return n;
-      } else {
-        return -1;
-      }
-    } else {
-      //throw new IndexOutOfBoundsException("BitSet64 index out of range: " + fromIdx);
-      return -1;
-    }
-  }
+	@Override
+	public void clear() {
+		l0 = 0L;
+		cardinality = 0;
+	}
 
-  public void and (BitSet64 other){
-    l0 &= other.l0;
+	@Override
+	public int nextSetBit(int fromIdx) {
+		if ((fromIdx & INDEX_MASK) == 0) {
+			// int n = Long.numberOfTrailingZeros(l0 & (0xffffffffffffffffL <<
+			// fromIdx));
+			int n = Long.numberOfTrailingZeros(l0 >> fromIdx) + fromIdx;
+			if (n < 64) {
+				return n;
+			} else {
+				return -1;
+			}
+		} else {
+			// throw new
+			// IndexOutOfBoundsException("BitSet64 index out of range: " +
+			// fromIdx);
+			return -1;
+		}
+	}
 
-    cardinality = computeCardinality();
-  }
+	@Override
+	public int nextClearBit(int fromIdx) {
+		if ((fromIdx & INDEX_MASK) == 0) {
+			// int n = Long.numberOfTrailingZeros(~l0 & (0xffffffffffffffffL <<
+			// fromIdx));
+			int n = Long.numberOfTrailingZeros(~l0 >> fromIdx) + fromIdx;
+			if (n < 64) {
+				return n;
+			} else {
+				return -1;
+			}
+		} else {
+			// throw new
+			// IndexOutOfBoundsException("BitSet64 index out of range: " +
+			// fromIdx);
+			return -1;
+		}
+	}
 
-  public void andNot (BitSet64 other){
-    l0 &= ~other.l0;
+	public void and(BitSet64 other) {
+		l0 &= other.l0;
 
-    cardinality = computeCardinality();
-  }
+		cardinality = computeCardinality();
+	}
 
-  public void or (BitSet64 other){
-    l0 |= other.l0;
+	public void andNot(BitSet64 other) {
+		l0 &= ~other.l0;
 
-    cardinality = computeCardinality();
-  }
+		cardinality = computeCardinality();
+	}
 
-  public boolean equals (Object o){
-    if (o instanceof BitSet64){
-      BitSet64 other = (BitSet64)o;
-      if (l0 != other.l0) return false;
-      return true;
-    } else {
-      // <2do> we could compare to a normal java.util.BitSet here
-      return false;
-    }
-  }
+	public void or(BitSet64 other) {
+		l0 |= other.l0;
 
-  public void hash(HashData hd){
-    hd.add(hashCode());
-  }
+		cardinality = computeCardinality();
+	}
 
-  /**
-   * answer the same hashCodes as java.util.BitSet
-   */
-  public int hashCode() {
-    long hc = 1234;
-    hc ^= l0;
-    return (int) ((hc >>32) ^ hc);
-  }
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof BitSet64) {
+			BitSet64 other = (BitSet64) o;
+			if (l0 != other.l0)
+				return false;
+			return true;
+		} else {
+			// <2do> we could compare to a normal java.util.BitSet here
+			return false;
+		}
+	}
 
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append('{');
+	public void hash(HashData hd) {
+		hd.add(hashCode());
+	}
 
-    boolean first = true;
-    for (int i=nextSetBit(0); i>= 0; i = nextSetBit(i+1)){
-      if (!first){
-        sb.append(',');
-      } else {
-        first = false;
-      }
-      sb.append(i);
-    }
+	/**
+	 * answer the same hashCodes as java.util.BitSet
+	 */
+	@Override
+	public int hashCode() {
+		long hc = 1234;
+		hc ^= l0;
+		return (int) ((hc >> 32) ^ hc);
+	}
 
-    sb.append('}');
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append('{');
 
-    return sb.toString();
-  }
+		boolean first = true;
+		for (int i = nextSetBit(0); i >= 0; i = nextSetBit(i + 1)) {
+			if (!first) {
+				sb.append(',');
+			} else {
+				first = false;
+			}
+			sb.append(i);
+		}
 
-  //--- IntSet interface
-  
-  class SetBitIterator implements IntIterator {
-    int cur = 0;
-    int nBits;
-    
-    @Override
-    public void remove() {
-      if (cur >0){
-        clear(cur-1);
-      }
-    }
+		sb.append('}');
 
-    @Override
-    public boolean hasNext() {
-      return nBits < cardinality;
-    }
+		return sb.toString();
+	}
 
-    @Override
-    public int next() {
-      if (nBits < cardinality){
-        int idx = nextSetBit(cur);
-        if (idx >= 0){
-          nBits++;
-          cur = idx+1;
-        }
-        return idx;
-        
-      } else {
-        throw new NoSuchElementException();
-      }
-    }
-  }
-  
-  @Override
-  public boolean add(int i) {
-    if (get(i)) {
-      return false;
-    } else {
-      set(i);
-      return true;
-    }
-  }
+	// --- IntSet interface
 
-  @Override
-  public boolean remove(int i) {
-    if (get(i)) {
-      clear(i);
-      return true;
-    } else {
-      return false;
-    }
-  }
+	class SetBitIterator implements IntIterator {
+		int cur = 0;
+		int nBits;
 
-  @Override
-  public boolean contains(int i) {
-    return get(i);
-  }
+		@Override
+		public void remove() {
+			if (cur > 0) {
+				clear(cur - 1);
+			}
+		}
 
-  @Override
-  public IntIterator intIterator() {
-    return new SetBitIterator();
-  }
+		@Override
+		public boolean hasNext() {
+			return nBits < cardinality;
+		}
+
+		@Override
+		public int next() {
+			if (nBits < cardinality) {
+				int idx = nextSetBit(cur);
+				if (idx >= 0) {
+					nBits++;
+					cur = idx + 1;
+				}
+				return idx;
+
+			} else {
+				throw new NoSuchElementException();
+			}
+		}
+	}
+
+	@Override
+	public boolean add(int i) {
+		if (get(i)) {
+			return false;
+		} else {
+			set(i);
+			return true;
+		}
+	}
+
+	@Override
+	public boolean remove(int i) {
+		if (get(i)) {
+			clear(i);
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public boolean contains(int i) {
+		return get(i);
+	}
+
+	@Override
+	public IntIterator intIterator() {
+		return new SetBitIterator();
+	}
 }

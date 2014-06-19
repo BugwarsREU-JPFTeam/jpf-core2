@@ -22,19 +22,20 @@ package gov.nasa.jpf.vm;
 /**
  * state storer/restorer that works solely on a snapshot basis
  */
-public abstract class MementoRestorer extends AbstractRestorer<Memento<KernelState>> implements MementoFactory {
+public abstract class MementoRestorer extends
+		AbstractRestorer<Memento<KernelState>> implements MementoFactory {
 
+	@Override
+	protected Memento<KernelState> computeRestorableData() {
+		return ks.getMemento(this);
+	}
 
-  @Override
-  protected Memento<KernelState> computeRestorableData() {
-    return ks.getMemento(this);
-  }
+	@Override
+	protected void doRestore(Memento<KernelState> data) {
 
-  @Override
-  protected void doRestore(Memento<KernelState> data) {
-
-    // it's identity preserving, so we don't have to worry about updating external fields
-    ks = data.restore(ks);
-  }
+		// it's identity preserving, so we don't have to worry about updating
+		// external fields
+		ks = data.restore(ks);
+	}
 
 }

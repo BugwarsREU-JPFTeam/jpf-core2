@@ -20,52 +20,54 @@ package gov.nasa.jpf;
 
 /**
  * @author Nastaran Shafiei <nastaran.shafiei@gmail.com>
- *  
- * Represents the finalizer thread which runs finalize() methods upon
- * garbage collection of finalizable objects, i.e. the class of a finalizable 
- * object overrides the Object.finalize() method.
  * 
- * Note that, by default, we don't process finalizers. To run finalizers one
- * needs to set the property "vm.process_finalizers" to true.
+ *         Represents the finalizer thread which runs finalize() methods upon
+ *         garbage collection of finalizable objects, i.e. the class of a
+ *         finalizable object overrides the Object.finalize() method.
+ * 
+ *         Note that, by default, we don't process finalizers. To run finalizers
+ *         one needs to set the property "vm.process_finalizers" to true.
  */
 public class FinalizerThread extends Thread {
-  
-  // upon their garbage collection, finalizable objects are added into this list instead 
-  // of being removed by gc().sweep()
-  private Object[] finalizeQueue;
-  
-  private Object semaphore;
-  private boolean done;
-  
-  
-  private void runAllFinalizers() {
-    while(!isEmpty()) {
-      try {
-        // runFinalizer processes and removes the first element in the list
-        runFinalizer(finalizeQueue[0]);
-      } catch (Throwable e) { 
-        // FinalizerThread ignores exceptions thrown by finalizers.
-      }
-    }
-  }
-  
-  boolean isEmpty() {
-    return (finalizeQueue.length == 0);
-  }
-  
-  // invoke finalize() on the give object
-  private native void runFinalizer(Object o);
-  
-  private native void manageState();
-  
-  private void processFinalizers() {
-    runAllFinalizers();
-    manageState();
-  }
 
-  public void run() {
-    while (!done){
-      processFinalizers();
-    }
-  }
+	// upon their garbage collection, finalizable objects are added into this
+	// list instead
+	// of being removed by gc().sweep()
+	private Object[] finalizeQueue;
+
+	private Object semaphore;
+	private boolean done;
+
+	private void runAllFinalizers() {
+		while (!isEmpty()) {
+			try {
+				// runFinalizer processes and removes the first element in the
+				// list
+				runFinalizer(finalizeQueue[0]);
+			} catch (Throwable e) {
+				// FinalizerThread ignores exceptions thrown by finalizers.
+			}
+		}
+	}
+
+	boolean isEmpty() {
+		return (finalizeQueue.length == 0);
+	}
+
+	// invoke finalize() on the give object
+	private native void runFinalizer(Object o);
+
+	private native void manageState();
+
+	private void processFinalizers() {
+		runAllFinalizers();
+		manageState();
+	}
+
+	@Override
+	public void run() {
+		while (!done) {
+			processFinalizers();
+		}
+	}
 }

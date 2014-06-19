@@ -28,65 +28,65 @@ import gov.nasa.jpf.vm.VM;
  * abstract class for operations that access elements of arrays
  */
 public abstract class ArrayElementInstruction extends ArrayInstruction {
-  
-  protected int index; // the accessed element
 
-  // we need this to be abstract because of the LongArrayStore insns
-  abstract public int peekIndex (ThreadInfo ti);
-  
-  
-  
-  public int getIndex (ThreadInfo ti){
-    if (!isCompleted(ti)){
-      return peekIndex(ti);
-    } else {
-      return index;
-    }
-  }
-  
-  /**
-   * return size of array elements in stack words (long,double: 2, all other: 1)
-   * e.g. used to determine where the object reference is on the stack
-   * 
-   * should probably be abstract, but there are lots of subclasses and only LongArrayLoad/Store insns have different size
-   */
-  protected int getElementSize () {
-    return 1;
-  }
-  
-  public abstract boolean isRead();
-  
-  //--- element access related POR
-  
-  protected boolean createAndSetArrayCG ( ElementInfo ei, ThreadInfo ti,
-                                int aref, int idx, boolean isRead) {
-    // unfortunately we can't do the field filtering here because
-    // there is no field info for array instructions - the reference might
-    // have been on the operand-stack for a while, and the preceeding
-    // GET_FIELD already was a scheduling point (i.e. we can't cache it)
-    
-    VM vm = ti.getVM();
-    ChoiceGenerator<?> cg = vm.getSchedulerFactory().createSharedArrayAccessCG(ei, ti);
-    if (vm.setNextChoiceGenerator(cg)){
-      // we need to set the array access info (ref, index) before it is
-      // lost from the insn cache (insn might get reexecuted later-on
-      // on non-shared object
-      //ArrayAccess aac = new ArrayAccess(aref,idx,isRead);
-      //cg.setAttr(aac);
+	protected int index; // the accessed element
 
-      ti.skipInstructionLogging();
-      return true;
-    }
-        
-    return false;
-  }
-  
-  /**
-   * this depends on the SchedulerFactory in use being smart about which array
-   * element ops really can cause races, otherwise there is a high chance this
-   * is a major state exploder
-   */
-  protected boolean isNewPorBoundary (ElementInfo ei, ThreadInfo ti) {
-    return (!ti.checkPorFieldBoundary() && ei.isShared());
-  }
+	// we need this to be abstract because of the LongArrayStore insns
+	abstract public int peekIndex(ThreadInfo ti);
+
+	public int getIndex(ThreadInfo ti) {
+		if (!isCompleted(ti)) {
+			return peekIndex(ti);
+		} else {
+			return index;
+		}
+	}
+
+	/**
+	 * return size of array elements in stack words (long,double: 2, all other:
+	 * 1) e.g. used to determine where the object reference is on the stack
+	 * 
+	 * should probably be abstract, but there are lots of subclasses and only
+	 * LongArrayLoad/Store insns have different size
+	 */
+	protected int getElementSize() {
+		return 1;
+	}
+
+	public abstract boolean isRead();
+
+	// --- element access related POR
+
+	protected boolean createAndSetArrayCG(ElementInfo ei, ThreadInfo ti,
+			int aref, int idx, boolean isRead) {
+		// unfortunately we can't do the field filtering here because
+		// there is no field info for array instructions - the reference might
+		// have been on the operand-stack for a while, and the preceeding
+		// GET_FIELD already was a scheduling point (i.e. we can't cache it)
+
+		VM vm = ti.getVM();
+		ChoiceGenerator<?> cg = vm.getSchedulerFactory()
+				.createSharedArrayAccessCG(ei, ti);
+		if (vm.setNextChoiceGenerator(cg)) {
+			// we need to set the array access info (ref, index) before it is
+			// lost from the insn cache (insn might get reexecuted later-on
+			// on non-shared object
+			// ArrayAccess aac = new ArrayAccess(aref,idx,isRead);
+			// cg.setAttr(aac);
+
+			ti.skipInstructionLogging();
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * this depends on the SchedulerFactory in use being smart about which array
+	 * element ops really can cause races, otherwise there is a high chance this
+	 * is a major state exploder
+	 */
+	protected boolean isNewPorBoundary(ElementInfo ei, ThreadInfo ti) {
+		return (!ti.checkPorFieldBoundary() && ei.isShared());
+	}
 }

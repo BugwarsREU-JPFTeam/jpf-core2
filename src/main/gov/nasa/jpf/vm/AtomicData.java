@@ -20,82 +20,83 @@ package gov.nasa.jpf.vm;
 
 import gov.nasa.jpf.util.HashData;
 
-
 /**
- * helper object to store per thread information about atomic line
- * execution
- * <2do> check if we can't do this less expensive. atomic-lines is not
- * the default anymore
+ * helper object to store per thread information about atomic line execution
+ * <2do> check if we can't do this less expensive. atomic-lines is not the
+ * default anymore
  */
 public class AtomicData {
-  /**
-   * The method in which the line step started.
-   */
-  public MethodInfo currentMethod;
+	/**
+	 * The method in which the line step started.
+	 */
+	public MethodInfo currentMethod;
 
-  /**
-   * The line at which the line step started.
-   */
-  public int line;
+	/**
+	 * The line at which the line step started.
+	 */
+	public int line;
 
-  /**
-   * Set to true if we still are in the same method in which we were
-   * when the line step started.
-   */
-  public boolean inSameMethod;
+	/**
+	 * Set to true if we still are in the same method in which we were when the
+	 * line step started.
+	 */
+	public boolean inSameMethod;
 
-  public Object clone () {
-    AtomicData a = new AtomicData();
+	@Override
+	public Object clone() {
+		AtomicData a = new AtomicData();
 
-    a.currentMethod = currentMethod;
-    a.line = line;
-    a.inSameMethod = inSameMethod;
+		a.currentMethod = currentMethod;
+		a.line = line;
+		a.inSameMethod = inSameMethod;
 
-    return a;
-  }
+		return a;
+	}
 
-  public boolean equals (Object o) {
-    if (o == null) {
-      return false;
-    }
+	@Override
+	public boolean equals(Object o) {
+		if (o == null) {
+			return false;
+		}
 
-    if (!(o instanceof AtomicData)) {
-      return false;
-    }
+		if (!(o instanceof AtomicData)) {
+			return false;
+		}
 
-    AtomicData a = (AtomicData) o;
+		AtomicData a = (AtomicData) o;
 
-    if (currentMethod != a.currentMethod) {
-      return false;
-    }
+		if (currentMethod != a.currentMethod) {
+			return false;
+		}
 
-    if (line != a.line) {
-      return false;
-    }
+		if (line != a.line) {
+			return false;
+		}
 
-    if (inSameMethod != a.inSameMethod) {
-      return false;
-    }
+		if (inSameMethod != a.inSameMethod) {
+			return false;
+		}
 
-    return true;
-  }
+		return true;
+	}
 
-  /**
-   * Computes a hash code with the object data.
-   */
-  public void hash (HashData hd) {
-    hd.add(line);
-    hd.add(inSameMethod ? 1 : 0);
-  }
+	/**
+	 * Computes a hash code with the object data.
+	 */
+	public void hash(HashData hd) {
+		hd.add(line);
+		hd.add(inSameMethod ? 1 : 0);
+	}
 
-  /**
-   * Returns a hash code for the object.
-   */
-  public int hashCode () {
-    HashData hd = new HashData();
+	/**
+	 * Returns a hash code for the object.
+	 */
+	@Override
+	public int hashCode() {
+		HashData hd = new HashData();
 
-    hash(hd);
+		hash(hd);
 
-    return hd.getValue();
-  }
+		return hd.getValue();
+	}
 }

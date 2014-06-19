@@ -22,11 +22,11 @@ package java.lang.ref;
  * MJI model class for java.lang.ref.WeakReference library abstraction
  */
 public class WeakReference<T> extends Reference<T> {
-  public WeakReference (T ref) {
-    super( ref);
-  }
+	public WeakReference(T ref) {
+		super(ref);
+	}
 
-  public WeakReference (T ref, ReferenceQueue<? super T> queue) {
-    super( ref, queue);
-  }
+	public WeakReference(T ref, ReferenceQueue<? super T> queue) {
+		super(ref, queue);
+	}
 }

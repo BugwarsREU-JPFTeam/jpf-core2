@@ -23,34 +23,35 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Divide int
- * ..., value1, value2  =>..., result
+ * Divide int ..., value1, value2 =>..., result
  */
 public class IDIV extends JVMInstruction {
 
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    int v1 = frame.pop();
-    int v2 = frame.pop();
+		int v1 = frame.pop();
+		int v2 = frame.pop();
 
-    if (v1 == 0) {
-      return ti.createAndThrowException("java.lang.ArithmeticException",
-                                        "division by zero");
-    }
+		if (v1 == 0) {
+			return ti.createAndThrowException("java.lang.ArithmeticException",
+					"division by zero");
+		}
 
-    frame.push(v2 / v1);
+		frame.push(v2 / v1);
 
-    return getNext(ti);
-  }
+		return getNext(ti);
+	}
 
-  public int getByteCode () {
-    return 0x6C;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public int getByteCode() {
+		return 0x6C;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

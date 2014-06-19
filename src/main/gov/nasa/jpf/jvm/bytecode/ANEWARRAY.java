@@ -28,71 +28,75 @@ import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.Types;
 
-
 /**
- * Create new array of reference
- * ..., count => ..., arrayref
+ * Create new array of reference ..., count => ..., arrayref
  */
 public class ANEWARRAY extends NewArrayInstruction {
 
-  public ANEWARRAY (String typeDescriptor){
-    type = Types.getTypeSignature(typeDescriptor, true);
-  }
+	public ANEWARRAY(String typeDescriptor) {
+		type = Types.getTypeSignature(typeDescriptor, true);
+	}
 
-  public Instruction execute (ThreadInfo ti) {
-    // resolve the component class first
-    String compType = Types.getTypeName(type);
-    if(Types.isReferenceSignature(type)) {
-      try {
-        ti.resolveReferencedClass(compType);
-      } catch(LoadOnJPFRequired lre) {
-        return ti.getPC();
-      }
-    }
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		// resolve the component class first
+		String compType = Types.getTypeName(type);
+		if (Types.isReferenceSignature(type)) {
+			try {
+				ti.resolveReferencedClass(compType);
+			} catch (LoadOnJPFRequired lre) {
+				return ti.getPC();
+			}
+		}
 
-    // there is no clinit for array classes, but we still have  to create a class object
-    // since its a builtin class, we also don't have to bother with NoClassDefFoundErrors
-    String clsName = "[" + type;
-    ClassInfo ci = ClassLoaderInfo.getCurrentResolvedClassInfo(clsName);
+		// there is no clinit for array classes, but we still have to create a
+		// class object
+		// since its a builtin class, we also don't have to bother with
+		// NoClassDefFoundErrors
+		String clsName = "[" + type;
+		ClassInfo ci = ClassLoaderInfo.getCurrentResolvedClassInfo(clsName);
 
-    if (!ci.isRegistered()) {
-      ci.registerClass(ti);
-      ci.setInitialized();
-    }
+		if (!ci.isRegistered()) {
+			ci.registerClass(ti);
+			ci.setInitialized();
+		}
 
-    StackFrame frame = ti.getModifiableTopFrame();
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    arrayLength = frame.pop();
-    if (arrayLength < 0){
-      return ti.createAndThrowException("java.lang.NegativeArraySizeException");
-    }
+		arrayLength = frame.pop();
+		if (arrayLength < 0) {
+			return ti
+					.createAndThrowException("java.lang.NegativeArraySizeException");
+		}
 
-    Heap heap = ti.getHeap();
-    if (heap.isOutOfMemory()) { // simulate OutOfMemoryError
-      return ti.createAndThrowException("java.lang.OutOfMemoryError",
-                                        "trying to allocate new " +
-                                          Types.getTypeName(type) +
-                                        "[" + arrayLength + "]");
-    }
+		Heap heap = ti.getHeap();
+		if (heap.isOutOfMemory()) { // simulate OutOfMemoryError
+			return ti.createAndThrowException("java.lang.OutOfMemoryError",
+					"trying to allocate new " + Types.getTypeName(type) + "["
+							+ arrayLength + "]");
+		}
 
-    ElementInfo eiArray = heap.newArray(type, arrayLength, ti);
-    int aRef = eiArray.getObjectRef();
-    
-    // pushes the object reference on the top stack frame
-    frame.push(aRef, true);
-    
-    return getNext(ti);
-  }
+		ElementInfo eiArray = heap.newArray(type, arrayLength, ti);
+		int aRef = eiArray.getObjectRef();
 
-  public int getLength () {
-    return 3; // opcode, index1, index2
-  }
-  
-  public int getByteCode () {
-    return 0xBD;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		// pushes the object reference on the top stack frame
+		frame.push(aRef, true);
+
+		return getNext(ti);
+	}
+
+	@Override
+	public int getLength() {
+		return 3; // opcode, index1, index2
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0xBD;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

@@ -23,58 +23,66 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPFException;
 import gov.nasa.jpf.vm.FloatChoiceGenerator;
 
-public class FloatChoiceFromList extends NumberChoiceFromList<Float> implements FloatChoiceGenerator {
+public class FloatChoiceFromList extends NumberChoiceFromList<Float> implements
+		FloatChoiceGenerator {
 
-  
-  protected Float[] createValueArray(int len){
-    return new Float[len];
-  }
-  protected Float getDefaultValue() {
-    return 0.0f;
-  }
-    
-  public Class<Float> getChoiceType(){
-    return Float.class;
-  }
-    
-  protected Float parseLiteral (String literal, int sign){
-    Float val = Float.parseFloat(literal);
-    return new Float( val * sign);
-  }
-  
-  protected Float newValue (Number num, int sign){
-    return new Float( num.intValue() * sign);
-  }
-  
-  /**
-   *  super constructor for subclasses that want to configure themselves
-   * @param id name used in choice config
-   */
-  protected FloatChoiceFromList(String id){
-    super(id);
-  }
+	@Override
+	protected Float[] createValueArray(int len) {
+		return new Float[len];
+	}
 
-  protected FloatChoiceFromList (String id, Float[] vals){
-    super(id, vals);
-  }
-  
-  public FloatChoiceFromList(Config conf, String id) {
-    super(conf, id);
-  }
+	@Override
+	protected Float getDefaultValue() {
+		return 0.0f;
+	}
 
-  public FloatChoiceFromList(String id, float... val){
-    super(id);
+	@Override
+	public Class<Float> getChoiceType() {
+		return Float.class;
+	}
 
-    if (val != null){
-      values = new Float[val.length];
-      for (int i=0; i<val.length; i++){
-        values[i] = val[i];  // enable use of cached Float values
-      }
-    } else {
-      throw new JPFException("empty set for FloatChoiceFromList");
-    }
+	@Override
+	protected Float parseLiteral(String literal, int sign) {
+		Float val = Float.parseFloat(literal);
+		return new Float(val * sign);
+	}
 
-    count = -1;
-  }
+	@Override
+	protected Float newValue(Number num, int sign) {
+		return new Float(num.intValue() * sign);
+	}
+
+	/**
+	 * super constructor for subclasses that want to configure themselves
+	 * 
+	 * @param id
+	 *            name used in choice config
+	 */
+	protected FloatChoiceFromList(String id) {
+		super(id);
+	}
+
+	protected FloatChoiceFromList(String id, Float[] vals) {
+		super(id, vals);
+	}
+
+	public FloatChoiceFromList(Config conf, String id) {
+		super(conf, id);
+	}
+
+	public FloatChoiceFromList(String id, float... val) {
+		super(id);
+
+		if (val != null) {
+			values = new Float[val.length];
+			for (int i = 0; i < val.length; i++) {
+				values[i] = val[i]; // enable use of cached Float values
+			}
+		} else {
+			throw new JPFException("empty set for FloatChoiceFromList");
+		}
+
+		count = -1;
+	}
 
 }

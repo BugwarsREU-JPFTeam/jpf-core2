@@ -28,26 +28,28 @@ import java.io.File;
  * (without superclasses, clinit calls and the other bells and whistles)
  */
 class NonResolvedClassInfo extends JVMClassInfo {
-    
-  NonResolvedClassInfo (String clsName, File file) throws ClassParseException {
-    super( clsName, null, new ClassFile(file), file.getAbsolutePath(), new JVMCodeBuilder(new InstructionFactory()));
-  }
 
-  //--- these are overridden so that we can create instances without the whole JPF ClassInfo environment
-  
-  @Override
-  protected void resolveClass() {
-    linkFields();
-  }
+	NonResolvedClassInfo(String clsName, File file) throws ClassParseException {
+		super(clsName, null, new ClassFile(file), file.getAbsolutePath(),
+				new JVMCodeBuilder(new InstructionFactory()));
+	}
 
-  @Override
-  protected NativePeer loadNativePeer(){
-    return null;
-  }
-  
-  @Override
-  protected void setAssertionStatus(){
-    // nothing
-  }
-  
+	// --- these are overridden so that we can create instances without the
+	// whole JPF ClassInfo environment
+
+	@Override
+	protected void resolveClass() {
+		linkFields();
+	}
+
+	@Override
+	protected NativePeer loadNativePeer() {
+		return null;
+	}
+
+	@Override
+	protected void setAssertionStatus() {
+		// nothing
+	}
+
 }

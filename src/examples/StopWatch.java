@@ -21,16 +21,16 @@
  * example to show how to explore off-nominal paths
  */
 public class StopWatch {
-  
-  public static void main(String[] args){
-    long tStart = System.currentTimeMillis();
-    System.out.println("some lengthy computation..");
-    long tEnd = System.currentTimeMillis();
-    
-    if (tEnd - tStart > 1000){
-      throw new RuntimeException("it took too long..");
-    }
-    
-    System.out.println("all fine, finished in time");
-  }
+
+	public static void main(String[] args) {
+		long tStart = System.currentTimeMillis();
+		System.out.println("some lengthy computation..");
+		long tEnd = System.currentTimeMillis();
+
+		if (tEnd - tStart > 1000) {
+			throw new RuntimeException("it took too long..");
+		}
+
+		System.out.println("all fine, finished in time");
+	}
 }

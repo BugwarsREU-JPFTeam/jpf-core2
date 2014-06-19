@@ -25,84 +25,90 @@ import gov.nasa.jpf.vm.MJIEnv;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
  * abstraction for all array store instructions
- *
- *  ... array, index, <value> => ...
+ * 
+ * ... array, index, <value> => ...
  */
-public abstract class ArrayStoreInstruction extends ArrayElementInstruction implements StoreInstruction {
+public abstract class ArrayStoreInstruction extends ArrayElementInstruction
+		implements StoreInstruction {
 
-  @Override
-  public Instruction execute (ThreadInfo ti) {
-    int aref = peekArrayRef(ti); // need to be poly, could be LongArrayStore
-    if (aref == MJIEnv.NULL) {
-      return ti.createAndThrowException("java.lang.NullPointerException");
-    }
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		int aref = peekArrayRef(ti); // need to be poly, could be LongArrayStore
+		if (aref == MJIEnv.NULL) {
+			return ti.createAndThrowException("java.lang.NullPointerException");
+		}
 
-    ElementInfo e = ti.getModifiableElementInfoWithUpdatedSharedness(aref);
-    if (isNewPorBoundary(e, ti)) {
-      if (createAndSetArrayCG(e,ti, aref, peekIndex(ti), false)) {
-        return this;
-      }
-    }
+		ElementInfo e = ti.getModifiableElementInfoWithUpdatedSharedness(aref);
+		if (isNewPorBoundary(e, ti)) {
+			if (createAndSetArrayCG(e, ti, aref, peekIndex(ti), false)) {
+				return this;
+			}
+		}
 
-    int esize = getElementSize();
-    StackFrame frame = ti.getModifiableTopFrame();
+		int esize = getElementSize();
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    Object attr = esize == 1 ? frame.getOperandAttr() : frame.getLongOperandAttr();
-    
-    popValue(frame);
-    index = frame.pop();
-    // don't set 'arrayRef' before we do the CG check (would kill loop optimization)
-    arrayRef = frame.pop();
+		Object attr = esize == 1 ? frame.getOperandAttr() : frame
+				.getLongOperandAttr();
 
-    Instruction xInsn = checkArrayStoreException(ti, e);
-    if (xInsn != null){
-      return xInsn;
-    }
+		popValue(frame);
+		index = frame.pop();
+		// don't set 'arrayRef' before we do the CG check (would kill loop
+		// optimization)
+		arrayRef = frame.pop();
 
-    try {
-      setField(e, index);
-      e.setElementAttrNoClone(index,attr); // <2do> what if the value is the same but not the attr?
-      return getNext(ti);
+		Instruction xInsn = checkArrayStoreException(ti, e);
+		if (xInsn != null) {
+			return xInsn;
+		}
 
-    } catch (ArrayIndexOutOfBoundsExecutiveException ex) { // at this point, the AIOBX is already processed
-      return ex.getInstruction();
-    }
-  }
+		try {
+			setField(e, index);
+			e.setElementAttrNoClone(index, attr); // <2do> what if the value is
+													// the same but not the
+													// attr?
+			return getNext(ti);
 
-  /**
-   * this is for pre-exec use
-   */
-  @Override
-  public int peekArrayRef(ThreadInfo ti) {
-    return ti.getTopFrame().peek(2);
-  }
+		} catch (ArrayIndexOutOfBoundsExecutiveException ex) { // at this point,
+																// the AIOBX is
+																// already
+																// processed
+			return ex.getInstruction();
+		}
+	}
 
-  @Override
-  public int peekIndex(ThreadInfo ti){
-    return ti.getTopFrame().peek(1);
-  }
+	/**
+	 * this is for pre-exec use
+	 */
+	@Override
+	public int peekArrayRef(ThreadInfo ti) {
+		return ti.getTopFrame().peek(2);
+	}
 
-  protected Instruction checkArrayStoreException(ThreadInfo ti, ElementInfo ei){
-    return null;
-  }
+	@Override
+	public int peekIndex(ThreadInfo ti) {
+		return ti.getTopFrame().peek(1);
+	}
 
-  protected abstract void popValue(StackFrame frame);
+	protected Instruction checkArrayStoreException(ThreadInfo ti, ElementInfo ei) {
+		return null;
+	}
 
-  protected abstract void setField (ElementInfo e, int index)
-                    throws ArrayIndexOutOfBoundsExecutiveException;
+	protected abstract void popValue(StackFrame frame);
 
+	protected abstract void setField(ElementInfo e, int index)
+			throws ArrayIndexOutOfBoundsExecutiveException;
 
-  @Override
-  public boolean isRead() {
-    return false;
-  }
-  
-  @Override
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public boolean isRead() {
+		return false;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 
 }

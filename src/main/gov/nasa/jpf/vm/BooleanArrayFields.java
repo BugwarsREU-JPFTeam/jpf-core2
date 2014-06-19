@@ -17,96 +17,105 @@
 // DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE.
 //
 
-
 package gov.nasa.jpf.vm;
 
 import gov.nasa.jpf.util.HashData;
 import gov.nasa.jpf.util.IntVector;
 
 import java.io.PrintStream;
-import java.io.PrintWriter;
 
 /**
  * element values for boolean[] objects
  */
 public class BooleanArrayFields extends ArrayFields {
 
-  boolean[] values;
+	boolean[] values;
 
-  public BooleanArrayFields (int length) {
-    values = new boolean[length];
-  }
+	public BooleanArrayFields(int length) {
+		values = new boolean[length];
+	}
 
-  protected void printValue(PrintStream ps, int idx){
-    ps.print(values[idx] ? 't' : 'f');
-  }
+	@Override
+	protected void printValue(PrintStream ps, int idx) {
+		ps.print(values[idx] ? 't' : 'f');
+	}
 
-  public boolean[] asBooleanArray() {
-    return values;
-  }
+	@Override
+	public boolean[] asBooleanArray() {
+		return values;
+	}
 
-  public Object getValues(){
-    return values;
-  }
+	@Override
+	public Object getValues() {
+		return values;
+	}
 
-  public int arrayLength() {
-    return values.length;
-  }
+	@Override
+	public int arrayLength() {
+		return values.length;
+	}
 
-  public int getHeapSize() {
-    return values.length * 4;
-  }
+	@Override
+	public int getHeapSize() {
+		return values.length * 4;
+	}
 
-  /**
-   * we check for type and equal element values
-   */
-  public boolean equals (Object o) {
-    if (o instanceof BooleanArrayFields) {
-      BooleanArrayFields other = (BooleanArrayFields)o;
+	/**
+	 * we check for type and equal element values
+	 */
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof BooleanArrayFields) {
+			BooleanArrayFields other = (BooleanArrayFields) o;
 
-      boolean[] v = values;
-      boolean[] vOther = other.values;
-      if (v.length != vOther.length) {
-        return false;
-      }
+			boolean[] v = values;
+			boolean[] vOther = other.values;
+			if (v.length != vOther.length) {
+				return false;
+			}
 
-      for (int i=0; i<v.length; i++) {
-        if (v[i] != vOther[i]) {
-          return false;
-        }
-      }
+			for (int i = 0; i < v.length; i++) {
+				if (v[i] != vOther[i]) {
+					return false;
+				}
+			}
 
-      return compareAttrs(other);
+			return compareAttrs(other);
 
-    } else {
-      return false;
-    }
-  }
+		} else {
+			return false;
+		}
+	}
 
-  public BooleanArrayFields clone(){
-    BooleanArrayFields f = (BooleanArrayFields)cloneFields();
-    f.values = values.clone();
-    return f;
-  }
+	@Override
+	public BooleanArrayFields clone() {
+		BooleanArrayFields f = (BooleanArrayFields) cloneFields();
+		f.values = values.clone();
+		return f;
+	}
 
-  // for serialization
-  public void appendTo(IntVector v) {
-    v.appendPacked(values);
-  }
+	// for serialization
+	@Override
+	public void appendTo(IntVector v) {
+		v.appendPacked(values);
+	}
 
-  public boolean getBooleanValue (int pos) {
-    return values[pos];
-  }
+	@Override
+	public boolean getBooleanValue(int pos) {
+		return values[pos];
+	}
 
-  public void setBooleanValue (int pos, boolean v) {
-    values[pos] = v;
-  }
+	@Override
+	public void setBooleanValue(int pos, boolean v) {
+		values[pos] = v;
+	}
 
-  public void hash (HashData hd) {
-    boolean[] v = values;
-    for (int i=0; i < v.length; i++) {
-      hd.add(v[i]);
-    }
-  }
+	@Override
+	public void hash(HashData hd) {
+		boolean[] v = values;
+		for (int i = 0; i < v.length; i++) {
+			hd.add(v[i]);
+		}
+	}
 
 }

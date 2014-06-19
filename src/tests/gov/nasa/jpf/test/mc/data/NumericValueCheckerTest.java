@@ -29,41 +29,40 @@ import org.junit.Test;
  */
 public class NumericValueCheckerTest extends TestJPF {
 
-  static class C1 {
-    double d;
-    void setValue(double v){
-      d = v;
-    }
-  }
+	static class C1 {
+		double d;
 
-  @Test
-  public void testField(){
-    if (verifyPropertyViolation(new TypeRef("gov.nasa.jpf.listener.NumericValueChecker"),
-            "+listener=.listener.NumericValueChecker",
-            "+range.fields=d",
-            "+range.d.field=*.NumericValueCheckerTest$C1.d",
-            "+range.d.min=42")){
-      C1 c1= new C1();
-      c1.setValue(0);
-    }
-  }
+		void setValue(double v) {
+			d = v;
+		}
+	}
 
+	@Test
+	public void testField() {
+		if (verifyPropertyViolation(new TypeRef(
+				"gov.nasa.jpf.listener.NumericValueChecker"),
+				"+listener=.listener.NumericValueChecker", "+range.fields=d",
+				"+range.d.field=*.NumericValueCheckerTest$C1.d",
+				"+range.d.min=42")) {
+			C1 c1 = new C1();
+			c1.setValue(0);
+		}
+	}
 
-  static class C2 {
-    void doSomething(int d){
-      int x = d;
-    }
-  }
+	static class C2 {
+		void doSomething(int d) {
+			int x = d;
+		}
+	}
 
-  @Test
-  public void testVars(){
-    if (verifyPropertyViolation(new TypeRef("gov.nasa.jpf.listener.NumericValueChecker"),
-            "+listener=.listener.NumericValueChecker",
-            "+range.vars=x",
-            "+range.x.var=*$C2.doSomething(int):x",
-            "+range.x.min=42")){
-      C2 c2= new C2();
-      c2.doSomething(-42);
-    }
-  }
+	@Test
+	public void testVars() {
+		if (verifyPropertyViolation(new TypeRef(
+				"gov.nasa.jpf.listener.NumericValueChecker"),
+				"+listener=.listener.NumericValueChecker", "+range.vars=x",
+				"+range.x.var=*$C2.doSomething(int):x", "+range.x.min=42")) {
+			C2 c2 = new C2();
+			c2.doSomething(-42);
+		}
+	}
 }

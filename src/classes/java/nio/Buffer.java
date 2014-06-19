@@ -28,8 +28,9 @@ public abstract class Buffer {
 	}
 
 	public final Buffer position(int newPosition) {
-		if ((newPosition<0)||(newPosition>limit)) {
-			throw new IllegalArgumentException("Illegal buffer position exception: "+newPosition);
+		if ((newPosition < 0) || (newPosition > limit)) {
+			throw new IllegalArgumentException(
+					"Illegal buffer position exception: " + newPosition);
 		}
 		this.position = newPosition;
 		return this;
@@ -44,14 +45,15 @@ public abstract class Buffer {
 	}
 
 	public final Buffer limit(int newLimit) {
-		if ((newLimit<0)||(newLimit>capacity)) {
-			throw new IllegalArgumentException("Illegal buffer limit exception: "+newLimit);
+		if ((newLimit < 0) || (newLimit > capacity)) {
+			throw new IllegalArgumentException(
+					"Illegal buffer limit exception: " + newLimit);
 		}
 		this.limit = newLimit;
 		return this;
 	}
 
-	public final Buffer clear(){
+	public final Buffer clear() {
 		position = 0;
 		limit = capacity;
 		return this;
@@ -69,11 +71,11 @@ public abstract class Buffer {
 	}
 
 	public final int remaining() {
-		return limit-position;
+		return limit - position;
 	}
 
 	public final boolean hasRemaining() {
-		return remaining()>0;
+		return remaining() > 0;
 	}
 
 	public abstract boolean hasArray();

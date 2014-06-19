@@ -23,90 +23,94 @@ import gov.nasa.jpf.vm.Verify;
 
 import org.junit.Test;
 
-
 public class AtomicTest extends TestJPF {
-  
-  static int data = 42;
-  
-  @Test public void testNoRace () {
-    if (verifyNoPropertyViolation("+cg.enable_atomic")) {
-      Runnable r = new Runnable() {
 
-        public void run() {
-          System.out.println("  enter run in Thread-0");
-          assert data == 42;
-          data += 1;
-          assert data == 43;
-          data -= 1;
-          assert data == 42;
-          System.out.println("  exit run in Thread-0");
-        }
-      };
+	static int data = 42;
 
-      Thread t = new Thread(r);
+	@Test
+	public void testNoRace() {
+		if (verifyNoPropertyViolation("+cg.enable_atomic")) {
+			Runnable r = new Runnable() {
 
-      Verify.beginAtomic();
-      System.out.println("enter atomic section in main");
-      t.start();
-      assert data == 42;
-      data += 2;
-      assert data == 44;
-      data -= 2;
-      assert data == 42;
-      System.out.println("exit atomic section in main");
-      Verify.endAtomic();
-    }
-  }
-  
-  @Test 
-  public void testDataCG () {
-    if (verifyNoPropertyViolation("+cg.enable_atomic")) {
-      Runnable r = new Runnable() {
+				@Override
+				public void run() {
+					System.out.println("  enter run in Thread-0");
+					assert data == 42;
+					data += 1;
+					assert data == 43;
+					data -= 1;
+					assert data == 42;
+					System.out.println("  exit run in Thread-0");
+				}
+			};
 
-        public void run() {
-          data += 10;
-        }
-      };
+			Thread t = new Thread(r);
 
-      Thread t = new Thread(r);
+			Verify.beginAtomic();
+			System.out.println("enter atomic section in main");
+			t.start();
+			assert data == 42;
+			data += 2;
+			assert data == 44;
+			data -= 2;
+			assert data == 42;
+			System.out.println("exit atomic section in main");
+			Verify.endAtomic();
+		}
+	}
 
-      Verify.beginAtomic();
-      t.start();
-      int i = Verify.getInt(1, 2);
-      data += i;
-      assert data < 45 : "data got incremented: " + data;
-      Verify.incrementCounter(0);
-      assert i == Verify.getCounter(0);
-      Verify.endAtomic();
-    }
-  }
+	@Test
+	public void testDataCG() {
+		if (verifyNoPropertyViolation("+cg.enable_atomic")) {
+			Runnable r = new Runnable() {
 
-  @Test public void testBlockedInAtomic () {
-    if (verifyDeadlock("+cg.enable_atomic")){
-      Runnable r = new Runnable() {
+				@Override
+				public void run() {
+					data += 10;
+				}
+			};
 
-        public synchronized void run() {
-          System.out.println("T notifying..");
-          this.notify();
-        }
-      };
+			Thread t = new Thread(r);
 
-      Thread t = new Thread(r);
+			Verify.beginAtomic();
+			t.start();
+			int i = Verify.getInt(1, 2);
+			data += i;
+			assert data < 45 : "data got incremented: " + data;
+			Verify.incrementCounter(0);
+			assert i == Verify.getCounter(0);
+			Verify.endAtomic();
+		}
+	}
 
-      synchronized (r){
-        System.out.println("main going atomic, holding r lock");
-        Verify.beginAtomic();
-        t.start();
+	@Test
+	public void testBlockedInAtomic() {
+		if (verifyDeadlock("+cg.enable_atomic")) {
+			Runnable r = new Runnable() {
 
-        try {
-          System.out.println("main waiting on r");
-          r.wait();
-        } catch (InterruptedException x){
-          System.out.println("main got interrupted");
-        }
-        System.out.println("main leaving atomic");
-        Verify.endAtomic();
-      }
-    }
-  }
+				@Override
+				public synchronized void run() {
+					System.out.println("T notifying..");
+					this.notify();
+				}
+			};
+
+			Thread t = new Thread(r);
+
+			synchronized (r) {
+				System.out.println("main going atomic, holding r lock");
+				Verify.beginAtomic();
+				t.start();
+
+				try {
+					System.out.println("main waiting on r");
+					r.wait();
+				} catch (InterruptedException x) {
+					System.out.println("main got interrupted");
+				}
+				System.out.println("main leaving atomic");
+				Verify.endAtomic();
+			}
+		}
+	}
 }

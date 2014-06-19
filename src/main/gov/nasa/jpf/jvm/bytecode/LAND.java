@@ -23,34 +23,32 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Boolean AND long
- * ..., value1, value2 => ..., result
+ * Boolean AND long ..., value1, value2 => ..., result
  */
 public class LAND extends JVMInstruction {
 
-  @Override
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
-    
-    long v1 = frame.popLong();
-    long v2 = frame.popLong();
-    
-    long r = v1 & v2;
-    
-    frame.pushLong(r);
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    return getNext(ti);
-  }
-  
-  @Override
-  public int getByteCode () {
-    return 0x7F;
-  }
-  
-  @Override
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		long v1 = frame.popLong();
+		long v2 = frame.popLong();
+
+		long r = v1 & v2;
+
+		frame.pushLong(r);
+
+		return getNext(ti);
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0x7F;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

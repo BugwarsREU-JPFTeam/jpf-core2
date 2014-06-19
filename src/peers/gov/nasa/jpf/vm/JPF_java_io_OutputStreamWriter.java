@@ -28,74 +28,74 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 
 /**
- * native peer for OutputStreamWriter, to avoid that we have the
- * char-to-byte conversion in JPF
- *
+ * native peer for OutputStreamWriter, to avoid that we have the char-to-byte
+ * conversion in JPF
+ * 
  * <2do> this needs to be de-staticed (see model class)
  */
 public class JPF_java_io_OutputStreamWriter extends NativePeer {
 
-  static final int BUF_SIZE=128; // needs to be the same as in the model class!
-  static CharsetEncoder encoder;
-  
-  static CharBuffer in = CharBuffer.allocate(BUF_SIZE);
-  static ByteBuffer out = ByteBuffer.allocate(BUF_SIZE*6); // worst case UTF-8
+	static final int BUF_SIZE = 128; // needs to be the same as in the model
+										// class!
+	static CharsetEncoder encoder;
 
-  public JPF_java_io_OutputStreamWriter() {
-    encoder = Charset.defaultCharset().newEncoder();
-  }
+	static CharBuffer in = CharBuffer.allocate(BUF_SIZE);
+	static ByteBuffer out = ByteBuffer.allocate(BUF_SIZE * 6); // worst case
+																// UTF-8
 
-  @MJI
-  public int encode___3CII_3B__I (MJIEnv env, int objref,
-                                         int cref, int off, int len,
-                                         int bref){
-    if (len > BUF_SIZE){ // check for buffer overflow
-      len = BUF_SIZE;
-    }
-    int imax = off+len;
+	public JPF_java_io_OutputStreamWriter() {
+		encoder = Charset.defaultCharset().newEncoder();
+	}
 
-    out.clear();
-    in.clear();
-    
-    for (int i=off; i<imax; i++){
-      in.put(env.getCharArrayElement(cref, i));
-    }
+	@MJI
+	public int encode___3CII_3B__I(MJIEnv env, int objref, int cref, int off,
+			int len, int bref) {
+		if (len > BUF_SIZE) { // check for buffer overflow
+			len = BUF_SIZE;
+		}
+		int imax = off + len;
 
-    in.flip();
-    encoder.encode(in,out,true);
-    
-    int n = out.position();
-    for (int i=0; i<n; i++){
-      env.setByteArrayElement(bref,i,out.get(i));
-    }
-    
-    return n;
-  }
-  
-  @MJI
-  public int encode__Ljava_lang_String_2II_3B__I (MJIEnv env, int objref,
-                                         int sref, int off, int len,
-                                         int bref){
-    int cref = env.getReferenceField(sref, "value");
-    
-    return encode___3CII_3B__I(env,objref,cref,off,len,bref);
-  }
-  
-  @MJI
-  public int encode__C_3B__I (MJIEnv env, int objref, char c, int bufref) {
-    out.clear();
-    
-    in.clear();
-    in.put(c);
-    in.flip();
+		out.clear();
+		in.clear();
 
-    encoder.encode(in,out,true);
-    
-    int n = out.position();
-    for (int i=0; i<n; i++){
-      env.setByteArrayElement(bufref,i,out.get(i));
-    }
-    
-    return n;
-  }
+		for (int i = off; i < imax; i++) {
+			in.put(env.getCharArrayElement(cref, i));
+		}
+
+		in.flip();
+		encoder.encode(in, out, true);
+
+		int n = out.position();
+		for (int i = 0; i < n; i++) {
+			env.setByteArrayElement(bref, i, out.get(i));
+		}
+
+		return n;
+	}
+
+	@MJI
+	public int encode__Ljava_lang_String_2II_3B__I(MJIEnv env, int objref,
+			int sref, int off, int len, int bref) {
+		int cref = env.getReferenceField(sref, "value");
+
+		return encode___3CII_3B__I(env, objref, cref, off, len, bref);
+	}
+
+	@MJI
+	public int encode__C_3B__I(MJIEnv env, int objref, char c, int bufref) {
+		out.clear();
+
+		in.clear();
+		in.put(c);
+		in.flip();
+
+		encoder.encode(in, out, true);
+
+		int n = out.position();
+		for (int i = 0; i < n; i++) {
+			env.setByteArrayElement(bufref, i, out.get(i));
+		}
+
+		return n;
+	}
 }

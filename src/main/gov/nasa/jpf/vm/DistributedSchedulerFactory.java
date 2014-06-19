@@ -23,100 +23,120 @@ import gov.nasa.jpf.util.Predicate;
 import gov.nasa.jpf.vm.choice.MultiProcessThreadChoice;
 import gov.nasa.jpf.vm.choice.ThreadChoiceFromSet;
 
-
 /**
  * @author Nastaran Shafiei <nastaran.shafiei@gmail.com>
  * 
- * This scheduler factory is used for distributed application
+ *         This scheduler factory is used for distributed application
  */
 public class DistributedSchedulerFactory extends DefaultSchedulerFactory {
 
-  public DistributedSchedulerFactory (Config config, VM vm, SystemState ss) {
-    super(config, vm, ss);
-  }
+	public DistributedSchedulerFactory(Config config, VM vm, SystemState ss) {
+		super(config, vm, ss);
+	}
 
-  Predicate<ThreadInfo> getRunnableAppPredicate (final ThreadInfo ti){
-    return new Predicate<ThreadInfo>(){
-      public boolean isTrue (ThreadInfo t){
-        return (t.appCtx == ti.appCtx && t.isTimeoutRunnable());
-      }
-    };
-  }
-  
-  Predicate<ThreadInfo> getLiveUserAppThreads (final ThreadInfo ti){
-    return new Predicate<ThreadInfo>(){
-      public boolean isTrue (ThreadInfo t){
-        return (t.appCtx == ti.appCtx && t.isAlive() && !t.isSystemThread());
-      }
-    }; 
-  }
-  
-  Predicate<ThreadInfo> getRunnableSystemAppThreads (final ThreadInfo ti){
-    return new Predicate<ThreadInfo>(){
-      public boolean isTrue (ThreadInfo t){
-        return (t.appCtx == ti.appCtx && t.isSystemThread() && t.isTimeoutRunnable());
-      }
-    }; 
-  }
-  
-  /**************************************** our choice acquisition methods ***/
+	Predicate<ThreadInfo> getRunnableAppPredicate(final ThreadInfo ti) {
+		return new Predicate<ThreadInfo>() {
+			@Override
+			public boolean isTrue(ThreadInfo t) {
+				return (t.appCtx == ti.appCtx && t.isTimeoutRunnable());
+			}
+		};
+	}
 
-  /**
-   * get list of all runnable threads in the same process as ti
-   */
-  protected ThreadInfo[] getRunnables(ThreadInfo ti) {
-    return filter(vm.getThreadList().getAllMatching(getRunnableAppPredicate(ti)));
-  }
+	Predicate<ThreadInfo> getLiveUserAppThreads(final ThreadInfo ti) {
+		return new Predicate<ThreadInfo>() {
+			@Override
+			public boolean isTrue(ThreadInfo t) {
+				return (t.appCtx == ti.appCtx && t.isAlive() && !t
+						.isSystemThread());
+			}
+		};
+	}
 
-  /**
-   * return a list of runnable choices, or null if there is only one, 
-   *  in the same process as ti
-   */
-  protected ThreadInfo[] getRunnablesIfChoices(ThreadInfo ti) {
-    ThreadInfo[] choices = vm.getThreadList().getAllMatching(getRunnableAppPredicate(ti));
-    int n = choices.length;
+	Predicate<ThreadInfo> getRunnableSystemAppThreads(final ThreadInfo ti) {
+		return new Predicate<ThreadInfo>() {
+			@Override
+			public boolean isTrue(ThreadInfo t) {
+				return (t.appCtx == ti.appCtx && t.isSystemThread() && t
+						.isTimeoutRunnable());
+			}
+		};
+	}
 
-    if ((n > 1) || (n == 1 && breakSingleChoice)){
-      return filter(choices);
-    } else {
-      return null;
-    }
-  }
+	/**************************************** our choice acquisition methods ***/
 
-  protected ThreadInfo[] getRunnablesWith (ThreadInfo ti) {
-    return filter(vm.getThreadList().getAllMatchingWith(ti, getRunnableAppPredicate(ti)));
-  }
+	/**
+	 * get list of all runnable threads in the same process as ti
+	 */
+	@Override
+	protected ThreadInfo[] getRunnables(ThreadInfo ti) {
+		return filter(vm.getThreadList().getAllMatching(
+				getRunnableAppPredicate(ti)));
+	}
 
-  protected ThreadInfo[] getRunnablesWithout (ThreadInfo ti) {
-    return filter(vm.getThreadList().getAllMatchingWithout(ti, getRunnableAppPredicate(ti)));
-  }
+	/**
+	 * return a list of runnable choices, or null if there is only one, in the
+	 * same process as ti
+	 */
+	@Override
+	protected ThreadInfo[] getRunnablesIfChoices(ThreadInfo ti) {
+		ThreadInfo[] choices = vm.getThreadList().getAllMatching(
+				getRunnableAppPredicate(ti));
+		int n = choices.length;
 
-  /************************************ the public interface towards the insns ***/
+		if ((n > 1) || (n == 1 && breakSingleChoice)) {
+			return filter(choices);
+		} else {
+			return null;
+		}
+	}
 
-  @Override
-  public ChoiceGenerator<ThreadInfo> createThreadTerminateCG (ThreadInfo terminateThread) {
-    // terminateThread is already TERMINATED at this point
-    ThreadList tl = vm.getThreadList();
-    
-    if (tl.hasAnyMatching(vm.getAlivePredicate())) {
-      int liveUserCount = tl.getMatchingCount(getLiveUserAppThreads(terminateThread));
-      int runnableSystemCount = tl.getMatchingCount(getRunnableSystemAppThreads(terminateThread));
-      
-      if(liveUserCount==0 && runnableSystemCount==0) {
-        return new MultiProcessThreadChoice( THREAD_TERMINATE, super.getRunnablesWithout(terminateThread), true);
-      } else {
-        return new ThreadChoiceFromSet( THREAD_TERMINATE, getRunnablesWithout(terminateThread), true);
-      }
-    } else {
-      return null;
-    }
-  }
-  
-  /**
-   * after the FinalizerThread processes the finalizeQueue, a global scheduling point is created
-   */
-  @Override
-  public ChoiceGenerator<ThreadInfo> createPostFinalizeCG (ThreadInfo finalizerThread) {
-    return new MultiProcessThreadChoice( POST_FINALIZE, super.getRunnables(finalizerThread), true);
-  }
+	@Override
+	protected ThreadInfo[] getRunnablesWith(ThreadInfo ti) {
+		return filter(vm.getThreadList().getAllMatchingWith(ti,
+				getRunnableAppPredicate(ti)));
+	}
+
+	@Override
+	protected ThreadInfo[] getRunnablesWithout(ThreadInfo ti) {
+		return filter(vm.getThreadList().getAllMatchingWithout(ti,
+				getRunnableAppPredicate(ti)));
+	}
+
+	/************************************ the public interface towards the insns ***/
+
+	@Override
+	public ChoiceGenerator<ThreadInfo> createThreadTerminateCG(
+			ThreadInfo terminateThread) {
+		// terminateThread is already TERMINATED at this point
+		ThreadList tl = vm.getThreadList();
+
+		if (tl.hasAnyMatching(vm.getAlivePredicate())) {
+			int liveUserCount = tl
+					.getMatchingCount(getLiveUserAppThreads(terminateThread));
+			int runnableSystemCount = tl
+					.getMatchingCount(getRunnableSystemAppThreads(terminateThread));
+
+			if (liveUserCount == 0 && runnableSystemCount == 0) {
+				return new MultiProcessThreadChoice(THREAD_TERMINATE,
+						super.getRunnablesWithout(terminateThread), true);
+			} else {
+				return new ThreadChoiceFromSet(THREAD_TERMINATE,
+						getRunnablesWithout(terminateThread), true);
+			}
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * after the FinalizerThread processes the finalizeQueue, a global
+	 * scheduling point is created
+	 */
+	@Override
+	public ChoiceGenerator<ThreadInfo> createPostFinalizeCG(
+			ThreadInfo finalizerThread) {
+		return new MultiProcessThreadChoice(POST_FINALIZE,
+				super.getRunnables(finalizerThread), true);
+	}
 }

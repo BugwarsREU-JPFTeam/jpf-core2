@@ -24,87 +24,87 @@ package gov.nasa.jpf.util;
  */
 public class MutableInteger extends Number {
 
-  private int value;
-  
-  public MutableInteger (int val){
-    value = val;
-  }
-  
-  public void set (int val){
-    value = val;
-  }
-  
-  //--- arithmetic operations
-  public MutableInteger inc() {
-    value++;
-    return this;
-  }
-  
-  public MutableInteger dec() {
-    value--;
-    return this;
-  }
-  
-  public MutableInteger add (int n){
-    value += n;
-    return this;
-  }
-  
-  public MutableInteger subtract (int n){
-    value -= n;
-    return this;
-  }
-  
-  public MutableInteger multiply (int n){
-    value *= n;
-    return this;
-  }
-  
-  public MutableInteger divide (int n){
-    value /= n;
-    return this;
-  }
-  
-  //-- Hmm, we probably want to round correctly for these
-  public MutableInteger add (Number n){
-    value += n.intValue();
-    return this;
-  }
-  
-  public MutableInteger subtract (Number n){
-    value -= n.intValue();
-    return this;
-  }
-  
-  public MutableInteger multiply (Number n){
-    value *= n.intValue();
-    return this;
-  }
-  
-  public MutableInteger divide (Number n){
-    value /= n.intValue();
-    return this;
-  }
-  
-  //--- value accessors
-  
-  @Override
-  public double doubleValue() {
-    return (double)value;
-  }
+	private int value;
 
-  @Override
-  public float floatValue() {
-    return (float)value;
-  }
+	public MutableInteger(int val) {
+		value = val;
+	}
 
-  @Override
-  public int intValue() {
-    return value;
-  }
+	public void set(int val) {
+		value = val;
+	}
 
-  @Override
-  public long longValue() {
-    return (long)value;
-  }
+	// --- arithmetic operations
+	public MutableInteger inc() {
+		value++;
+		return this;
+	}
+
+	public MutableInteger dec() {
+		value--;
+		return this;
+	}
+
+	public MutableInteger add(int n) {
+		value += n;
+		return this;
+	}
+
+	public MutableInteger subtract(int n) {
+		value -= n;
+		return this;
+	}
+
+	public MutableInteger multiply(int n) {
+		value *= n;
+		return this;
+	}
+
+	public MutableInteger divide(int n) {
+		value /= n;
+		return this;
+	}
+
+	// -- Hmm, we probably want to round correctly for these
+	public MutableInteger add(Number n) {
+		value += n.intValue();
+		return this;
+	}
+
+	public MutableInteger subtract(Number n) {
+		value -= n.intValue();
+		return this;
+	}
+
+	public MutableInteger multiply(Number n) {
+		value *= n.intValue();
+		return this;
+	}
+
+	public MutableInteger divide(Number n) {
+		value /= n.intValue();
+		return this;
+	}
+
+	// --- value accessors
+
+	@Override
+	public double doubleValue() {
+		return value;
+	}
+
+	@Override
+	public float floatValue() {
+		return value;
+	}
+
+	@Override
+	public int intValue() {
+		return value;
+	}
+
+	@Override
+	public long longValue() {
+		return value;
+	}
 }

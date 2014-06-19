@@ -23,29 +23,30 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Boolean XOR int
- * ..., value1, value2 => ..., result
+ * Boolean XOR int ..., value1, value2 => ..., result
  */
 public class IXOR extends JVMInstruction {
 
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    int v1 = frame.pop();
-    int v2 = frame.pop();
+		int v1 = frame.pop();
+		int v2 = frame.pop();
 
-    frame.push(v1 ^ v2);
+		frame.push(v1 ^ v2);
 
-    return getNext(ti);
-  }
+		return getNext(ti);
+	}
 
-  public int getByteCode () {
-    return 0x82;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public int getByteCode() {
+		return 0x82;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

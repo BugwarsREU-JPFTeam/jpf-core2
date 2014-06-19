@@ -20,10 +20,11 @@ package gov.nasa.jpf.vm;
 
 /**
  * generic Memento interface for things that need to be stored/backtracked
+ * 
  * @deprecated foo
  */
 @Deprecated
 public interface Storable {
 
-  void backtrackTo (ArrayOffset storing);
+	void backtrackTo(ArrayOffset storing);
 }

@@ -21,8 +21,8 @@ package gov.nasa.jpf.vm;
 import java.io.PrintWriter;
 
 public interface ThreadChoiceGenerator extends ChoiceGenerator<ThreadInfo> {
-  
-  void printOn (PrintWriter pw);
-  
-  boolean contains (ThreadInfo ti);
+
+	void printOn(PrintWriter pw);
+
+	boolean contains(ThreadInfo ti);
 }

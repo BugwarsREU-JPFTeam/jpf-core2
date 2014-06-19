@@ -22,50 +22,50 @@ package sun.misc;
  * MJI model class for sun.misc.AtomicLong library abstraction
  */
 public class AtomicLong {
-  long value;
+	long value;
 
-  public AtomicLong () {
-  }
+	public AtomicLong() {
+	}
 
-  private AtomicLong (long val) {
-    value = val;
-  }
+	private AtomicLong(long val) {
+		value = val;
+	}
 
-  public static AtomicLong newAtomicLong (long val) {
-    return new AtomicLong(val);
-  }
+	public static AtomicLong newAtomicLong(long val) {
+		return new AtomicLong(val);
+	}
 
-  public boolean attemptAdd (long l) {
-    value += l;
+	public boolean attemptAdd(long l) {
+		value += l;
 
-    return true;
-  }
+		return true;
+	}
 
-  public boolean attemptIncrememt () {
-    value++;
+	public boolean attemptIncrememt() {
+		value++;
 
-    return true;
-  }
+		return true;
+	}
 
-  public boolean attemptSet (long val) {
-    value = val;
+	public boolean attemptSet(long val) {
+		value = val;
 
-    return true;
-  }
+		return true;
+	}
 
-  public boolean attemptUpdate (long fallback, long newval) {
-    value = newval;
+	public boolean attemptUpdate(long fallback, long newval) {
+		value = newval;
 
-    return true;
-  }
+		return true;
+	}
 
-  public long get () {
-    return value;
-  }
+	public long get() {
+		return value;
+	}
 
-  @SuppressWarnings("unused")
-  private static boolean VMSupportsCS8 () {
-    // whatever it means
-    return false;
-  }
+	@SuppressWarnings("unused")
+	private static boolean VMSupportsCS8() {
+		// whatever it means
+		return false;
+	}
 }

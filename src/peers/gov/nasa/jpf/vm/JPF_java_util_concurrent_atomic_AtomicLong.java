@@ -23,23 +23,25 @@ import gov.nasa.jpf.vm.MJIEnv;
 import gov.nasa.jpf.vm.NativePeer;
 
 /**
- * native peer for java.util.concurrent.atomic.AtomicLong
- * this implementation just cuts off native methods
+ * native peer for java.util.concurrent.atomic.AtomicLong this implementation
+ * just cuts off native methods
  */
 public class JPF_java_util_concurrent_atomic_AtomicLong extends NativePeer {
-  @MJI
-  public void $clinit____V (MJIEnv env, int rcls) {
-    // don't let this one pass, it calls native methods from non-public Sun classes
-  }
+	@MJI
+	public void $clinit____V(MJIEnv env, int rcls) {
+		// don't let this one pass, it calls native methods from non-public Sun
+		// classes
+	}
 
-  @MJI
-  public boolean compareAndSet__JJ__Z (MJIEnv env, int objRef, long expect, long update){
-    long value = env.getLongField(objRef, "value");
-    if (value == expect){
-      env.setLongField(objRef, "value", update);
-      return true;
-    } else {
-      return false;
-    }
-  }
+	@MJI
+	public boolean compareAndSet__JJ__Z(MJIEnv env, int objRef, long expect,
+			long update) {
+		long value = env.getLongField(objRef, "value");
+		if (value == expect) {
+			env.setLongField(objRef, "value", update);
+			return true;
+		} else {
+			return false;
+		}
+	}
 }

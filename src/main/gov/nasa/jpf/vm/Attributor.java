@@ -19,13 +19,13 @@
 package gov.nasa.jpf.vm;
 
 /**
- * interface to configure various method and field attributes at class
- * load time
+ * interface to configure various method and field attributes at class load time
  */
 public interface Attributor {
 
-  void setMethodInfoAttributes(MethodInfo mi);
-  void setFieldInfoAttributes(FieldInfo fi);
-  void setElementInfoAttributes(ClassInfo ci);
-}
+	void setMethodInfoAttributes(MethodInfo mi);
 
+	void setFieldInfoAttributes(FieldInfo fi);
+
+	void setElementInfoAttributes(ClassInfo ci);
+}

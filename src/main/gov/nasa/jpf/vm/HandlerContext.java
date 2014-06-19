@@ -20,60 +20,64 @@
 package gov.nasa.jpf.vm;
 
 /**
- * utility wrapper for exception handlers that /would/ handle
- * a given exception type
+ * utility wrapper for exception handlers that /would/ handle a given exception
+ * type
  * 
  * <2do> This should be a class hierarchy to properly distinguish between
- * ordinary catch handlers and UncaughtHandler objects, but so far
- * this isn't worth it
+ * ordinary catch handlers and UncaughtHandler objects, but so far this isn't
+ * worth it
  */
 public class HandlerContext {
-  public enum UncaughtHandlerType { INSTANCE, GROUP, GLOBAL } 
-  
-  ThreadInfo ti;
-  ClassInfo ciException;
-  
-  StackFrame frame;
-  ExceptionHandler handler;
-  // - or -
-  int uncaughtHandlerRef;
-  UncaughtHandlerType uncaughtHandlerType;
+	public enum UncaughtHandlerType {
+		INSTANCE, GROUP, GLOBAL
+	}
 
-  HandlerContext (ThreadInfo ti, ClassInfo ciException, StackFrame frame, ExceptionHandler handler) {
-    this.ti = ti;
-    this.ciException = ciException;
-    this.frame = frame;
-    this.handler = handler;
-  }
-  
-  HandlerContext (ThreadInfo ti, ClassInfo ciException, UncaughtHandlerType uncaughtHandlerType, int uncaughtHandlerRef){
-    this.ti = ti;
-    this.ciException = ciException;
-    this.uncaughtHandlerType = uncaughtHandlerType;
-    this.uncaughtHandlerRef = uncaughtHandlerRef;
-  }
+	ThreadInfo ti;
+	ClassInfo ciException;
 
-  public ThreadInfo getThreadInfo(){
-    return ti;
-  }
-  
-  public StackFrame getFrame () {
-    return frame;
-  }
+	StackFrame frame;
+	ExceptionHandler handler;
+	// - or -
+	int uncaughtHandlerRef;
+	UncaughtHandlerType uncaughtHandlerType;
 
-  public ExceptionHandler getHandler () {
-    return handler;
-  }
+	HandlerContext(ThreadInfo ti, ClassInfo ciException, StackFrame frame,
+			ExceptionHandler handler) {
+		this.ti = ti;
+		this.ciException = ciException;
+		this.frame = frame;
+		this.handler = handler;
+	}
 
-  public boolean isUncaughtHandler(){
-    return uncaughtHandlerType != null;
-  }
-  
-  public UncaughtHandlerType getUncaughtHandlerType(){
-    return uncaughtHandlerType;
-  }
-  
-  public int getUncaughtHandlerRef(){
-    return uncaughtHandlerRef;
-  }
+	HandlerContext(ThreadInfo ti, ClassInfo ciException,
+			UncaughtHandlerType uncaughtHandlerType, int uncaughtHandlerRef) {
+		this.ti = ti;
+		this.ciException = ciException;
+		this.uncaughtHandlerType = uncaughtHandlerType;
+		this.uncaughtHandlerRef = uncaughtHandlerRef;
+	}
+
+	public ThreadInfo getThreadInfo() {
+		return ti;
+	}
+
+	public StackFrame getFrame() {
+		return frame;
+	}
+
+	public ExceptionHandler getHandler() {
+		return handler;
+	}
+
+	public boolean isUncaughtHandler() {
+		return uncaughtHandlerType != null;
+	}
+
+	public UncaughtHandlerType getUncaughtHandlerType() {
+		return uncaughtHandlerType;
+	}
+
+	public int getUncaughtHandlerRef() {
+		return uncaughtHandlerRef;
+	}
 }

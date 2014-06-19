@@ -23,28 +23,29 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Negate int
- * ..., value => ..., result
+ * Negate int ..., value => ..., result
  */
 public class INEG extends JVMInstruction {
 
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    int v = frame.pop();
-    
-    frame.push(-v);
+		int v = frame.pop();
 
-    return getNext(ti);
-  }
+		frame.push(-v);
 
-  public int getByteCode () {
-    return 0x74;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		return getNext(ti);
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0x74;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

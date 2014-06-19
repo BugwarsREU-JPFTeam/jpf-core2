@@ -17,7 +17,6 @@
 // DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE.
 //
 
-
 package gov.nasa.jpf.vm;
 
 /**
@@ -30,16 +29,16 @@ package gov.nasa.jpf.vm;
  */
 public interface Memento<T> {
 
-  /**
-   * note that there is no guarantee the restored object will be the same that
-   * is (optionally) passed in.
-   * 
-   * Implementations are free to restore in-situ or create a new object if a
-   * non-null reference is provided. Callers are responsible for identity
-   * integrity if they do provide in-situ objects
-   * 
-   * The caller does not guarantee the provided in-situ object was the one the
-   * Memento was created from
-   */
-  T restore(T inSitu);
+	/**
+	 * note that there is no guarantee the restored object will be the same that
+	 * is (optionally) passed in.
+	 * 
+	 * Implementations are free to restore in-situ or create a new object if a
+	 * non-null reference is provided. Callers are responsible for identity
+	 * integrity if they do provide in-situ objects
+	 * 
+	 * The caller does not guarantee the provided in-situ object was the one the
+	 * Memento was created from
+	 */
+	T restore(T inSitu);
 }

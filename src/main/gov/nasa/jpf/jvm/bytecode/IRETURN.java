@@ -21,53 +21,59 @@ package gov.nasa.jpf.jvm.bytecode;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Return int from method
- * ..., value => [empty]
+ * Return int from method ..., value => [empty]
  */
 public class IRETURN extends ReturnInstruction {
 
-  int ret;
-  
-  public int getReturnTypeSize() {
-    return 1;
-  }
-  
-  protected Object getReturnedOperandAttr (StackFrame frame) {
-    return frame.getOperandAttr();
-  }
-  
-  protected void getAndSaveReturnValue (StackFrame ti) {
-    ret = ti.pop();
-  }
-  
-  protected void pushReturnValue (StackFrame ti) {
-    ti.push(ret);
-  }
-  
-  public int getReturnValue () {
-    return ret;
-  }
-  
-  public Object getReturnValue(ThreadInfo ti) {
-    if (!isCompleted(ti)) { // we have to pull it from the operand stack
-      StackFrame frame = ti.getTopFrame();
-      ret = frame.peek();
-    }
+	int ret;
 
-    return new Integer(ret);
-  }
-  
-  public int getByteCode () {
-    return 0xAC;
-  }
-  
-  public String toString() {
-    return "ireturn " + mi.getFullName();
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public int getReturnTypeSize() {
+		return 1;
+	}
+
+	@Override
+	protected Object getReturnedOperandAttr(StackFrame frame) {
+		return frame.getOperandAttr();
+	}
+
+	@Override
+	protected void getAndSaveReturnValue(StackFrame ti) {
+		ret = ti.pop();
+	}
+
+	@Override
+	protected void pushReturnValue(StackFrame ti) {
+		ti.push(ret);
+	}
+
+	public int getReturnValue() {
+		return ret;
+	}
+
+	@Override
+	public Object getReturnValue(ThreadInfo ti) {
+		if (!isCompleted(ti)) { // we have to pull it from the operand stack
+			StackFrame frame = ti.getTopFrame();
+			ret = frame.peek();
+		}
+
+		return new Integer(ret);
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0xAC;
+	}
+
+	@Override
+	public String toString() {
+		return "ireturn " + mi.getFullName();
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

@@ -24,92 +24,95 @@ package java.util.regex;
  */
 public class Matcher {
 
-  // this is the same trick like java.text.Format - avoiding a native
-  // memory leak by means of overwriting a JPF state tracked index value
-  // (well, it's still a leak since it never gets recycled unless we add a
-  // finalizer, but it should be much less serious)
-  static int nInstances;
-  private int id = nInstances++; // just for peer implementation purposes 
-  
-  Pattern pattern;
-  String input;    // that's an approximation (don't use CharSequence on the native side)
-  
-  Matcher() {
-  }
-  
-  Matcher (Pattern pattern, CharSequence inp){
-    this.pattern = pattern;
-    this.input = inp.toString();
-    
-    register();
-  }
-  
-  public Pattern pattern() {
-    return pattern;
-  }
-  
-  native void register();
-  
-  public native Matcher reset();
-  
-  public String group() {
-    return group(0);
-  }
-  
-  public native String group(int group);
-  
-  public native int groupCount();
+	// this is the same trick like java.text.Format - avoiding a native
+	// memory leak by means of overwriting a JPF state tracked index value
+	// (well, it's still a leak since it never gets recycled unless we add a
+	// finalizer, but it should be much less serious)
+	static int nInstances;
+	private int id = nInstances++; // just for peer implementation purposes
 
-  public Matcher reset(CharSequence inp) {
-    this.input = inp.toString();
-    return reset();
-  }
+	Pattern pattern;
+	String input; // that's an approximation (don't use CharSequence on the
+					// native side)
 
-  public native boolean matches();
-  
-  public native boolean find();
-  
-  public native boolean lookingAt();
-  
-  public int start() {
-    return start(0);
-  }
-  
-  public native int start(int group);
-  
-  public int end() {
-    return end(0);
-  }
-  
-  public native int end(int group);
+	Matcher() {
+	}
 
-  public native boolean hasTransparentBounds();
+	Matcher(Pattern pattern, CharSequence inp) {
+		this.pattern = pattern;
+		this.input = inp.toString();
 
-  public native Matcher useTransparentBounds(boolean b);
+		register();
+	}
 
-  public native boolean hasAnchoringBounds();
+	public Pattern pattern() {
+		return pattern;
+	}
 
-  public native Matcher useAnchoringBounds(boolean b);
+	native void register();
 
-  public native int regionStart();
+	public native Matcher reset();
 
-  public native int regionEnd();
+	public String group() {
+		return group(0);
+	}
 
-  public native Matcher region(int start, int end);
+	public native String group(int group);
 
-  public static native String quoteReplacement(String abc);
+	public native int groupCount();
 
-  public native String replaceAll(String replacement);
+	public Matcher reset(CharSequence inp) {
+		this.input = inp.toString();
+		return reset();
+	}
 
-  public native String replaceFirst(String replacement);
+	public native boolean matches();
 
-  public native String toString();
+	public native boolean find();
 
-  public native boolean hitEnd();
+	public native boolean lookingAt();
 
-  public native boolean requireEnd();
+	public int start() {
+		return start(0);
+	}
 
-  // TODO public native MatchResult toMatchResult();
-  // TODO public native StringBuffer appendTail(StringBuffer sb);
-  // TODO public native Matcher appendReplacement(StringBuffer sb, String replacement);
+	public native int start(int group);
+
+	public int end() {
+		return end(0);
+	}
+
+	public native int end(int group);
+
+	public native boolean hasTransparentBounds();
+
+	public native Matcher useTransparentBounds(boolean b);
+
+	public native boolean hasAnchoringBounds();
+
+	public native Matcher useAnchoringBounds(boolean b);
+
+	public native int regionStart();
+
+	public native int regionEnd();
+
+	public native Matcher region(int start, int end);
+
+	public static native String quoteReplacement(String abc);
+
+	public native String replaceAll(String replacement);
+
+	public native String replaceFirst(String replacement);
+
+	@Override
+	public native String toString();
+
+	public native boolean hitEnd();
+
+	public native boolean requireEnd();
+
+	// TODO public native MatchResult toMatchResult();
+	// TODO public native StringBuffer appendTail(StringBuffer sb);
+	// TODO public native Matcher appendReplacement(StringBuffer sb, String
+	// replacement);
 }

@@ -24,43 +24,50 @@ import org.junit.Test;
 
 public class ReflectionTest extends TestJPF {
 
-  static class MyClass {
-    void bar(){
-      foo();
-    }
+	static class MyClass {
+		void bar() {
+			foo();
+		}
 
-    // compilation will cause a warning about internal proprietary API that cannot be suppressed, but we have to test this
-    // since it is still used by standard libs
-    void foo (){
-      Class<?> callerCls = sun.reflect.Reflection.getCallerClass(0); // that would be getCallerClass()
-      System.out.println("-- getCallerClass(0) = " + callerCls);
-      assertTrue(callerCls.getName().equals("sun.reflect.Reflection"));
-      
-      callerCls = sun.reflect.Reflection.getCallerClass(1); // foo()
-      System.out.println("-- getCallerClass(1) = " + callerCls);
-      assertTrue(callerCls.getName().equals("gov.nasa.jpf.test.vm.reflection.ReflectionTest$MyClass"));
-      
-      callerCls = sun.reflect.Reflection.getCallerClass(2); // bar()
-      System.out.println("-- getCallerClass(2) = " + callerCls);
-      assertTrue(callerCls.getName().equals("gov.nasa.jpf.test.vm.reflection.ReflectionTest$MyClass"));
+		// compilation will cause a warning about internal proprietary API that
+		// cannot be suppressed, but we have to test this
+		// since it is still used by standard libs
+		void foo() {
+			Class<?> callerCls = sun.reflect.Reflection.getCallerClass(0); // that
+																			// would
+																			// be
+																			// getCallerClass()
+			System.out.println("-- getCallerClass(0) = " + callerCls);
+			assertTrue(callerCls.getName().equals("sun.reflect.Reflection"));
 
-      callerCls = sun.reflect.Reflection.getCallerClass(3); // callIt()
-      System.out.println("-- getCallerClass(3) = " + callerCls);
-      assertTrue(callerCls.getName().equals("gov.nasa.jpf.test.vm.reflection.ReflectionTest"));
-      
-      // <2do> should also test Method.invoke skipping
-    }
-  }
-  
-  void callIt(){
-    MyClass o = new MyClass();
-    o.bar();
-  }
-  
-  @Test
-  public void testCallerClass() {
-    if (verifyNoPropertyViolation()){
-      callIt();
-    }
-  }
+			callerCls = sun.reflect.Reflection.getCallerClass(1); // foo()
+			System.out.println("-- getCallerClass(1) = " + callerCls);
+			assertTrue(callerCls.getName().equals(
+					"gov.nasa.jpf.test.vm.reflection.ReflectionTest$MyClass"));
+
+			callerCls = sun.reflect.Reflection.getCallerClass(2); // bar()
+			System.out.println("-- getCallerClass(2) = " + callerCls);
+			assertTrue(callerCls.getName().equals(
+					"gov.nasa.jpf.test.vm.reflection.ReflectionTest$MyClass"));
+
+			callerCls = sun.reflect.Reflection.getCallerClass(3); // callIt()
+			System.out.println("-- getCallerClass(3) = " + callerCls);
+			assertTrue(callerCls.getName().equals(
+					"gov.nasa.jpf.test.vm.reflection.ReflectionTest"));
+
+			// <2do> should also test Method.invoke skipping
+		}
+	}
+
+	void callIt() {
+		MyClass o = new MyClass();
+		o.bar();
+	}
+
+	@Test
+	public void testCallerClass() {
+		if (verifyNoPropertyViolation()) {
+			callIt();
+		}
+	}
 }

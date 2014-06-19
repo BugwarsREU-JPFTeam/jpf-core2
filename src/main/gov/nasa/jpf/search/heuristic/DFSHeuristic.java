@@ -21,18 +21,20 @@ package gov.nasa.jpf.search.heuristic;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.vm.VM;
 
-
 /**
  * heuristic state prioritizer that favors search depth
  */
 public class DFSHeuristic extends SimplePriorityHeuristic {
-  
-  public DFSHeuristic (Config conf, VM vm) {
-    super(conf, vm);
-  }
 
-  protected int computeHeuristicValue () {
-	  System.out.println("computed heuristic value is "+(Integer.MAX_VALUE-vm.getPathLength()));//put breakpoint here
-	  return Integer.MAX_VALUE - vm.getPathLength();
-  }
+	public DFSHeuristic(Config conf, VM vm) {
+		super(conf, vm);
+	}
+
+	@Override
+	protected int computeHeuristicValue() {
+		System.out.println("computed heuristic value is "
+				+ (Integer.MAX_VALUE - vm.getPathLength()));// put breakpoint
+															// here
+		return Integer.MAX_VALUE - vm.getPathLength();
+	}
 }

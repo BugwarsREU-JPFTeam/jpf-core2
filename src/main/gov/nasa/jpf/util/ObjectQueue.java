@@ -19,7 +19,6 @@
 
 package gov.nasa.jpf.util;
 
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
@@ -27,19 +26,21 @@ import java.util.NoSuchElementException;
  */
 public interface ObjectQueue<E> extends Iterable<E> {
 
-  boolean isEmpty();
-  
-  void clear();
-  
-  int size();
-  
-  boolean offer (E e);
-  boolean add (E e);
-  
-  E peek();
-  
-  E poll();
-  E remove() throws NoSuchElementException;
-  
-  void process (Processor<E> processor);
+	boolean isEmpty();
+
+	void clear();
+
+	int size();
+
+	boolean offer(E e);
+
+	boolean add(E e);
+
+	E peek();
+
+	E poll();
+
+	E remove() throws NoSuchElementException;
+
+	void process(Processor<E> processor);
 }

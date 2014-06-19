@@ -31,105 +31,104 @@ import org.junit.Test;
  */
 public class ElementInfoTest extends TestJPF {
 
-  @Test
-  public void testPinDownCounter() {
-    DynamicElementInfo ei = new DynamicElementInfo();
+	@Test
+	public void testPinDownCounter() {
+		DynamicElementInfo ei = new DynamicElementInfo();
 
-    assert !ei.isPinnedDown();
+		assert !ei.isPinnedDown();
 
-    assert ei.incPinDown(); // should return true because this is the first inc
+		assert ei.incPinDown(); // should return true because this is the first
+								// inc
 
-    // count up to the max number
-    for (int i=2; i<= ElementInfo.ATTR_PINDOWN_MASK; i++){
-      assert !ei.incPinDown();
-      assert ei.getPinDownCount() == i;
-    }
+		// count up to the max number
+		for (int i = 2; i <= ElementInfo.ATTR_PINDOWN_MASK; i++) {
+			assert !ei.incPinDown();
+			assert ei.getPinDownCount() == i;
+		}
 
-    // count exceeded, now it should throw a JPFException
-    try {
-      ei.incPinDown();
-      assert false : "incPinDown did not throw";
-    } catch (JPFException x){
-      System.out.println("caught " + x + ", getPinDownCount() = " + ei.getPinDownCount());
-    }
+		// count exceeded, now it should throw a JPFException
+		try {
+			ei.incPinDown();
+			assert false : "incPinDown did not throw";
+		} catch (JPFException x) {
+			System.out.println("caught " + x + ", getPinDownCount() = "
+					+ ei.getPinDownCount());
+		}
 
-    // count down to the first one
-    for (int i=ElementInfo.ATTR_PINDOWN_MASK-1; i>0; i--){
-      assert !ei.decPinDown() : "decPinDown() from " + ei.getPinDownCount() + " returned true";
-      assert ei.getPinDownCount() == i : "getPinDownCount() = " + ei.getPinDownCount() +
-              " != " + i;
-    }
+		// count down to the first one
+		for (int i = ElementInfo.ATTR_PINDOWN_MASK - 1; i > 0; i--) {
+			assert !ei.decPinDown() : "decPinDown() from "
+					+ ei.getPinDownCount() + " returned true";
+			assert ei.getPinDownCount() == i : "getPinDownCount() = "
+					+ ei.getPinDownCount() + " != " + i;
+		}
 
-    assert ei.decPinDown(); // should return true now
-    assert ei.getPinDownCount() == 0 : "getPinDownCount() != 0";
-  }
-  
-  
-  
-  @Test
-  public void testALiveFlag() {
-    DynamicElementInfo ei = new DynamicElementInfo();
+		assert ei.decPinDown(); // should return true now
+		assert ei.getPinDownCount() == 0 : "getPinDownCount() != 0";
+	}
 
-    assert !ei.isMarked();
-    
-    ei.setAlive(true);
-    
-    assert  ei.isAlive(true);
-    assert !ei.isAlive(false);
-    assert  ei.isMarkedOrAlive(true);
-    assert !ei.isMarkedOrAlive(false);
-    
-    
-    ei.setAlive(false);
-    
-    assert !ei.isAlive(true);
-    assert  ei.isAlive(false);
-    assert !ei.isMarkedOrAlive(true);
-    assert  ei.isMarkedOrAlive(false);
-    
-  }
+	@Test
+	public void testALiveFlag() {
+		DynamicElementInfo ei = new DynamicElementInfo();
 
-  @Test
-  public void testMarkedFlag() {
-    DynamicElementInfo ei = new DynamicElementInfo();
+		assert !ei.isMarked();
 
-    assert !ei.isMarked();
-    
-    ei.setMarked();
-    assert ei.isMarked();
+		ei.setAlive(true);
 
-    ei.setUnmarked();
-    assert !ei.isMarked();
-    
-  }
+		assert ei.isAlive(true);
+		assert !ei.isAlive(false);
+		assert ei.isMarkedOrAlive(true);
+		assert !ei.isMarkedOrAlive(false);
 
-  @Test
-  public void testMarkedOrAlive() {
-    DynamicElementInfo ei = new DynamicElementInfo();
-    boolean[] boolValues = { true, false};
-    
-    assert !ei.isMarked();
-    
-    ei.setMarked();
-    assert ei.isMarked();
-    
-    for(boolean b : boolValues) {
-       ei.setAlive(b);
-       
-      assert ei.isMarkedOrAlive(true);
-      assert ei.isMarkedOrAlive(false);
-    }
-    
+		ei.setAlive(false);
 
-    ei.setUnmarked();
-    assert !ei.isMarked();
-    
-    for(boolean b : boolValues) {
-      ei.setAlive(b);
-      
-      assert ei.isMarkedOrAlive(true) == ei.isAlive(true);
-      assert ei.isMarkedOrAlive(false) == ei.isAlive(false);
-    }
-  }
+		assert !ei.isAlive(true);
+		assert ei.isAlive(false);
+		assert !ei.isMarkedOrAlive(true);
+		assert ei.isMarkedOrAlive(false);
+
+	}
+
+	@Test
+	public void testMarkedFlag() {
+		DynamicElementInfo ei = new DynamicElementInfo();
+
+		assert !ei.isMarked();
+
+		ei.setMarked();
+		assert ei.isMarked();
+
+		ei.setUnmarked();
+		assert !ei.isMarked();
+
+	}
+
+	@Test
+	public void testMarkedOrAlive() {
+		DynamicElementInfo ei = new DynamicElementInfo();
+		boolean[] boolValues = { true, false };
+
+		assert !ei.isMarked();
+
+		ei.setMarked();
+		assert ei.isMarked();
+
+		for (boolean b : boolValues) {
+			ei.setAlive(b);
+
+			assert ei.isMarkedOrAlive(true);
+			assert ei.isMarkedOrAlive(false);
+		}
+
+		ei.setUnmarked();
+		assert !ei.isMarked();
+
+		for (boolean b : boolValues) {
+			ei.setAlive(b);
+
+			assert ei.isMarkedOrAlive(true) == ei.isAlive(true);
+			assert ei.isMarkedOrAlive(false) == ei.isAlive(false);
+		}
+	}
 
 }

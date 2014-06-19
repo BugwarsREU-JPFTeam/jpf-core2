@@ -26,43 +26,47 @@ import gov.nasa.jpf.JPFException;
  */
 public class ByteFieldInfo extends SingleSlotFieldInfo {
 
-  byte init;
+	byte init;
 
-  public ByteFieldInfo (String name, int modifiers) {
-     super(name, "B", modifiers);
-  }
+	public ByteFieldInfo(String name, int modifiers) {
+		super(name, "B", modifiers);
+	}
 
-  public void setConstantValue(Object constValue){
-    if (constValue instanceof Integer){
-      cv = constValue;
-      init = ((Integer)constValue).byteValue();
+	@Override
+	public void setConstantValue(Object constValue) {
+		if (constValue instanceof Integer) {
+			cv = constValue;
+			init = ((Integer) constValue).byteValue();
 
-    } else {
-      throw new JPFException("illegal byte ConstValue=" + constValue);
-    }
-  }
+		} else {
+			throw new JPFException("illegal byte ConstValue=" + constValue);
+		}
+	}
 
+	@Override
+	public void initialize(ElementInfo ei, ThreadInfo ti) {
+		ei.getFields().setByteValue(storageOffset, init);
+	}
 
-  public void initialize (ElementInfo ei, ThreadInfo ti) {
-    ei.getFields().setByteValue(storageOffset, init);
-  }
+	@Override
+	public boolean isByteField() {
+		return true;
+	}
 
-  public boolean isByteField() {
-    return true;
-  }
+	@Override
+	public String valueToString(Fields f) {
+		byte i = f.getByteValue(storageOffset);
+		return Byte.toString(i);
+	}
 
-  public String valueToString (Fields f) {
-    byte i = f.getByteValue(storageOffset);
-    return Byte.toString(i);
-  }
+	@Override
+	public Object getValueObject(Fields f) {
+		int i = f.getIntValue(storageOffset);
+		return new Byte((byte) i);
+	}
 
-
-  public Object getValueObject (Fields f){
-    int i = f.getIntValue(storageOffset);
-    return new Byte((byte)i);
-  }
-
-  public boolean isNumericField(){
-    return true;
-  }
+	@Override
+	public boolean isNumericField() {
+		return true;
+	}
 }

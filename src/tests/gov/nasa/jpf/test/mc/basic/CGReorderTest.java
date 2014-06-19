@@ -37,82 +37,86 @@ import java.util.Comparator;
 import org.junit.Test;
 
 /**
- * regression test for choice reordering APIs 
+ * regression test for choice reordering APIs
  */
 public class CGReorderTest extends TestJPF {
 
-  public static class ReverseListener extends ListenerAdapter {  
-    @Override
-    public void choiceGeneratorSet (VM vm, ChoiceGenerator<?> newCG){
-      if (newCG instanceof IntIntervalGenerator){
-        System.out.println("reverse choice enumeration order");
-        ((IntIntervalGenerator)newCG).reverse();
-      }
-    }
+	public static class ReverseListener extends ListenerAdapter {
+		@Override
+		public void choiceGeneratorSet(VM vm, ChoiceGenerator<?> newCG) {
+			if (newCG instanceof IntIntervalGenerator) {
+				System.out.println("reverse choice enumeration order");
+				((IntIntervalGenerator) newCG).reverse();
+			}
+		}
 
-    int lastVal = Integer.MAX_VALUE;
-    @Override
-    public void choiceGeneratorAdvanced (VM vm, ChoiceGenerator<?> currentCG){
-      if (currentCG instanceof IntIntervalGenerator){
-        int v = ((IntChoiceGenerator)currentCG).getNextChoice();
-        if (v >= lastVal){
-          fail("values not decreasing");
-        }
-        lastVal = v;
-      }
-    }
-  }
-  
-  @Test
-  public void testReverse(){
-    if (verifyNoPropertyViolation("+listener=.test.mc.basic.CGReorderTest$ReverseListener")){
-      int x = Verify.getInt(0,4);
-      System.out.println(x);
-    }
-  }
+		int lastVal = Integer.MAX_VALUE;
 
-  
-  public static class ReorderListener extends ListenerAdapter {
-    ChoiceGenerator<?> reorderedCG;
-    
-    @Override
-    public void choiceGeneratorRegistered (VM vm, ChoiceGenerator<?> nextCG, ThreadInfo ti, Instruction executedInsn){
-      // make sure we are not getting recursive (could also use setId())
-      if (nextCG instanceof DoubleChoiceFromList && nextCG != reorderedCG){ 
-        System.out.println("reorder choices");
-        reorderedCG = ((DoubleChoiceFromList)nextCG).reorder( new Comparator<Double>(){
-          public int compare (Double d1, Double d2){
-            return (int) (d2 - d1);
-          }
-        });
-        
-        System.out.println("replacing: " + nextCG);
-        System.out.println("with: " + reorderedCG);
-        SystemState ss = vm.getSystemState();
-        ss.removeNextChoiceGenerator();
-        ss.setNextChoiceGenerator(reorderedCG);
-      }
-    }
+		@Override
+		public void choiceGeneratorAdvanced(VM vm, ChoiceGenerator<?> currentCG) {
+			if (currentCG instanceof IntIntervalGenerator) {
+				int v = ((IntChoiceGenerator) currentCG).getNextChoice();
+				if (v >= lastVal) {
+					fail("values not decreasing");
+				}
+				lastVal = v;
+			}
+		}
+	}
 
-    double lastVal = Double.MAX_VALUE;
-    @Override
-    public void choiceGeneratorAdvanced (VM vm, ChoiceGenerator<?> currentCG){
-      if (currentCG instanceof DoubleChoiceGenerator){
-        double v = ((DoubleChoiceGenerator)currentCG).getNextChoice();
-        if (v >= lastVal){
-          fail("values not decreasing");
-        }
-        lastVal = v;
-      }
-    }
-  }
-  
-  @Test
-  public void testReorder(){
-    if (verifyNoPropertyViolation("+listener=.test.mc.basic.CGReorderTest$ReorderListener")){
-      double x = Verify.getDoubleFromList(1.0, 2.0, 3.0, 4.0);
-      System.out.println(x);
-    }
-  }
-  
+	@Test
+	public void testReverse() {
+		if (verifyNoPropertyViolation("+listener=.test.mc.basic.CGReorderTest$ReverseListener")) {
+			int x = Verify.getInt(0, 4);
+			System.out.println(x);
+		}
+	}
+
+	public static class ReorderListener extends ListenerAdapter {
+		ChoiceGenerator<?> reorderedCG;
+
+		@Override
+		public void choiceGeneratorRegistered(VM vm, ChoiceGenerator<?> nextCG,
+				ThreadInfo ti, Instruction executedInsn) {
+			// make sure we are not getting recursive (could also use setId())
+			if (nextCG instanceof DoubleChoiceFromList && nextCG != reorderedCG) {
+				System.out.println("reorder choices");
+				reorderedCG = ((DoubleChoiceFromList) nextCG)
+						.reorder(new Comparator<Double>() {
+							@Override
+							public int compare(Double d1, Double d2) {
+								return (int) (d2 - d1);
+							}
+						});
+
+				System.out.println("replacing: " + nextCG);
+				System.out.println("with: " + reorderedCG);
+				SystemState ss = vm.getSystemState();
+				ss.removeNextChoiceGenerator();
+				ss.setNextChoiceGenerator(reorderedCG);
+			}
+		}
+
+		double lastVal = Double.MAX_VALUE;
+
+		@Override
+		public void choiceGeneratorAdvanced(VM vm, ChoiceGenerator<?> currentCG) {
+			if (currentCG instanceof DoubleChoiceGenerator) {
+				double v = ((DoubleChoiceGenerator) currentCG).getNextChoice();
+				if (v >= lastVal) {
+					fail("values not decreasing");
+				}
+				lastVal = v;
+			}
+		}
+	}
+
+	@Test
+	public void testReorder() {
+		if (verifyNoPropertyViolation("+listener=.test.mc.basic.CGReorderTest$ReorderListener")) {
+			double x = Verify.getDoubleFromList(1.0, 2.0, 3.0, 4.0);
+			System.out.println(x);
+		}
+	}
+
 }

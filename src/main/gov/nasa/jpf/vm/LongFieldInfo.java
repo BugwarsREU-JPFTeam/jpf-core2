@@ -20,56 +20,61 @@ package gov.nasa.jpf.vm;
 
 import gov.nasa.jpf.JPFException;
 
-
-
 /**
  *
  */
 public class LongFieldInfo extends DoubleSlotFieldInfo {
-  long init;
+	long init;
 
-  public LongFieldInfo (String name, int modifiers) {
-    super(name, "J", modifiers);
-  }
+	public LongFieldInfo(String name, int modifiers) {
+		super(name, "J", modifiers);
+	}
 
-  public void setConstantValue(Object constValue){
-    if (constValue instanceof Long){
-      cv = constValue;
-      init = (Long)constValue;
+	@Override
+	public void setConstantValue(Object constValue) {
+		if (constValue instanceof Long) {
+			cv = constValue;
+			init = (Long) constValue;
 
-    } else {
-      throw new JPFException("illegal long ConstValue=" + constValue);
-    }
-  }
+		} else {
+			throw new JPFException("illegal long ConstValue=" + constValue);
+		}
+	}
 
-  public void initialize (ElementInfo ei, ThreadInfo ti) {
-    ei.getFields().setLongValue( storageOffset, init);
-  }
+	@Override
+	public void initialize(ElementInfo ei, ThreadInfo ti) {
+		ei.getFields().setLongValue(storageOffset, init);
+	}
 
-  public int getStorageSize() {
-    return 2;
-  }
+	@Override
+	public int getStorageSize() {
+		return 2;
+	}
 
-  public Class<? extends ChoiceGenerator<?>> getChoiceGeneratorType() {
-    return LongChoiceGenerator.class;
-  }
+	@Override
+	public Class<? extends ChoiceGenerator<?>> getChoiceGeneratorType() {
+		return LongChoiceGenerator.class;
+	}
 
-  public String valueToString (Fields f) {
-    long v = f.getLongValue(storageOffset);
-    return Long.toString(v);
-  }
+	@Override
+	public String valueToString(Fields f) {
+		long v = f.getLongValue(storageOffset);
+		return Long.toString(v);
+	}
 
-  public Object getValueObject (Fields f){
-    long v = f.getLongValue(storageOffset);
-    return new Long(v);
-  }
+	@Override
+	public Object getValueObject(Fields f) {
+		long v = f.getLongValue(storageOffset);
+		return new Long(v);
+	}
 
-  public boolean isLongField(){
-    return true;
-  }
+	@Override
+	public boolean isLongField() {
+		return true;
+	}
 
-  public boolean isNumericField(){
-    return true;
-  }
+	@Override
+	public boolean isNumericField() {
+		return true;
+	}
 }
-

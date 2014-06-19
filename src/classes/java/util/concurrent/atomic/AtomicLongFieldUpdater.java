@@ -20,33 +20,54 @@
 package java.util.concurrent.atomic;
 
 /**
- * model class for the AtomicLongFieldUpdater
- * in reality it's an abstract class, but this here is merely a stub anyways
+ * model class for the AtomicLongFieldUpdater in reality it's an abstract class,
+ * but this here is merely a stub anyways
  */
 public class AtomicLongFieldUpdater<T> {
 
-  int fieldId;
+	int fieldId;
 
-  public static <O> AtomicLongFieldUpdater<O> newUpdater (Class<O> objClass, String fieldName) {
-    return new AtomicLongFieldUpdater<O>(objClass, fieldName);
-  }
+	public static <O> AtomicLongFieldUpdater<O> newUpdater(Class<O> objClass,
+			String fieldName) {
+		return new AtomicLongFieldUpdater<O>(objClass, fieldName);
+	}
 
-  protected AtomicLongFieldUpdater(Class<T> objClass, String fieldName){
-    // direct Object subclass, so we can directly intercept the ctor
-    // w/o having to call a parent ctor
-  }
+	protected AtomicLongFieldUpdater(Class<T> objClass, String fieldName) {
+		// direct Object subclass, so we can directly intercept the ctor
+		// w/o having to call a parent ctor
+	}
 
-  public native boolean compareAndSet(T obj, long expect, long update);
-  public native long    get(T obj);
-  public native long    getAndAdd(T obj, long delta);
-  public native long    getAndSet(T obj, long newValue);
-  public native void    lazySet(T obj, long newValue);
-  public native void    set(T obj, long newValue);
-  public native boolean weakCompareAndSet(T obj, long expect, long update);
+	public native boolean compareAndSet(T obj, long expect, long update);
 
-  public        long    addAndGet(T obj, long delta) {return(getAndAdd(obj, delta) + delta);}
-  public        long    decrementAndGet(T obj)       {return(addAndGet(obj, -1));}
-  public        long    getAndDecrement(T obj)       {return(getAndAdd(obj, -1));}
-  public        long    getAndIncrement(T obj)       {return(getAndAdd(obj, 1));}
-  public        long    incrementAndGet(T obj)       {return(addAndGet(obj, 1));}
+	public native long get(T obj);
+
+	public native long getAndAdd(T obj, long delta);
+
+	public native long getAndSet(T obj, long newValue);
+
+	public native void lazySet(T obj, long newValue);
+
+	public native void set(T obj, long newValue);
+
+	public native boolean weakCompareAndSet(T obj, long expect, long update);
+
+	public long addAndGet(T obj, long delta) {
+		return (getAndAdd(obj, delta) + delta);
+	}
+
+	public long decrementAndGet(T obj) {
+		return (addAndGet(obj, -1));
+	}
+
+	public long getAndDecrement(T obj) {
+		return (getAndAdd(obj, -1));
+	}
+
+	public long getAndIncrement(T obj) {
+		return (getAndAdd(obj, 1));
+	}
+
+	public long incrementAndGet(T obj) {
+		return (addAndGet(obj, 1));
+	}
 }

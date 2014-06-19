@@ -24,11 +24,11 @@ import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.MethodInfo;
 
 public interface FilterConfiguration {
-  void init(Config config);
-  
-  Iterable<FieldInfo> getMatchedInstanceFields(ClassInfo ci); 
+	void init(Config config);
 
-  Iterable<FieldInfo> getMatchedStaticFields(ClassInfo ci); 
+	Iterable<FieldInfo> getMatchedInstanceFields(ClassInfo ci);
 
-  FramePolicy getFramePolicy(MethodInfo mi);
+	Iterable<FieldInfo> getMatchedStaticFields(ClassInfo ci);
+
+	FramePolicy getFramePolicy(MethodInfo mi);
 }

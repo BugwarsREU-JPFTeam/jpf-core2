@@ -18,40 +18,43 @@
 //
 package gov.nasa.jpf.vm;
 
-
 /**
- * helper class to store object references in a context where Integer is used for boxed 'int' values
+ * helper class to store object references in a context where Integer is used
+ * for boxed 'int' values
  */
 public class ObjRef {
-  public static final ObjRef NULL = new ObjRef(MJIEnv.NULL);
-  
-  int reference;
+	public static final ObjRef NULL = new ObjRef(MJIEnv.NULL);
 
-  protected ObjRef (int ref) {
-    reference = ref;
-  }
+	int reference;
 
-  public boolean isNull () {
-    return reference == MJIEnv.NULL;
-  }
+	protected ObjRef(int ref) {
+		reference = ref;
+	}
 
-  public int getReference () {
-    return reference;
-  }
+	public boolean isNull() {
+		return reference == MJIEnv.NULL;
+	}
 
-  public boolean equals (Object o) {
-    if (o.getClass() == ObjRef.class) {
-      ObjRef other = (ObjRef)o;
-      return reference == other.reference;
-    }
-    return false;
-  }
+	public int getReference() {
+		return reference;
+	}
 
-  public int hashCode () {
-    return reference;
-  }
+	@Override
+	public boolean equals(Object o) {
+		if (o.getClass() == ObjRef.class) {
+			ObjRef other = (ObjRef) o;
+			return reference == other.reference;
+		}
+		return false;
+	}
 
-  public String toString () {
-    return "ObjRef(" + reference + ')';
-  }
+	@Override
+	public int hashCode() {
+		return reference;
+	}
+
+	@Override
+	public String toString() {
+		return "ObjRef(" + reference + ')';
+	}
 }

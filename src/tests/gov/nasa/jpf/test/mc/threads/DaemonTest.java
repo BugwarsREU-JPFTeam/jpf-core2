@@ -28,40 +28,45 @@ import gov.nasa.jpf.util.test.TestJPF;
  */
 public class DaemonTest extends TestJPF {
 
-  static class T1 extends Thread {
+	static class T1 extends Thread {
 
-    boolean blowUp = false;
-    //Boolean blowUp = false;
+		boolean blowUp = false;
 
-    T1() {
-      setDaemon(true);
-    }
+		// Boolean blowUp = false;
 
-    public void run() {
-      if (blowUp){
-        throw new RuntimeException("blow up");
-      }
-    }
-  }
+		T1() {
+			setDaemon(true);
+		}
 
-  
-  /**
-   * test if there is a proper CG BEFORE the main thread terminates, which
-   * would take the daemon down before it has a chance to blow up
-   */
-  @Test
-  public void testRace(){
-    if (verifyUnhandledExceptionDetails("java.lang.RuntimeException", "blow up")){
-      T1 t = new T1();
-      t.start();
-      
-      // this is a shared access CG, but since this is the last statement,
-      // main thread termination would kill the daemon. In a host VM, there
-      // could be still a context switch between the PUTFIELD and the thread
-      // termination
-      t.blowUp = true;
-      
-      int dummy = 42; // totally pointless, but a host VM could still reschedule here
-    }
-  }
+		@Override
+		public void run() {
+			if (blowUp) {
+				throw new RuntimeException("blow up");
+			}
+		}
+	}
+
+	/**
+	 * test if there is a proper CG BEFORE the main thread terminates, which
+	 * would take the daemon down before it has a chance to blow up
+	 */
+	@Test
+	public void testRace() {
+		if (verifyUnhandledExceptionDetails("java.lang.RuntimeException",
+				"blow up")) {
+			T1 t = new T1();
+			t.start();
+
+			// this is a shared access CG, but since this is the last statement,
+			// main thread termination would kill the daemon. In a host VM,
+			// there
+			// could be still a context switch between the PUTFIELD and the
+			// thread
+			// termination
+			t.blowUp = true;
+
+			int dummy = 42; // totally pointless, but a host VM could still
+							// reschedule here
+		}
+	}
 }

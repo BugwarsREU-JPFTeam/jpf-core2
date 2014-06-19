@@ -35,87 +35,92 @@ import org.junit.Test;
  */
 public class TypeSeparationTest extends TestMultiProcessJPF {
 
-  private static int counter = 0;
+	private static int counter = 0;
 
-  private static void incCounter() {
-    counter++;
-  }
+	private static void incCounter() {
+		counter++;
+	}
 
-  // To make sure that our multiProcess VM keeps the static attributes separated
-  // This also checks for type safe clone for the InvokeStatic instruction.
-  @Test
-  public void staticCounterTest() {
-    // Note that this code is executed 4 times. Since every time this is executed its
-    // state is restored, the value of counter should be always 1
-    if (mpVerifyNoPropertyViolation(2)) {
-      int id = getProcessId();
-      switch(id) {
-      case 0:
-        incCounter();
-        break;
-      case 1:
-        incCounter();
-        break;
-      default:
-        fail("invalid process number!");
-      }
+	// To make sure that our multiProcess VM keeps the static attributes
+	// separated
+	// This also checks for type safe clone for the InvokeStatic instruction.
+	@Test
+	public void staticCounterTest() {
+		// Note that this code is executed 4 times. Since every time this is
+		// executed its
+		// state is restored, the value of counter should be always 1
+		if (mpVerifyNoPropertyViolation(2)) {
+			int id = getProcessId();
+			switch (id) {
+			case 0:
+				incCounter();
+				break;
+			case 1:
+				incCounter();
+				break;
+			default:
+				fail("invalid process number!");
+			}
 
-      assertEquals(counter,1);
-    }
-  }
+			assertEquals(counter, 1);
+		}
+	}
 
-  @Retention(RetentionPolicy.RUNTIME)
-  @Inherited
-  public @interface A0 {
-  }
+	@Retention(RetentionPolicy.RUNTIME)
+	@Inherited
+	public @interface A0 {
+	}
 
-  private native void keepAnnotationClass(Class annCls, int prcId);
+	private native void keepAnnotationClass(Class annCls, int prcId);
 
-  @Test
-  public void annotationsTest () {
-    if(!isJPFRun()) {
-      JPF_gov_nasa_jpf_vm_multiProcess_TypeSeparationTest.resetPrcIds();
-    }
+	@Test
+	public void annotationsTest() {
+		if (!isJPFRun()) {
+			JPF_gov_nasa_jpf_vm_multiProcess_TypeSeparationTest.resetPrcIds();
+		}
 
-    if (mpVerifyNoPropertyViolation(2)) {
-      int prcId = getProcessId();
-      keepAnnotationClass(A0.class, prcId);
-    }
+		if (mpVerifyNoPropertyViolation(2)) {
+			int prcId = getProcessId();
+			keepAnnotationClass(A0.class, prcId);
+		}
 
-    if(!isJPFRun()) {
-      List<ClassInfo> annClassList = JPF_gov_nasa_jpf_vm_multiProcess_TypeSeparationTest.getAnnotationClasses();
-      assertEquals(annClassList.size(), 2);
-      assertTrue(annClassList.get(0)!=annClassList.get(1));
-    }
-  }
+		if (!isJPFRun()) {
+			List<ClassInfo> annClassList = JPF_gov_nasa_jpf_vm_multiProcess_TypeSeparationTest
+					.getAnnotationClasses();
+			assertEquals(annClassList.size(), 2);
+			assertTrue(annClassList.get(0) != annClassList.get(1));
+		}
+	}
 
+	private native void keepClassLoader(ClassLoader thd, int prcId);
 
-  private native void keepClassLoader(ClassLoader thd, int prcId);
+	// to make sure that each process accesses the classes loaded by the right
+	// system class loader
+	@Test
+	public void systemClassLoaderTest() {
+		if (!isJPFRun()) {
+			JPF_gov_nasa_jpf_vm_multiProcess_TypeSeparationTest.resetPrcIds();
+		}
 
-  // to make sure that each process accesses the classes loaded by the right
-  // system class loader
-  @Test
-  public void systemClassLoaderTest() {
-    if(!isJPFRun()) {
-      JPF_gov_nasa_jpf_vm_multiProcess_TypeSeparationTest.resetPrcIds();
-    }
+		if (mpVerifyNoPropertyViolation(2)) {
+			ClassLoader cl = Object.class.getClassLoader();
 
-    if (mpVerifyNoPropertyViolation(2)) {
-      ClassLoader cl = Object.class.getClassLoader();
+			// in our implementation this goes through the class hierarchy of
+			// the
+			// current thread and it returns the class loader of the Thread
+			// class
+			ClassLoader sysLoader = ClassLoader.getSystemClassLoader();
+			assertEquals(cl, sysLoader);
 
-      // in our implementation this goes through the class hierarchy of the 
-      // current thread and it returns the class loader of the Thread class
-      ClassLoader sysLoader = ClassLoader.getSystemClassLoader();
-      assertEquals(cl, sysLoader);
+			int prcId = getProcessId();
+			keepClassLoader(cl, prcId);
+		}
 
-      int prcId = getProcessId();
-      keepClassLoader(cl, prcId);
-    }
-
-    if(!isJPFRun()) {
-      List<ClassLoaderInfo> classLoaders = JPF_gov_nasa_jpf_vm_multiProcess_TypeSeparationTest.getClassLoaders();
-      assertEquals(classLoaders.size(), 2);
-      assertTrue(classLoaders.get(0)!=classLoaders.get(1));
-    }
-  }
+		if (!isJPFRun()) {
+			List<ClassLoaderInfo> classLoaders = JPF_gov_nasa_jpf_vm_multiProcess_TypeSeparationTest
+					.getClassLoaders();
+			assertEquals(classLoaders.size(), 2);
+			assertTrue(classLoaders.get(0) != classLoaders.get(1));
+		}
+	}
 }

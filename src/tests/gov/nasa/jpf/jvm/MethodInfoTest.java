@@ -19,7 +19,6 @@
 
 package gov.nasa.jpf.jvm;
 
-import gov.nasa.jpf.jvm.bytecode.InstructionFactory;
 import gov.nasa.jpf.util.test.TestJPF;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ClassParseException;
@@ -36,121 +35,164 @@ import org.junit.Test;
  */
 public class MethodInfoTest extends TestJPF {
 
-  static class MyClass {
-    static double staticNoArgs() {int a=42; double b=42.0; b+=a; return b;}
-    static double staticInt (int intArg) {int a=42; double b=42.0; b+=a; return b;}
-    static double staticIntString (int intArg, String stringArg) {int a=42; double b=42.0; b+=a; return b;}
-    
-    double instanceNoArgs() {int a=42; double b=42.0; b+=a; return b;}
-    double instanceInt( int intArg) {int a=42; double b=42.0; b+=a; return b;}
-    double instanceIntString  (int intArg, String stringArg) {int a=42; double b=42.0; b+=a; return b;}
-    
-    int instanceCycleMethod (int intArg, int int2Arg) {
-      for (int i = 0; i < int2Arg; ++i) {
-        // it's important to have a for cycle because it breaks the instruction per line monotony
-        intArg += intArg;
-      }
-      return intArg;
-    }
-  }
-  
-  @Test
-  public void testMethodArgs() {
-    File file = new File("build/tests/gov/nasa/jpf/jvm/MethodInfoTest$MyClass.class");
+	static class MyClass {
+		static double staticNoArgs() {
+			int a = 42;
+			double b = 42.0;
+			b += a;
+			return b;
+		}
 
-    try {
-      ClassInfo ci = new NonResolvedClassInfo( "gov.nasa.jpf.jvm.MethodInfoTest$MyClass",  file);
-      MethodInfo mi;
-      LocalVarInfo[] args;
+		static double staticInt(int intArg) {
+			int a = 42;
+			double b = 42.0;
+			b += a;
+			return b;
+		}
 
-      //--- the statics
-      mi = ci.getMethod("staticNoArgs", "()D", false);
-      System.out.println("-- checking: " + mi);
-      args = mi.getArgumentLocalVars();
-      assertTrue("args not empty or null", args != null && args.length == 0);
+		static double staticIntString(int intArg, String stringArg) {
+			int a = 42;
+			double b = 42.0;
+			b += a;
+			return b;
+		}
 
-      mi = ci.getMethod("staticInt", "(I)D", false);
-      System.out.println("-- checking: " + mi);
-      args = mi.getArgumentLocalVars();
-      assertTrue("args null", args != null);
-      for (LocalVarInfo lvi : args){
-        System.out.println("     " + lvi);
-      }
-      assertTrue(args.length == 1 && args[0].getName().equals("intArg"));
+		double instanceNoArgs() {
+			int a = 42;
+			double b = 42.0;
+			b += a;
+			return b;
+		}
 
-      mi = ci.getMethod("staticIntString", "(ILjava/lang/String;)D", false);
-      System.out.println("-- checking: " + mi);
-      args = mi.getArgumentLocalVars();
-      assertTrue("args null", args != null);
-      for (LocalVarInfo lvi : args){
-        System.out.println("     " + lvi);
-      }
-      assertTrue(args.length == 2 && args[0].getName().equals("intArg") && args[1].getName().equals("stringArg"));
+		double instanceInt(int intArg) {
+			int a = 42;
+			double b = 42.0;
+			b += a;
+			return b;
+		}
 
-      
-      //--- the instances
-      mi = ci.getMethod("instanceNoArgs", "()D", false);
-      System.out.println("-- checking: " + mi);
-      args = mi.getArgumentLocalVars();
-      assertTrue("args null", args != null);
-      for (LocalVarInfo lvi : args){
-        System.out.println("     " + lvi);
-      }
-      assertTrue(args.length == 1 && args[0].getName().equals("this"));
-      
-      mi = ci.getMethod("instanceInt", "(I)D", false);
-      System.out.println("-- checking: " + mi);
-      args = mi.getArgumentLocalVars();
-      assertTrue("args null", args != null);
-      for (LocalVarInfo lvi : args){
-        System.out.println("     " + lvi);
-      }
-      assertTrue(args.length == 2 && args[0].getName().equals("this") && args[1].getName().equals("intArg"));
+		double instanceIntString(int intArg, String stringArg) {
+			int a = 42;
+			double b = 42.0;
+			b += a;
+			return b;
+		}
 
-      mi = ci.getMethod("instanceIntString", "(ILjava/lang/String;)D", false);
-      System.out.println("-- checking: " + mi);
-      args = mi.getArgumentLocalVars();
-      assertTrue("args null", args != null);
-      for (LocalVarInfo lvi : args){
-        System.out.println("     " + lvi);
-      }
-      assertTrue(args.length == 3 && args[0].getName().equals("this") 
-          && args[1].getName().equals("intArg") && args[2].getName().equals("stringArg"));
+		int instanceCycleMethod(int intArg, int int2Arg) {
+			for (int i = 0; i < int2Arg; ++i) {
+				// it's important to have a for cycle because it breaks the
+				// instruction per line monotony
+				intArg += intArg;
+			}
+			return intArg;
+		}
+	}
 
-    } catch (NullPointerException npe){
-      npe.printStackTrace();
-      fail("method not found");
-    } catch (ClassParseException cfx){
-      cfx.printStackTrace();
-      fail(cfx.toString());
-    }
-  }
-  
-  @Test
-  public void testGetInstructionsForLine () {
-    File file = new File(
-            "build/tests/gov/nasa/jpf/jvm/MethodInfoTest$MyClass.class");
-    try {
-      ClassInfo ci = new NonResolvedClassInfo("gov.nasa.jpf.jvm.MethodInfoTest$MyClass", file);
-      MethodInfo mi = ci.getMethod("instanceCycleMethod", "(II)I", false);
+	@Test
+	public void testMethodArgs() {
+		File file = new File(
+				"build/tests/gov/nasa/jpf/jvm/MethodInfoTest$MyClass.class");
 
-      nextInstruction:
-      for (Instruction instruction : mi.getInstructions()) {
-        int l = instruction.getLineNumber();
-        Instruction[] foundInstructions = mi.getInstructionsForLine(l);
-        System.out.printf("%d : %s\n", l, instruction);
+		try {
+			ClassInfo ci = new NonResolvedClassInfo(
+					"gov.nasa.jpf.jvm.MethodInfoTest$MyClass", file);
+			MethodInfo mi;
+			LocalVarInfo[] args;
 
-        for (int j=0; j<foundInstructions.length; j++){
-          if (foundInstructions[j] == instruction){
-            continue nextInstruction;
-          }
-        }
-        
-        fail("instruction not in list: " + instruction);
-      }
-    } catch (ClassParseException cfx) {
-      cfx.printStackTrace();
-      fail(cfx.toString());
-    }
-  }
+			// --- the statics
+			mi = ci.getMethod("staticNoArgs", "()D", false);
+			System.out.println("-- checking: " + mi);
+			args = mi.getArgumentLocalVars();
+			assertTrue("args not empty or null", args != null
+					&& args.length == 0);
+
+			mi = ci.getMethod("staticInt", "(I)D", false);
+			System.out.println("-- checking: " + mi);
+			args = mi.getArgumentLocalVars();
+			assertTrue("args null", args != null);
+			for (LocalVarInfo lvi : args) {
+				System.out.println("     " + lvi);
+			}
+			assertTrue(args.length == 1 && args[0].getName().equals("intArg"));
+
+			mi = ci.getMethod("staticIntString", "(ILjava/lang/String;)D",
+					false);
+			System.out.println("-- checking: " + mi);
+			args = mi.getArgumentLocalVars();
+			assertTrue("args null", args != null);
+			for (LocalVarInfo lvi : args) {
+				System.out.println("     " + lvi);
+			}
+			assertTrue(args.length == 2 && args[0].getName().equals("intArg")
+					&& args[1].getName().equals("stringArg"));
+
+			// --- the instances
+			mi = ci.getMethod("instanceNoArgs", "()D", false);
+			System.out.println("-- checking: " + mi);
+			args = mi.getArgumentLocalVars();
+			assertTrue("args null", args != null);
+			for (LocalVarInfo lvi : args) {
+				System.out.println("     " + lvi);
+			}
+			assertTrue(args.length == 1 && args[0].getName().equals("this"));
+
+			mi = ci.getMethod("instanceInt", "(I)D", false);
+			System.out.println("-- checking: " + mi);
+			args = mi.getArgumentLocalVars();
+			assertTrue("args null", args != null);
+			for (LocalVarInfo lvi : args) {
+				System.out.println("     " + lvi);
+			}
+			assertTrue(args.length == 2 && args[0].getName().equals("this")
+					&& args[1].getName().equals("intArg"));
+
+			mi = ci.getMethod("instanceIntString", "(ILjava/lang/String;)D",
+					false);
+			System.out.println("-- checking: " + mi);
+			args = mi.getArgumentLocalVars();
+			assertTrue("args null", args != null);
+			for (LocalVarInfo lvi : args) {
+				System.out.println("     " + lvi);
+			}
+			assertTrue(args.length == 3 && args[0].getName().equals("this")
+					&& args[1].getName().equals("intArg")
+					&& args[2].getName().equals("stringArg"));
+
+		} catch (NullPointerException npe) {
+			npe.printStackTrace();
+			fail("method not found");
+		} catch (ClassParseException cfx) {
+			cfx.printStackTrace();
+			fail(cfx.toString());
+		}
+	}
+
+	@Test
+	public void testGetInstructionsForLine() {
+		File file = new File(
+				"build/tests/gov/nasa/jpf/jvm/MethodInfoTest$MyClass.class");
+		try {
+			ClassInfo ci = new NonResolvedClassInfo(
+					"gov.nasa.jpf.jvm.MethodInfoTest$MyClass", file);
+			MethodInfo mi = ci.getMethod("instanceCycleMethod", "(II)I", false);
+
+			nextInstruction: for (Instruction instruction : mi
+					.getInstructions()) {
+				int l = instruction.getLineNumber();
+				Instruction[] foundInstructions = mi.getInstructionsForLine(l);
+				System.out.printf("%d : %s\n", l, instruction);
+
+				for (int j = 0; j < foundInstructions.length; j++) {
+					if (foundInstructions[j] == instruction) {
+						continue nextInstruction;
+					}
+				}
+
+				fail("instruction not in list: " + instruction);
+			}
+		} catch (ClassParseException cfx) {
+			cfx.printStackTrace();
+			fail(cfx.toString());
+		}
+	}
 }

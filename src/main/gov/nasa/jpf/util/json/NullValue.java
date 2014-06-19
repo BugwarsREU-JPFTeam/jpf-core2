@@ -20,31 +20,37 @@ package gov.nasa.jpf.util.json;
 
 /**
  * Null value from JSON document
+ * 
  * @author Ivan Mushketik
  */
 class NullValue implements Value {
 
-  public NullValue() {
-  }
+	public NullValue() {
+	}
 
-  public String getString() {
-    return null;
-  }
+	@Override
+	public String getString() {
+		return null;
+	}
 
-  public Double getDouble() {
-    return null;
-  }
+	@Override
+	public Double getDouble() {
+		return null;
+	}
 
-  public Boolean getBoolean() {
-    return null;
-  }
+	@Override
+	public Boolean getBoolean() {
+		return null;
+	}
 
-  public JSONObject getObject() {
-    return null;
-  }
+	@Override
+	public JSONObject getObject() {
+		return null;
+	}
 
-  public Value[] getArray() {
-    return null;
-  }
+	@Override
+	public Value[] getArray() {
+		return null;
+	}
 
 }

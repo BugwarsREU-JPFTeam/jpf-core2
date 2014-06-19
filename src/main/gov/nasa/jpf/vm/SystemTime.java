@@ -27,15 +27,17 @@ import gov.nasa.jpf.Config;
  */
 public class SystemTime implements TimeModel {
 
-  public SystemTime(VM vm, Config conf){
-    // we don't need these, but it speeds up VM initialization
-  }
-  
-  public long currentTimeMillis() {
-    return System.currentTimeMillis();
-  }
+	public SystemTime(VM vm, Config conf) {
+		// we don't need these, but it speeds up VM initialization
+	}
 
-  public long nanoTime() {
-    return System.nanoTime();
-  }
+	@Override
+	public long currentTimeMillis() {
+		return System.currentTimeMillis();
+	}
+
+	@Override
+	public long nanoTime() {
+		return System.nanoTime();
+	}
 }

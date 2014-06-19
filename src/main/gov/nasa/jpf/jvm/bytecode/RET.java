@@ -23,38 +23,39 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Return from subroutine
- *   No change
+ * Return from subroutine No change
  */
 public class RET extends JVMInstruction {
-  private int index;
+	private int index;
 
-  public RET( int index){
-    this.index = index;
-  }
+	public RET(int index) {
+		this.index = index;
+	}
 
-  @Override
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getTopFrame();
-    int jumpTgt = frame.getLocalVariable(index);
-    return mi.getInstructionAt(jumpTgt);
-  }
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getTopFrame();
+		int jumpTgt = frame.getLocalVariable(index);
+		return mi.getInstructionAt(jumpTgt);
+	}
 
-  public int getLength() {
-    return 2; // opcode, insnIndex
-  }
-  
-  public int getByteCode () {
-    return 0xA9; // ?? wide
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public int getLength() {
+		return 2; // opcode, insnIndex
+	}
 
-  public int getIndex() {
-	return index;
-  }
+	@Override
+	public int getByteCode() {
+		return 0xA9; // ?? wide
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
+
+	public int getIndex() {
+		return index;
+	}
 }

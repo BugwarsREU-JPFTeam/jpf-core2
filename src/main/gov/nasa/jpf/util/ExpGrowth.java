@@ -19,28 +19,29 @@
 package gov.nasa.jpf.util;
 
 public class ExpGrowth implements Growth {
-  final float factor;
-  final float sqFactor;
-  final int plus;
-  
-  public ExpGrowth(float factor, int plus) {
-    if (factor < 1.001F || factor > 100.F) {
-      throw new IllegalArgumentException();
-    }
-    this.factor = factor;
-    this.sqFactor = (float) Math.sqrt(factor);
-    this.plus = plus;
-  }
-  
-  public ExpGrowth(float factor) {
-    this(factor,7);
-  }
-  
-  public int grow(int oldSize, int minNewSize) {
-    int newSize = (int)(factor * oldSize) + plus;
-    if (newSize < minNewSize) {
-      newSize = (int)(sqFactor * minNewSize) + plus;
-    }
-    return newSize;
-  }
+	final float factor;
+	final float sqFactor;
+	final int plus;
+
+	public ExpGrowth(float factor, int plus) {
+		if (factor < 1.001F || factor > 100.F) {
+			throw new IllegalArgumentException();
+		}
+		this.factor = factor;
+		this.sqFactor = (float) Math.sqrt(factor);
+		this.plus = plus;
+	}
+
+	public ExpGrowth(float factor) {
+		this(factor, 7);
+	}
+
+	@Override
+	public int grow(int oldSize, int minNewSize) {
+		int newSize = (int) (factor * oldSize) + plus;
+		if (newSize < minNewSize) {
+			newSize = (int) (sqFactor * minNewSize) + plus;
+		}
+		return newSize;
+	}
 }

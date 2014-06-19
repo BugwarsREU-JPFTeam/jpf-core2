@@ -19,11 +19,8 @@
 
 package gov.nasa.jpf.jvm.bytecode;
 
-import gov.nasa.jpf.util.FixedBitSet;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.MJIEnv;
-import gov.nasa.jpf.vm.MethodInfo;
-import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
 /**
@@ -31,34 +28,36 @@ import gov.nasa.jpf.vm.ThreadInfo;
  */
 public abstract class InstanceInvocation extends InvokeInstruction {
 
-  protected InstanceInvocation() {}
+	protected InstanceInvocation() {
+	}
 
-  protected InstanceInvocation (String clsDescriptor, String methodName, String signature){
-    super(clsDescriptor, methodName, signature);
-  }
+	protected InstanceInvocation(String clsDescriptor, String methodName,
+			String signature) {
+		super(clsDescriptor, methodName, signature);
+	}
 
+	public int getCalleeThis(ThreadInfo ti) {
+		if (!ti.isPostExec()) {
+			// we have to dig out the 'this' reference from the callers stack
+			return ti.getCalleeThis(getArgSize());
+		} else {
+			// enter() cached it
+			return lastObj;
+		}
+	}
 
-  public int getCalleeThis (ThreadInfo ti) {
-    if (!ti.isPostExec()){
-      // we have to dig out the 'this' reference from the callers stack
-      return ti.getCalleeThis( getArgSize());
-    } else {
-      // enter() cached it
-      return lastObj;
-    }
-  }
+	public ElementInfo getThisElementInfo(ThreadInfo ti) {
+		int thisRef = getCalleeThis(ti);
+		if (thisRef != MJIEnv.NULL) {
+			return ti.getElementInfo(thisRef);
+		} else {
+			return null;
+		}
+	}
 
-  public ElementInfo getThisElementInfo (ThreadInfo ti) {
-    int thisRef = getCalleeThis(ti);
-    if (thisRef != MJIEnv.NULL) {
-      return ti.getElementInfo(thisRef);
-    } else {
-      return null;
-    }
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 
 }

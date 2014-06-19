@@ -24,35 +24,35 @@ import gov.nasa.jpf.vm.ByteArrayFields;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.Fields;
 import gov.nasa.jpf.vm.StackFrame;
-import gov.nasa.jpf.vm.ThreadInfo;
-
 
 /**
- * Load byte or boolean from array
- * ..., arrayref, index => ..., value
+ * Load byte or boolean from array ..., arrayref, index => ..., value
  */
 public class BALOAD extends ArrayLoadInstruction {
 
-  protected void push (StackFrame frame, ElementInfo ei, int index) throws ArrayIndexOutOfBoundsExecutiveException {
-    ei.checkArrayBounds(index);
+	@Override
+	protected void push(StackFrame frame, ElementInfo ei, int index)
+			throws ArrayIndexOutOfBoundsExecutiveException {
+		ei.checkArrayBounds(index);
 
-    int value = 0;
-    Fields f = ei.getFields();
-    if (f instanceof ByteArrayFields){
-      value = ei.getByteElement(index);
-    } else if (f instanceof BooleanArrayFields){
-      value = ei.getBooleanElement(index) ? 1 : 0;
-    }
+		int value = 0;
+		Fields f = ei.getFields();
+		if (f instanceof ByteArrayFields) {
+			value = ei.getByteElement(index);
+		} else if (f instanceof BooleanArrayFields) {
+			value = ei.getBooleanElement(index) ? 1 : 0;
+		}
 
-    frame.push( value);
-  }
+		frame.push(value);
+	}
 
+	@Override
+	public int getByteCode() {
+		return 0x33;
+	}
 
-  public int getByteCode () {
-    return 0x33;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

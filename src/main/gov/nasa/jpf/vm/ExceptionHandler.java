@@ -22,66 +22,68 @@ package gov.nasa.jpf.vm;
  * Stores the information about an exception handler.
  */
 public class ExceptionHandler {
-  /**
-   * Name of the exception caught. If it is 'null', this means this is an 'any' handler
-   */
-  private String name;
+	/**
+	 * Name of the exception caught. If it is 'null', this means this is an
+	 * 'any' handler
+	 */
+	private String name;
 
-  /**
-   * The first instruction belonging to this handler.
-   */
-  private int begin;
+	/**
+	 * The first instruction belonging to this handler.
+	 */
+	private int begin;
 
-  /**
-   * The last instruction belonging to this handler.
-   */
-  private int end;
+	/**
+	 * The last instruction belonging to this handler.
+	 */
+	private int end;
 
-  /**
-   * The offset of the handler.
-   */
-  private int handler;
+	/**
+	 * The offset of the handler.
+	 */
+	private int handler;
 
-  /**
-   * Creates a new exception handler.
-   */
-  public ExceptionHandler (String n, int b, int e, int h) {
-    name = n;
-    begin = b;
-    end = e;
-    handler = h;
-  }
+	/**
+	 * Creates a new exception handler.
+	 */
+	public ExceptionHandler(String n, int b, int e, int h) {
+		name = n;
+		begin = b;
+		end = e;
+		handler = h;
+	}
 
-  /**
-   * Returns the first instruction in the block.
-   */
-  public int getBegin () {
-    return begin;
-  }
+	/**
+	 * Returns the first instruction in the block.
+	 */
+	public int getBegin() {
+		return begin;
+	}
 
-  /**
-   * Returns the last instruction in the block.
-   */
-  public int getEnd () {
-    return end;
-  }
+	/**
+	 * Returns the last instruction in the block.
+	 */
+	public int getEnd() {
+		return end;
+	}
 
-  /**
-   * Returns the instruction location for the handler.
-   */
-  public int getHandler () {
-    return handler;
-  }
+	/**
+	 * Returns the instruction location for the handler.
+	 */
+	public int getHandler() {
+		return handler;
+	}
 
-  /**
-   * Returns the name of the exception caught.
-   */
-  public String getName () {
-    return name;
-  }
+	/**
+	 * Returns the name of the exception caught.
+	 */
+	public String getName() {
+		return name;
+	}
 
-
-  public String toString() {
-    return "Handler [name="+name+",from="+begin+",to="+end+",target="+handler+"]";
-  }
+	@Override
+	public String toString() {
+		return "Handler [name=" + name + ",from=" + begin + ",to=" + end
+				+ ",target=" + handler + "]";
+	}
 }

@@ -1,0 +1,2 @@
+target = break_dfs_bfs
+search.class = .search.heuristic.DFSHeuristic

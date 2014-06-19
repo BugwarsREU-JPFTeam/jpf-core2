@@ -22,5 +22,5 @@ package gov.nasa.jpf.vm;
  * an empty (tag) interface to identify allocating instructions
  */
 public interface AllocInstruction {
-  // nothing in here
+	// nothing in here
 }

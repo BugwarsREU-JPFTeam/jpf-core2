@@ -23,44 +23,44 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Push byte
- * ... => ..., value
+ * Push byte ... => ..., value
  */
 public class BIPUSH extends JVMInstruction {
-  private int value;
+	private int value;
 
-  public BIPUSH() {} // this is going away
+	public BIPUSH() {
+	} // this is going away
 
-  public BIPUSH(int value){
-    this.value = value;
-  }
+	public BIPUSH(int value) {
+		this.value = value;
+	}
 
-  @Override
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    frame.push(value);
+		frame.push(value);
 
-    return getNext(ti);
-  }
-  
-  public int getValue(){
-	  return value;
-  }
-  
-  public int getLength() {
-    return 2; // opcode, byte
-  }
+		return getNext(ti);
+	}
 
-  @Override
-  public int getByteCode () {
-    return 0x10;
-  }
-  
-  @Override
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	public int getValue() {
+		return value;
+	}
+
+	@Override
+	public int getLength() {
+		return 2; // opcode, byte
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0x10;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

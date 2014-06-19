@@ -19,63 +19,68 @@
 
 package gov.nasa.jpf.util.script;
 
-
 public class Repetition extends ScriptElementContainer {
-  int repeatCount;
+	int repeatCount;
 
-  class RepetitionIterator extends ScriptElementContainer.SECIterator {
+	class RepetitionIterator extends ScriptElementContainer.SECIterator {
 
-    int count;
+		int count;
 
-    RepetitionIterator () {
-      count = 0;
-      cur = firstChild;
-    }
+		RepetitionIterator() {
+			count = 0;
+			cur = firstChild;
+		}
 
-    public boolean hasNext() {
-      return ((cur != null) || (count<repeatCount) || (repeatCount < 0));
-    }
+		@Override
+		public boolean hasNext() {
+			return ((cur != null) || (count < repeatCount) || (repeatCount < 0));
+		}
 
-    public ScriptElement next() {
-      if (cur != null) {
-        ScriptElement ret = cur;
-        cur = cur.nextSibling;
-        return ret;
-      } else {
-        if ((++count < repeatCount) || (repeatCount < 0) ) {
-          ScriptElement ret = firstChild;
-          cur = ret.nextSibling;
-          return ret;
-        } else {
-          return null;
-        }
-      }
-    }
+		@Override
+		public ScriptElement next() {
+			if (cur != null) {
+				ScriptElement ret = cur;
+				cur = cur.nextSibling;
+				return ret;
+			} else {
+				if ((++count < repeatCount) || (repeatCount < 0)) {
+					ScriptElement ret = firstChild;
+					cur = ret.nextSibling;
+					return ret;
+				} else {
+					return null;
+				}
+			}
+		}
 
-    public void remove() {
-      throw new UnsupportedOperationException("no ScriptElement removal supported");
-    }
-  }
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException(
+					"no ScriptElement removal supported");
+		}
+	}
 
+	public Repetition(ScriptElement parent, int n, int line) {
+		super(parent, line);
+		repeatCount = n;
+	}
 
-  public Repetition (ScriptElement parent, int n, int line) {
-    super(parent, line);
-    repeatCount = n;
-  }
+	@Override
+	public SECIterator iterator() {
+		return new RepetitionIterator();
+	}
 
-  public SECIterator iterator() {
-    return new RepetitionIterator();
-  }
+	@Override
+	public String toString() {
+		return toString("REPEAT " + repeatCount);
+	}
 
-  public String toString() {
-    return toString("REPEAT " + repeatCount );
-  }
+	public int getRepeatCount() {
+		return repeatCount;
+	}
 
-  public int getRepeatCount() {
-    return repeatCount;
-  }
-
-  public void process (ElementProcessor p) {
-    p.process(this);
-  }
+	@Override
+	public void process(ElementProcessor p) {
+		p.process(this);
+	}
 }

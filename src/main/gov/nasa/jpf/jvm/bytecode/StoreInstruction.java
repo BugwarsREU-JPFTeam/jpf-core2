@@ -21,8 +21,6 @@ package gov.nasa.jpf.jvm.bytecode;
 /**
  * abstraction for various store instructions
  */
-public interface StoreInstruction
-{
-  // just a type tag for now
+public interface StoreInstruction {
+	// just a type tag for now
 }
-

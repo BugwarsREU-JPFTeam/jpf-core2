@@ -22,110 +22,112 @@ package gov.nasa.jpf.vm;
 import gov.nasa.jpf.util.test.TestJPF;
 import gov.nasa.jpf.vm.BooleanChoiceGenerator;
 import gov.nasa.jpf.vm.ChoiceGenerator;
-import gov.nasa.jpf.vm.VM;
 import gov.nasa.jpf.vm.SystemState;
 import gov.nasa.jpf.vm.choice.DoubleChoiceFromList;
 import gov.nasa.jpf.vm.choice.IntChoiceFromSet;
 
 import org.junit.Test;
 
-
 /**
  * unit test driver for SystemState functions
  */
 public class SystemStateTest extends TestJPF {
 
-  static class MyJVM extends SingleProcessVM {
+	static class MyJVM extends SingleProcessVM {
 
-    protected void notifyChoiceGeneratorSet (ChoiceGenerator<?>cg) {
-      System.out.println("notifyChoiceGeneratorSet: " + cg);
-    }
-    protected void notifyChoiceGeneratorAdvanced (ChoiceGenerator<?>cg) {
-      System.out.println("notifyChoiceGeneratorAdvanced: " + cg);
-    }
-    protected void notifyChoiceGeneratorProcessed (ChoiceGenerator<?>cg) {
-      System.out.println("notifyChoiceGeneratorProcessed: " + cg);
-    }
-  }
+		@Override
+		protected void notifyChoiceGeneratorSet(ChoiceGenerator<?> cg) {
+			System.out.println("notifyChoiceGeneratorSet: " + cg);
+		}
 
-  static class MySystemState extends SystemState {
-  }
+		@Override
+		protected void notifyChoiceGeneratorAdvanced(ChoiceGenerator<?> cg) {
+			System.out.println("notifyChoiceGeneratorAdvanced: " + cg);
+		}
 
+		@Override
+		protected void notifyChoiceGeneratorProcessed(ChoiceGenerator<?> cg) {
+			System.out.println("notifyChoiceGeneratorProcessed: " + cg);
+		}
+	}
 
-  @Test
-  public void testCascadedCGops() {
+	static class MySystemState extends SystemState {
+	}
 
-    MyJVM vm = new MyJVM();
-    MySystemState ss = new MySystemState();
+	@Test
+	public void testCascadedCGops() {
 
-    IntChoiceFromSet       cg0 = new IntChoiceFromSet( "cg0", -100, -200); // not cascaded
-    BooleanChoiceGenerator cg1 = new BooleanChoiceGenerator("cg1"); // false,true
-    IntChoiceFromSet       cg2 = new IntChoiceFromSet( "cg2", 1, 2);
-    DoubleChoiceFromList    cg3 = new DoubleChoiceFromList( "cg3", 42.1, 42.2);
+		MyJVM vm = new MyJVM();
+		MySystemState ss = new MySystemState();
 
-    cg2.isCascaded = true;
-    cg1.isCascaded = true;
+		IntChoiceFromSet cg0 = new IntChoiceFromSet("cg0", -100, -200); // not
+																		// cascaded
+		BooleanChoiceGenerator cg1 = new BooleanChoiceGenerator("cg1"); // false,true
+		IntChoiceFromSet cg2 = new IntChoiceFromSet("cg2", 1, 2);
+		DoubleChoiceFromList cg3 = new DoubleChoiceFromList("cg3", 42.1, 42.2);
 
-    cg3.prev = cg2;
-    cg2.prev = cg1;
-    cg1.prev = cg0;
-    ss.curCg = cg3;
+		cg2.isCascaded = true;
+		cg1.isCascaded = true;
 
-    cg0.advance();
+		cg3.prev = cg2;
+		cg2.prev = cg1;
+		cg1.prev = cg0;
+		ss.curCg = cg3;
 
-    //--- test initial advance
-    System.out.println("--- testing advanceCurCg()");
-    ss.advanceCurCg(vm);
+		cg0.advance();
 
-    assert cg0.getNextChoice() == -100;
-    assert cg1.getNextChoice() == false;
-    assert cg2.getNextChoice() == 1;
-    assert cg3.getNextChoice() == 42.1;
+		// --- test initial advance
+		System.out.println("--- testing advanceCurCg()");
+		ss.advanceCurCg(vm);
 
+		assert cg0.getNextChoice() == -100;
+		assert cg1.getNextChoice() == false;
+		assert cg2.getNextChoice() == 1;
+		assert cg3.getNextChoice() == 42.1;
 
-    //--- test advanceCascadedParent
-    System.out.println("--- testing advanceCascadedParent()");
-    cg2.advance(2);
-    cg3.advance(2);
+		// --- test advanceCascadedParent
+		System.out.println("--- testing advanceCascadedParent()");
+		cg2.advance(2);
+		cg3.advance(2);
 
-    assert !cg2.hasMoreChoices();
-    assert !cg3.hasMoreChoices();
+		assert !cg2.hasMoreChoices();
+		assert !cg3.hasMoreChoices();
 
-    System.out.println(cg1);
-    System.out.println(cg2);
-    System.out.println(cg3);
-        
-    ss.advanceCascadedParent(vm,cg3);
+		System.out.println(cg1);
+		System.out.println(cg2);
+		System.out.println(cg3);
 
-    assert cg0.getNextChoice() == -100;
-    assert cg1.getNextChoice() == true;
-    assert cg2.getNextChoice() == 1;
-    assert cg3.getNextChoice() == 42.1;
-  }
+		ss.advanceCascadedParent(vm, cg3);
 
-  @Test
-  public void testCascadedCGadvance() {
+		assert cg0.getNextChoice() == -100;
+		assert cg1.getNextChoice() == true;
+		assert cg2.getNextChoice() == 1;
+		assert cg3.getNextChoice() == 42.1;
+	}
 
-    MyJVM vm = new MyJVM();
-    MySystemState ss = new MySystemState();
+	@Test
+	public void testCascadedCGadvance() {
 
-    BooleanChoiceGenerator cg1 = new BooleanChoiceGenerator("cg1"); // false,true
-    IntChoiceFromSet       cg2 = new IntChoiceFromSet( "cg2", 1, 2);
-    DoubleChoiceFromList    cg3 = new DoubleChoiceFromList( "cg3", 42.1, 42.2);
+		MyJVM vm = new MyJVM();
+		MySystemState ss = new MySystemState();
 
-    cg2.isCascaded = true;
-    cg1.isCascaded = true;
+		BooleanChoiceGenerator cg1 = new BooleanChoiceGenerator("cg1"); // false,true
+		IntChoiceFromSet cg2 = new IntChoiceFromSet("cg2", 1, 2);
+		DoubleChoiceFromList cg3 = new DoubleChoiceFromList("cg3", 42.1, 42.2);
 
-    cg3.prev = cg2;
-    cg2.prev = cg1;
-    ss.curCg = cg3;
+		cg2.isCascaded = true;
+		cg1.isCascaded = true;
 
-    int n = 0;
-    while (ss.advanceCurCg(vm)){
-      System.out.println("--");
-      n++;
-    }
+		cg3.prev = cg2;
+		cg2.prev = cg1;
+		ss.curCg = cg3;
 
-    assert n == 8;
-  }
+		int n = 0;
+		while (ss.advanceCurCg(vm)) {
+			System.out.println("--");
+			n++;
+		}
+
+		assert n == 8;
+	}
 }

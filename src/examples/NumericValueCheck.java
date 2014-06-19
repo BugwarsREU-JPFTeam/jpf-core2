@@ -18,15 +18,17 @@
 //
 
 /**
- * example to catch numeric value rnge violations with the NumericValueChecker listener
+ * example to catch numeric value rnge violations with the NumericValueChecker
+ * listener
  */
 public class NumericValueCheck {
-  
-  public static void main (String[] args){
-    double someVariable;
-    
-    someVariable = 42;  // what else
-    
-    someVariable = 12345; // ..That's the number only an idiot would have on his luggage
-  }
+
+	public static void main(String[] args) {
+		double someVariable;
+
+		someVariable = 42; // what else
+
+		someVariable = 12345; // ..That's the number only an idiot would have on
+								// his luggage
+	}
 }

@@ -20,26 +20,33 @@
 package gov.nasa.jpf.report;
 
 /**
- * this is just a little helper class to ease standalone PublisherExtension implementations
+ * this is just a little helper class to ease standalone PublisherExtension
+ * implementations
  */
 public class PublisherExtensionAdapter implements PublisherExtension {
 
-  @Override
-  public void publishConstraintHit(Publisher publisher) {}
+	@Override
+	public void publishConstraintHit(Publisher publisher) {
+	}
 
-  @Override
-  public void publishFinished(Publisher publisher) {}
+	@Override
+	public void publishFinished(Publisher publisher) {
+	}
 
-  @Override
-  public void publishPropertyViolation(Publisher publisher) {}
+	@Override
+	public void publishPropertyViolation(Publisher publisher) {
+	}
 
-  @Override
-  public void publishStart(Publisher publisher) {}
+	@Override
+	public void publishStart(Publisher publisher) {
+	}
 
-  @Override
-  public void publishTransition(Publisher publisher) {}
+	@Override
+	public void publishTransition(Publisher publisher) {
+	}
 
-  @Override
-  public void publishProbe(Publisher publisher) {}
+	@Override
+	public void publishProbe(Publisher publisher) {
+	}
 
 }

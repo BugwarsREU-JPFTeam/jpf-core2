@@ -21,84 +21,87 @@ package gov.nasa.jpf.jvm.bytecode;
 import gov.nasa.jpf.jvm.JVMInstruction;
 import gov.nasa.jpf.vm.*;
 
-
 /**
- * Create new object
- * ... => ..., objectref
+ * Create new object ... => ..., objectref
  */
 public class NEW extends JVMInstruction implements AllocInstruction {
-  protected String cname;
-  protected int newObjRef = MJIEnv.NULL;
+	protected String cname;
+	protected int newObjRef = MJIEnv.NULL;
 
-  public NEW (String clsDescriptor){
-    cname = Types.getClassNameFromTypeName(clsDescriptor);
-  }
-  
-  public String getClassName(){    // Needed for Java Race Finder
-    return(cname);
-  }
+	public NEW(String clsDescriptor) {
+		cname = Types.getClassNameFromTypeName(clsDescriptor);
+	}
 
-  @Override
-  public Instruction execute (ThreadInfo ti) {
-    Heap heap = ti.getHeap();
-    ClassInfo ci;
+	public String getClassName() { // Needed for Java Race Finder
+		return (cname);
+	}
 
-    // resolve the referenced class
-    try {
-      ci = ti.resolveReferencedClass(cname);
-    } catch(LoadOnJPFRequired lre) {
-      return ti.getPC();
-    }
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		Heap heap = ti.getHeap();
+		ClassInfo ci;
 
-    if (!ci.isRegistered()){
-      ci.registerClass(ti);
-    }
+		// resolve the referenced class
+		try {
+			ci = ti.resolveReferencedClass(cname);
+		} catch (LoadOnJPFRequired lre) {
+			return ti.getPC();
+		}
 
-    // since this is a NEW, we also have to pushClinit
-    if (!ci.isInitialized()) {
-      if (ci.initializeClass(ti)) {
-        return ti.getPC();  // reexecute this instruction once we return from the clinits
-      }
-    }
+		if (!ci.isRegistered()) {
+			ci.registerClass(ti);
+		}
 
-    if (heap.isOutOfMemory()) { // simulate OutOfMemoryError
-      return ti.createAndThrowException("java.lang.OutOfMemoryError",
-                                        "trying to allocate new " + cname);
-    }
+		// since this is a NEW, we also have to pushClinit
+		if (!ci.isInitialized()) {
+			if (ci.initializeClass(ti)) {
+				return ti.getPC(); // reexecute this instruction once we return
+									// from the clinits
+			}
+		}
 
-    ElementInfo ei = heap.newObject(ci, ti);
-    int objRef = ei.getObjectRef();
-    newObjRef = objRef;
+		if (heap.isOutOfMemory()) { // simulate OutOfMemoryError
+			return ti.createAndThrowException("java.lang.OutOfMemoryError",
+					"trying to allocate new " + cname);
+		}
 
-    // pushes the return value onto the stack
-    StackFrame frame = ti.getModifiableTopFrame();
-    frame.pushRef( objRef);
+		ElementInfo ei = heap.newObject(ci, ti);
+		int objRef = ei.getObjectRef();
+		newObjRef = objRef;
 
-    return getNext(ti);
-  }
+		// pushes the return value onto the stack
+		StackFrame frame = ti.getModifiableTopFrame();
+		frame.pushRef(objRef);
 
-  public int getLength() {
-    return 3; // opcode, index1, index2
-  }
+		return getNext(ti);
+	}
 
-  public int getByteCode () {
-    return 0xBB;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public int getLength() {
+		return 3; // opcode, index1, index2
+	}
 
-  public int getNewObjectRef() {
-    return newObjRef;
-  }
+	@Override
+	public int getByteCode() {
+		return 0xBB;
+	}
 
-  public String toString() {
-    if (newObjRef != MJIEnv.NULL){
-      return "new " + cname + '@' + Integer.toHexString(newObjRef);
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 
-    } else {
-      return "new " + cname;
-    }
-  }
+	public int getNewObjectRef() {
+		return newObjRef;
+	}
+
+	@Override
+	public String toString() {
+		if (newObjRef != MJIEnv.NULL) {
+			return "new " + cname + '@' + Integer.toHexString(newObjRef);
+
+		} else {
+			return "new " + cname;
+		}
+	}
 }

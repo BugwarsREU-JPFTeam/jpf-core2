@@ -28,158 +28,174 @@ import gov.nasa.jpf.vm.ThreadInfo;
 
 import java.util.Iterator;
 
-
 /**
  * abstraction for the various return instructions
  */
-public abstract class ReturnInstruction extends JVMInstruction implements gov.nasa.jpf.vm.ReturnInstruction {
+public abstract class ReturnInstruction extends JVMInstruction implements
+		gov.nasa.jpf.vm.ReturnInstruction {
 
-  // to store where we came from
-  protected StackFrame returnFrame;
+	// to store where we came from
+	protected StackFrame returnFrame;
 
-  abstract public int getReturnTypeSize();
-  abstract protected Object getReturnedOperandAttr(StackFrame frame);
-  
-  // note these are only callable from within the same enter - thread interleavings
-  // would cause races
-  abstract protected void getAndSaveReturnValue (StackFrame frame);
-  abstract protected void pushReturnValue (StackFrame frame);
+	abstract public int getReturnTypeSize();
 
-  public abstract Object getReturnValue(ThreadInfo ti);
+	abstract protected Object getReturnedOperandAttr(StackFrame frame);
 
-  public StackFrame getReturnFrame() {
-    return returnFrame;
-  }
+	// note these are only callable from within the same enter - thread
+	// interleavings
+	// would cause races
+	abstract protected void getAndSaveReturnValue(StackFrame frame);
 
-  public void setReturnFrame(StackFrame frame){
-    returnFrame = frame;
-  }
+	abstract protected void pushReturnValue(StackFrame frame);
 
-  /**
-   * this is important since keeping the StackFrame alive would be a major
-   * memory leak
-   */
-  @Override
-  public void cleanupTransients(){
-    returnFrame = null;
-  }
-  
-  //--- attribute accessors
-  
-  // the accessors are here to save the client some effort regarding the
-  // return type (slot size).
-  // Since these are all public methods that can be called by listeners,
-  // we stick to the ThreadInfo argument
-  
-  public boolean hasReturnAttr (ThreadInfo ti){
-    StackFrame frame = ti.getTopFrame();
-    return frame.hasOperandAttr();
-  }
-  public boolean hasReturnAttr (ThreadInfo ti, Class<?> type){
-    StackFrame frame = ti.getTopFrame();
-    return frame.hasOperandAttr(type);
-  }
-  
-  /**
-   * this returns all of them - use either if you know there will be only
-   * one attribute at a time, or check/process result with ObjectList
-   * 
-   * obviously, this only makes sense from an instructionExecuted(), since
-   * the value is pushed during the enter(). Use ObjectList to access values
-   */
-  public Object getReturnAttr (ThreadInfo ti){
-    StackFrame frame = ti.getTopFrame();
-    return frame.getOperandAttr();
-  }
+	public abstract Object getReturnValue(ThreadInfo ti);
 
-  /**
-   * this replaces all of them - use only if you know 
-   *  - there will be only one attribute at a time
-   *  - you obtained the value you set by a previous getXAttr()
-   *  - you constructed a multi value list with ObjectList.createList()
-   * 
-   * we don't clone since pushing a return value already changed the caller frame
-   */
-  public void setReturnAttr (ThreadInfo ti, Object a){
-    StackFrame frame = ti.getModifiableTopFrame();
-    frame.setOperandAttr(a);
-  }
-  
-  public void addReturnAttr (ThreadInfo ti, Object attr){
-    StackFrame frame = ti.getModifiableTopFrame();
-    frame.addOperandAttr(attr);
-  }
+	public StackFrame getReturnFrame() {
+		return returnFrame;
+	}
 
-  /**
-   * this only returns the first attr of this type, there can be more
-   * if you don't use client private types or the provided type is too general
-   */
-  public <T> T getReturnAttr (ThreadInfo ti, Class<T> type){
-    StackFrame frame = ti.getTopFrame();
-    return frame.getOperandAttr(type);
-  }
-  public <T> T getNextReturnAttr (ThreadInfo ti, Class<T> type, Object prev){
-    StackFrame frame = ti.getTopFrame();
-    return frame.getNextOperandAttr(type, prev);
-  }
-  public Iterator<?> returnAttrIterator (ThreadInfo ti){
-    StackFrame frame = ti.getTopFrame();
-    return frame.operandAttrIterator();
-  }
-  public <T> Iterator<T> returnAttrIterator (ThreadInfo ti, Class<T> type){
-    StackFrame frame = ti.getTopFrame();
-    return frame.operandAttrIterator(type);
-  }
-  
-  // -- end attribute accessors --
-  
-  public Instruction execute (ThreadInfo ti) {
+	public void setReturnFrame(StackFrame frame) {
+		returnFrame = frame;
+	}
 
-    if (!ti.isFirstStepInsn()) {
-      ti.leave();  // takes care of unlocking before potentially creating a CG
+	/**
+	 * this is important since keeping the StackFrame alive would be a major
+	 * memory leak
+	 */
+	@Override
+	public void cleanupTransients() {
+		returnFrame = null;
+	}
 
-      if (mi.isSynchronized()) {
-        int objref = mi.isStatic() ? mi.getClassInfo().getClassObjectRef() : ti.getThis();
-        ElementInfo ei = ti.getElementInfo(objref);
+	// --- attribute accessors
 
-        if (ei.getLockCount() == 0){
-          ei = ei.getInstanceWithUpdatedSharedness(ti); 
-          if (ei.isShared()) {
-            VM vm = ti.getVM();
-            ChoiceGenerator<ThreadInfo> cg = vm.getSchedulerFactory().createSyncMethodExitCG(ei, ti);
-            if (cg != null) {
-              if (vm.setNextChoiceGenerator(cg)) {
-                ti.skipInstructionLogging();
-                return this; // re-enter
-              }
-            }
-          }
-        }
-      }
-    }
+	// the accessors are here to save the client some effort regarding the
+	// return type (slot size).
+	// Since these are all public methods that can be called by listeners,
+	// we stick to the ThreadInfo argument
 
-    StackFrame frame = ti.getModifiableTopFrame();
-    returnFrame = frame;
-    Object attr = getReturnedOperandAttr(frame); // the return attr - get this before we pop
-    getAndSaveReturnValue(frame);
-    
-    // note that this is never the first frame, since we start all threads (incl. main)
-    // through a direct call
-    frame = ti.popAndGetModifiableTopFrame();
+	public boolean hasReturnAttr(ThreadInfo ti) {
+		StackFrame frame = ti.getTopFrame();
+		return frame.hasOperandAttr();
+	}
 
-    // remove args, push return value and continue with next insn
-    // (DirectCallStackFrames don't use this)
-    frame.removeArguments(mi);
-    pushReturnValue(frame);
+	public boolean hasReturnAttr(ThreadInfo ti, Class<?> type) {
+		StackFrame frame = ti.getTopFrame();
+		return frame.hasOperandAttr(type);
+	}
 
-    if (attr != null) {
-      setReturnAttr(ti, attr);
-    }
+	/**
+	 * this returns all of them - use either if you know there will be only one
+	 * attribute at a time, or check/process result with ObjectList
+	 * 
+	 * obviously, this only makes sense from an instructionExecuted(), since the
+	 * value is pushed during the enter(). Use ObjectList to access values
+	 */
+	public Object getReturnAttr(ThreadInfo ti) {
+		StackFrame frame = ti.getTopFrame();
+		return frame.getOperandAttr();
+	}
 
-    return frame.getPC().getNext();
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	/**
+	 * this replaces all of them - use only if you know - there will be only one
+	 * attribute at a time - you obtained the value you set by a previous
+	 * getXAttr() - you constructed a multi value list with
+	 * ObjectList.createList()
+	 * 
+	 * we don't clone since pushing a return value already changed the caller
+	 * frame
+	 */
+	public void setReturnAttr(ThreadInfo ti, Object a) {
+		StackFrame frame = ti.getModifiableTopFrame();
+		frame.setOperandAttr(a);
+	}
+
+	public void addReturnAttr(ThreadInfo ti, Object attr) {
+		StackFrame frame = ti.getModifiableTopFrame();
+		frame.addOperandAttr(attr);
+	}
+
+	/**
+	 * this only returns the first attr of this type, there can be more if you
+	 * don't use client private types or the provided type is too general
+	 */
+	public <T> T getReturnAttr(ThreadInfo ti, Class<T> type) {
+		StackFrame frame = ti.getTopFrame();
+		return frame.getOperandAttr(type);
+	}
+
+	public <T> T getNextReturnAttr(ThreadInfo ti, Class<T> type, Object prev) {
+		StackFrame frame = ti.getTopFrame();
+		return frame.getNextOperandAttr(type, prev);
+	}
+
+	public Iterator<?> returnAttrIterator(ThreadInfo ti) {
+		StackFrame frame = ti.getTopFrame();
+		return frame.operandAttrIterator();
+	}
+
+	public <T> Iterator<T> returnAttrIterator(ThreadInfo ti, Class<T> type) {
+		StackFrame frame = ti.getTopFrame();
+		return frame.operandAttrIterator(type);
+	}
+
+	// -- end attribute accessors --
+
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+
+		if (!ti.isFirstStepInsn()) {
+			ti.leave(); // takes care of unlocking before potentially creating a
+						// CG
+
+			if (mi.isSynchronized()) {
+				int objref = mi.isStatic() ? mi.getClassInfo()
+						.getClassObjectRef() : ti.getThis();
+				ElementInfo ei = ti.getElementInfo(objref);
+
+				if (ei.getLockCount() == 0) {
+					ei = ei.getInstanceWithUpdatedSharedness(ti);
+					if (ei.isShared()) {
+						VM vm = ti.getVM();
+						ChoiceGenerator<ThreadInfo> cg = vm
+								.getSchedulerFactory().createSyncMethodExitCG(
+										ei, ti);
+						if (cg != null) {
+							if (vm.setNextChoiceGenerator(cg)) {
+								ti.skipInstructionLogging();
+								return this; // re-enter
+							}
+						}
+					}
+				}
+			}
+		}
+
+		StackFrame frame = ti.getModifiableTopFrame();
+		returnFrame = frame;
+		Object attr = getReturnedOperandAttr(frame); // the return attr - get
+														// this before we pop
+		getAndSaveReturnValue(frame);
+
+		// note that this is never the first frame, since we start all threads
+		// (incl. main)
+		// through a direct call
+		frame = ti.popAndGetModifiableTopFrame();
+
+		// remove args, push return value and continue with next insn
+		// (DirectCallStackFrames don't use this)
+		frame.removeArguments(mi);
+		pushReturnValue(frame);
+
+		if (attr != null) {
+			setReturnAttr(ti, attr);
+		}
+
+		return frame.getPC().getNext();
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

@@ -30,177 +30,209 @@ import sun.nio.ch.Interruptible;
 import sun.reflect.ConstantPool;
 import sun.reflect.annotation.AnnotationType;
 
-
 public class System {
 
-  static Properties properties;
+	static Properties properties;
 
-  public static InputStream in; // new BufferedInputStream(...);  // <2do> not yet
-  public static PrintStream out;
-  public static PrintStream err;
-  
-  static {
+	public static InputStream in; // new BufferedInputStream(...); // <2do> not
+									// yet
+	public static PrintStream out;
+	public static PrintStream err;
 
-    out = createSystemOut();
-    err = createSystemErr();
+	static {
 
-    properties = new Properties();
+		out = createSystemOut();
+		err = createSystemErr();
 
-    String[] kv = getKeyValuePairs();
-    for (int i=0; i<kv.length; i+=2){
-      String key = kv[i];
-      String val = kv[i+1];
+		properties = new Properties();
 
-      if (key != null && val != null) {
-        properties.put(kv[i], kv[i+1]);
-      }
-    }
+		String[] kv = getKeyValuePairs();
+		for (int i = 0; i < kv.length; i += 2) {
+			String key = kv[i];
+			String val = kv[i + 1];
 
-    // this is the Java 6 sun.misc.SharedSecrets backdoor mechanism which I
-    // would have prefered not to learn about. It's a mess WRT Java 1.5 / 6 compatibility
-    // <2do> - most if this isn't supported yet
-    SharedSecrets.setJavaLangAccess( createJavaLangAccess());
+			if (key != null && val != null) {
+				properties.put(kv[i], kv[i + 1]);
+			}
+		}
 
-    // <2do> this is an approximation that isn't particularly safe since we don't
-    // initialize sun.misc.VM
-    //sun.misc.VM.booted();
-  }
+		// this is the Java 6 sun.misc.SharedSecrets backdoor mechanism which I
+		// would have prefered not to learn about. It's a mess WRT Java 1.5 / 6
+		// compatibility
+		// <2do> - most if this isn't supported yet
+		SharedSecrets.setJavaLangAccess(createJavaLangAccess());
 
-  static JavaLangAccess createJavaLangAccess () {
-    return new JavaLangAccess(){
-      public ConstantPool getConstantPool(Class<?> cls) {
-        throw new UnsupportedOperationException("JavaLangAccess.getConstantPool() not supported yet");
-        //return cls.getConstantPool();
-      }
-      public void setAnnotationType(Class<?> cls, AnnotationType type) {
-        throw new UnsupportedOperationException("JavaLangAccess.setAnnotationType() not supported yet");
-        //cls.setAnnotationType(type);
-      }
-      public AnnotationType getAnnotationType(Class<?> cls) {
-        throw new UnsupportedOperationException("JavaLangAccess.getAnnotationType() not supported yet");
-        //return cls.getAnnotationType();
-      }
-      public <E extends Enum<E>> E[] getEnumConstantsShared(Class<E> cls) {
-        return cls.getEnumConstantsShared();
-      }
-      public void blockedOn(Thread t, Interruptible b) {
-        throw new UnsupportedOperationException("JavaLangAccess.blockedOn() not supported yet");
-        //t.blockedOn(b);
-      }
-      public void registerShutdownHook(int slot, Runnable r) {
-        throw new UnsupportedOperationException("JavaLangAccess.registerShutdownHook() not supported yet");
-      }
-      public int getStackTraceDepth(Throwable t) {
-        return t.getStackTraceDepth();
-      }
-      public StackTraceElement getStackTraceElement(Throwable t, int i) {
-        StackTraceElement[] st = t.getStackTrace();
-        return st[i];
-      }
-    };
-  }
+		// <2do> this is an approximation that isn't particularly safe since we
+		// don't
+		// initialize sun.misc.VM
+		// sun.misc.VM.booted();
+	}
 
-  static private native String[] getKeyValuePairs();
+	static JavaLangAccess createJavaLangAccess() {
+		return new JavaLangAccess() {
+			@Override
+			public ConstantPool getConstantPool(Class<?> cls) {
+				throw new UnsupportedOperationException(
+						"JavaLangAccess.getConstantPool() not supported yet");
+				// return cls.getConstantPool();
+			}
 
-  static private native PrintStream createSystemOut();
-  static private native PrintStream createSystemErr();
+			@Override
+			public void setAnnotationType(Class<?> cls, AnnotationType type) {
+				throw new UnsupportedOperationException(
+						"JavaLangAccess.setAnnotationType() not supported yet");
+				// cls.setAnnotationType(type);
+			}
 
-  //--- standard streams
-  public static void setIn (InputStream newIn) {
-    in = newIn;
-  }
+			@Override
+			public AnnotationType getAnnotationType(Class<?> cls) {
+				throw new UnsupportedOperationException(
+						"JavaLangAccess.getAnnotationType() not supported yet");
+				// return cls.getAnnotationType();
+			}
 
-  public static void setOut (PrintStream newOut){
-    out = newOut;
-  }
+			@Override
+			public <E extends Enum<E>> E[] getEnumConstantsShared(Class<E> cls) {
+				return cls.getEnumConstantsShared();
+			}
 
-  public static void setErr (PrintStream newErr) {
-    err = newErr;
-  }
+			@Override
+			public void blockedOn(Thread t, Interruptible b) {
+				throw new UnsupportedOperationException(
+						"JavaLangAccess.blockedOn() not supported yet");
+				// t.blockedOn(b);
+			}
 
-  public static Channel inheritedChannel() {
-    throw new UnsupportedOperationException("inheritedChannel() not yet supported");
-  }
+			@Override
+			public void registerShutdownHook(int slot, Runnable r) {
+				throw new UnsupportedOperationException(
+						"JavaLangAccess.registerShutdownHook() not supported yet");
+			}
 
-  //--- misc
-  public static native void exit (int rc);
-  public static native void arraycopy (Object src, int srcPos,
-                                       Object dst, int dstPos, int len);
-  public static native void gc();
-  public static native void runFinalization();
-  public static native void runFinalizersOnExit(boolean cond);
-  static native Class<?> getCallerClass();
-  public static native int identityHashCode (Object o);
+			@Override
+			public int getStackTraceDepth(Throwable t) {
+				return t.getStackTraceDepth();
+			}
 
+			@Override
+			public StackTraceElement getStackTraceElement(Throwable t, int i) {
+				StackTraceElement[] st = t.getStackTrace();
+				return st[i];
+			}
+		};
+	}
 
-  //--- time management
-  public static native long currentTimeMillis();
-  public static native long nanoTime();
+	static private native String[] getKeyValuePairs();
 
-  //--- environment
-  public static native String getenv (String key);
-  public static Map<String,String> getenv() {
-    throw new UnsupportedOperationException("getenv() not yet supported");
-  }
+	static private native PrintStream createSystemOut();
 
-  //--- security manager
-  static SecurityManager securityManager;
+	static private native PrintStream createSystemErr();
 
-  public static void setSecurityManager (SecurityManager newManager) {
-    securityManager = newManager;
-  }
+	// --- standard streams
+	public static void setIn(InputStream newIn) {
+		in = newIn;
+	}
 
-  public static SecurityManager getSecurityManager() {
-    return securityManager;
-  }
+	public static void setOut(PrintStream newOut) {
+		out = newOut;
+	}
 
-  //--- system properties
+	public static void setErr(PrintStream newErr) {
+		err = newErr;
+	}
 
-  public static Properties getProperties() {
-    return properties;
-  }
-  public static void setProperties(Properties newProps){
-    properties = newProps;
-  }
+	public static Channel inheritedChannel() {
+		throw new UnsupportedOperationException(
+				"inheritedChannel() not yet supported");
+	}
 
-  public static String getProperty (String key) {
-    return properties.getProperty(key);
-  }
+	// --- misc
+	public static native void exit(int rc);
 
-  public static String getProperty (String key, String def){
-    String v = properties.getProperty(key);
-    if (v == null){
-      return def;
-    } else {
-      return v;
-    }
-  }
+	public static native void arraycopy(Object src, int srcPos, Object dst,
+			int dstPos, int len);
 
-  public static String setProperty (String key, String value){
-    String oldVal = properties.getProperty(key);
-    properties.put(key,value);
-    return oldVal;
-  }
+	public static native void gc();
 
-  public static String clearProperty (String key) {
-    String oldVal = properties.getProperty(key);
-    properties.remove(key);
-    return oldVal;
-  }
+	public static native void runFinalization();
 
-  //--- native libs
-  public static void load (String pathName) {
-    // nothing, we don't have native libs
-    // (maybe we could on-demand load peers?)
-  }
+	public static native void runFinalizersOnExit(boolean cond);
 
-  public static void loadLibrary (String libName){
-    // nothing yet
-  }
+	static native Class<?> getCallerClass();
 
-  public static String mapLibraryName (String libName){
-    // just a placeholder (Unix flavor)
-    return "lib" + libName + ".so";
-  }
+	public static native int identityHashCode(Object o);
+
+	// --- time management
+	public static native long currentTimeMillis();
+
+	public static native long nanoTime();
+
+	// --- environment
+	public static native String getenv(String key);
+
+	public static Map<String, String> getenv() {
+		throw new UnsupportedOperationException("getenv() not yet supported");
+	}
+
+	// --- security manager
+	static SecurityManager securityManager;
+
+	public static void setSecurityManager(SecurityManager newManager) {
+		securityManager = newManager;
+	}
+
+	public static SecurityManager getSecurityManager() {
+		return securityManager;
+	}
+
+	// --- system properties
+
+	public static Properties getProperties() {
+		return properties;
+	}
+
+	public static void setProperties(Properties newProps) {
+		properties = newProps;
+	}
+
+	public static String getProperty(String key) {
+		return properties.getProperty(key);
+	}
+
+	public static String getProperty(String key, String def) {
+		String v = properties.getProperty(key);
+		if (v == null) {
+			return def;
+		} else {
+			return v;
+		}
+	}
+
+	public static String setProperty(String key, String value) {
+		String oldVal = properties.getProperty(key);
+		properties.put(key, value);
+		return oldVal;
+	}
+
+	public static String clearProperty(String key) {
+		String oldVal = properties.getProperty(key);
+		properties.remove(key);
+		return oldVal;
+	}
+
+	// --- native libs
+	public static void load(String pathName) {
+		// nothing, we don't have native libs
+		// (maybe we could on-demand load peers?)
+	}
+
+	public static void loadLibrary(String libName) {
+		// nothing yet
+	}
+
+	public static String mapLibraryName(String libName) {
+		// just a placeholder (Unix flavor)
+		return "lib" + libName + ".so";
+	}
 
 }

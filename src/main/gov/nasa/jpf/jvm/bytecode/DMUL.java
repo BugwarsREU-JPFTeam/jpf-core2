@@ -22,36 +22,33 @@ import gov.nasa.jpf.jvm.JVMInstruction;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
-import gov.nasa.jpf.vm.Types;
-
 
 /**
- * Multiply double
- * ..., value1, value2 => ..., result
+ * Multiply double ..., value1, value2 => ..., result
  */
 public class DMUL extends JVMInstruction {
 
-  @Override
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    double v1 = frame.popDouble();
-    double v2 = frame.popDouble();
-    
-    double r = v2 * v1;
-    
-    frame.pushDouble(r);
-    
-    return getNext(ti);
-  }
+		double v1 = frame.popDouble();
+		double v2 = frame.popDouble();
 
-  @Override
-  public int getByteCode () {
-    return 0x6B;
-  }
-  
-  @Override
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		double r = v2 * v1;
+
+		frame.pushDouble(r);
+
+		return getNext(ti);
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0x6B;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

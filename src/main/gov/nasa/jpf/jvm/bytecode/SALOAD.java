@@ -21,26 +21,27 @@ package gov.nasa.jpf.jvm.bytecode;
 import gov.nasa.jpf.vm.ArrayIndexOutOfBoundsExecutiveException;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.StackFrame;
-import gov.nasa.jpf.vm.ThreadInfo;
 
 /**
- * Load short from array
- * ..., arrayref, index => ..., value
+ * Load short from array ..., arrayref, index => ..., value
  */
 public class SALOAD extends ArrayLoadInstruction {
 
-  protected void push (StackFrame frame, ElementInfo ei, int index) throws ArrayIndexOutOfBoundsExecutiveException {
-    ei.checkArrayBounds(index);
-    short value = ei.getShortElement(index);
-    frame.push( value);
-  }
+	@Override
+	protected void push(StackFrame frame, ElementInfo ei, int index)
+			throws ArrayIndexOutOfBoundsExecutiveException {
+		ei.checkArrayBounds(index);
+		short value = ei.getShortElement(index);
+		frame.push(value);
+	}
 
+	@Override
+	public int getByteCode() {
+		return 0x35;
+	}
 
-  public int getByteCode () {
-    return 0x35;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

@@ -21,49 +21,50 @@ package gov.nasa.jpf.search.heuristic;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.vm.VM;
 
-
 /**
  * heuristic state prioritizer that tries to minimize re-scheduling
  */
 public class GlobalSwitchThread extends SimplePriorityHeuristic {
-  private int[] threads;
+	private int[] threads;
 
-  public GlobalSwitchThread (Config config, VM vm) {
-    super(config, vm);
-    
-    int threadHistorySize = config.getInt("search.heuristic.thread_history_size", 10);
-    
-    threads = new int[threadHistorySize];
+	public GlobalSwitchThread(Config config, VM vm) {
+		super(config, vm);
 
-    for (int i = 0; i < threads.length; i++) {
-      threads[i] = -1;
-    }
-  }
+		int threadHistorySize = config.getInt(
+				"search.heuristic.thread_history_size", 10);
 
-  protected int computeHeuristicValue () {
-    int aliveThreads = vm.getThreadList().getMatchingCount(aliveThread);
+		threads = new int[threadHistorySize];
 
-    int lastRun = vm.getLastTransition().getThreadIndex();
-    int h_value = 0;
+		for (int i = 0; i < threads.length; i++) {
+			threads[i] = -1;
+		}
+	}
 
-    if (aliveThreads > 1) {
-      for (int i = 0; i < threads.length; i++) {
-        if (lastRun == threads[i]) {
-          h_value += ((threads.length - i) * aliveThreads);
-        }
-      }
-    }
+	@Override
+	protected int computeHeuristicValue() {
+		int aliveThreads = vm.getThreadList().getMatchingCount(aliveThread);
 
-    int temp0 = threads[0];
-    int temp1;
-    threads[0] = lastRun;
+		int lastRun = vm.getLastTransition().getThreadIndex();
+		int h_value = 0;
 
-    for (int i = 1; i < threads.length; i++) {
-      temp1 = threads[i];
-      threads[i] = temp0;
-      temp0 = temp1;
-    }
+		if (aliveThreads > 1) {
+			for (int i = 0; i < threads.length; i++) {
+				if (lastRun == threads[i]) {
+					h_value += ((threads.length - i) * aliveThreads);
+				}
+			}
+		}
 
-    return h_value;
-  }
+		int temp0 = threads[0];
+		int temp1;
+		threads[0] = lastRun;
+
+		for (int i = 1; i < threads.length; i++) {
+			temp1 = threads[i];
+			threads[i] = temp0;
+			temp0 = temp1;
+		}
+
+		return h_value;
+	}
 }

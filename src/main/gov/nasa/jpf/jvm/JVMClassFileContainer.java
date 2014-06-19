@@ -22,7 +22,6 @@ package gov.nasa.jpf.jvm;
 import gov.nasa.jpf.vm.AnnotationInfo;
 import gov.nasa.jpf.vm.ClassFileContainer;
 import gov.nasa.jpf.vm.ClassFileMatch;
-import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ClassLoaderInfo;
 import gov.nasa.jpf.vm.ClassParseException;
 
@@ -30,52 +29,56 @@ import gov.nasa.jpf.vm.ClassParseException;
  * ClassFileContainer that holds Java classfiles
  */
 public abstract class JVMClassFileContainer extends ClassFileContainer {
-  
-  // the VM and container type specific info we need to instantiate a ClassInfo from this container
-  public class JVMClassFileMatch extends ClassFileMatch {
-    byte[] data;
-    
-    JVMClassFileMatch (String typeName, String url, byte[] data) {
-      super(typeName, url);
-      
-      this.data = data;
-    }
-    
-    @Override
-    public ClassFileContainer getContainer(){
-      return JVMClassFileContainer.this;
-    }
-    
-    public byte[] getData(){
-      return data;
-    }
-    
-    @Override
-    public JVMClassInfo createClassInfo (ClassLoaderInfo loader) throws ClassParseException {
-      JVMSystemClassLoaderInfo sysCli = (JVMSystemClassLoaderInfo)loader.getSystemClassLoader();
-      
-      JVMCodeBuilder cb = sysCli.getCodeBuilder(typeName);
-      ClassFile cf = new ClassFile(data);
-      
-      return new JVMClassInfo( typeName, loader, cf, url, cb);
-    }
-    
-    @Override
-    public AnnotationInfo createAnnotationInfo (ClassLoaderInfo loader) throws ClassParseException {
-    ClassFile cf = new ClassFile(data);
-    JVMAnnotationParser parser = new JVMAnnotationParser(cf);
 
-    return new AnnotationInfo(typeName, loader, parser);
-    }
-  }
-  
-  protected JVMClassFileContainer (String name, String url) {
-    super(name, url);
-  }
-  
-  @Override
-  public String getClassURL (String typeName){
-    return getURL() + typeName.replace('.', '/') + ".class";
-  }
+	// the VM and container type specific info we need to instantiate a
+	// ClassInfo from this container
+	public class JVMClassFileMatch extends ClassFileMatch {
+		byte[] data;
+
+		JVMClassFileMatch(String typeName, String url, byte[] data) {
+			super(typeName, url);
+
+			this.data = data;
+		}
+
+		@Override
+		public ClassFileContainer getContainer() {
+			return JVMClassFileContainer.this;
+		}
+
+		public byte[] getData() {
+			return data;
+		}
+
+		@Override
+		public JVMClassInfo createClassInfo(ClassLoaderInfo loader)
+				throws ClassParseException {
+			JVMSystemClassLoaderInfo sysCli = (JVMSystemClassLoaderInfo) loader
+					.getSystemClassLoader();
+
+			JVMCodeBuilder cb = sysCli.getCodeBuilder(typeName);
+			ClassFile cf = new ClassFile(data);
+
+			return new JVMClassInfo(typeName, loader, cf, url, cb);
+		}
+
+		@Override
+		public AnnotationInfo createAnnotationInfo(ClassLoaderInfo loader)
+				throws ClassParseException {
+			ClassFile cf = new ClassFile(data);
+			JVMAnnotationParser parser = new JVMAnnotationParser(cf);
+
+			return new AnnotationInfo(typeName, loader, parser);
+		}
+	}
+
+	protected JVMClassFileContainer(String name, String url) {
+		super(name, url);
+	}
+
+	@Override
+	public String getClassURL(String typeName) {
+		return getURL() + typeName.replace('.', '/') + ".class";
+	}
 
 }

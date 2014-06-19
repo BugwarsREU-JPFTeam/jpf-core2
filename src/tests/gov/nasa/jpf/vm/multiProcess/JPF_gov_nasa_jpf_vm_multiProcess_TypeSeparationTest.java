@@ -31,41 +31,44 @@ import java.util.List;
 /**
  * @author Nastaran Shafiei <nastaran.shafiei@gmail.com>
  */
-public class JPF_gov_nasa_jpf_vm_multiProcess_TypeSeparationTest extends NativePeer {
-  private static List<Integer> prcIds = new ArrayList<Integer>();
+public class JPF_gov_nasa_jpf_vm_multiProcess_TypeSeparationTest extends
+		NativePeer {
+	private static List<Integer> prcIds = new ArrayList<Integer>();
 
-  protected static void resetPrcIds() {
-    prcIds.clear();
-  }
+	protected static void resetPrcIds() {
+		prcIds.clear();
+	}
 
-  private static List<ClassInfo> annClasses =  new ArrayList<ClassInfo>();
+	private static List<ClassInfo> annClasses = new ArrayList<ClassInfo>();
 
-  @MJI
-  public void keepAnnotationClass__Ljava_lang_Class_2I__V(MJIEnv env, int objRef, int annoClsRef, int prcId) {
-    ClassInfo aci = env.getReferredClassInfo(annoClsRef);
-    if(!prcIds.contains(prcId)) {
-      prcIds.add(prcId);
-      annClasses.add(aci);
-    }
-  }
+	@MJI
+	public void keepAnnotationClass__Ljava_lang_Class_2I__V(MJIEnv env,
+			int objRef, int annoClsRef, int prcId) {
+		ClassInfo aci = env.getReferredClassInfo(annoClsRef);
+		if (!prcIds.contains(prcId)) {
+			prcIds.add(prcId);
+			annClasses.add(aci);
+		}
+	}
 
-  protected static List<ClassInfo> getAnnotationClasses() {
-    return annClasses;
-  }
+	protected static List<ClassInfo> getAnnotationClasses() {
+		return annClasses;
+	}
 
-  private static List<ClassLoaderInfo> classLoaders =  new ArrayList<ClassLoaderInfo>();
+	private static List<ClassLoaderInfo> classLoaders = new ArrayList<ClassLoaderInfo>();
 
-  @MJI
-  public void keepClassLoader__Ljava_lang_ClassLoader_2I__V(MJIEnv env, int objRef, int clRef, int prcId) {
-    ClassLoaderInfo cl = env.getClassLoaderInfo(clRef);
+	@MJI
+	public void keepClassLoader__Ljava_lang_ClassLoader_2I__V(MJIEnv env,
+			int objRef, int clRef, int prcId) {
+		ClassLoaderInfo cl = env.getClassLoaderInfo(clRef);
 
-    if(!prcIds.contains(prcId)) {
-      prcIds.add(prcId);
-      classLoaders.add(cl);
-    }
-  }
+		if (!prcIds.contains(prcId)) {
+			prcIds.add(prcId);
+			classLoaders.add(cl);
+		}
+	}
 
-  protected static List<ClassLoaderInfo> getClassLoaders() {
-    return classLoaders;
-  }
+	protected static List<ClassLoaderInfo> getClassLoaders() {
+		return classLoaders;
+	}
 }

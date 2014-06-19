@@ -25,129 +25,134 @@ import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.MJIEnv;
 
-
 /**
  * a full peer for the AtomicLongFieldUpdater
  */
-public class JPF_java_util_concurrent_atomic_AtomicLongFieldUpdater extends AtomicFieldUpdater {
+public class JPF_java_util_concurrent_atomic_AtomicLongFieldUpdater extends
+		AtomicFieldUpdater {
 
-  @MJI
-  public void $init__Ljava_lang_Class_2Ljava_lang_String_2__V (MJIEnv env, int objRef,
-                                 int tClsObjRef, int fNameRef) {
+	@MJI
+	public void $init__Ljava_lang_Class_2Ljava_lang_String_2__V(MJIEnv env,
+			int objRef, int tClsObjRef, int fNameRef) {
 
-    // direct Object subclass, so we don't have to call a super ctor
+		// direct Object subclass, so we don't have to call a super ctor
 
-    ClassInfo ci = env.getReferredClassInfo(tClsObjRef);
-    String fname = env.getStringObject(fNameRef);
-    FieldInfo fi = ci.getInstanceField(fname);
+		ClassInfo ci = env.getReferredClassInfo(tClsObjRef);
+		String fname = env.getStringObject(fNameRef);
+		FieldInfo fi = ci.getInstanceField(fname);
 
-    ClassInfo fci = fi.getTypeClassInfo();
+		ClassInfo fci = fi.getTypeClassInfo();
 
-    if (!fci.isPrimitive() || !fci.getName().equals("long")) {
-      // that's also just an approximation, but we need to check
-      env.throwException("java.lang.RuntimeException", "wrong field type");
-    }
+		if (!fci.isPrimitive() || !fci.getName().equals("long")) {
+			// that's also just an approximation, but we need to check
+			env.throwException("java.lang.RuntimeException", "wrong field type");
+		}
 
-    int fidx = fi.getFieldIndex();
-    env.setIntField(objRef, "fieldId", fidx);
-  }
+		int fidx = fi.getFieldIndex();
+		env.setIntField(objRef, "fieldId", fidx);
+	}
 
-  @MJI
-  public boolean compareAndSet__Ljava_lang_Object_2JJ__Z
-  (MJIEnv env, int objRef, int tRef, long fExpect, long fUpdate){
+	@MJI
+	public boolean compareAndSet__Ljava_lang_Object_2JJ__Z(MJIEnv env,
+			int objRef, int tRef, long fExpect, long fUpdate) {
 
-    if (isNewPorFieldBoundary(env, objRef, tRef) && createAndSetFieldCG(env, tRef)) {
-      return false;  // re-executed anyways
-    }
+		if (isNewPorFieldBoundary(env, objRef, tRef)
+				&& createAndSetFieldCG(env, tRef)) {
+			return false; // re-executed anyways
+		}
 
-    int fidx = env.getIntField(objRef, "fieldId");
-    ElementInfo ei = env.getModifiableElementInfo(tRef);
-    FieldInfo fi = env.getClassInfo(tRef).getInstanceField(fidx);
+		int fidx = env.getIntField(objRef, "fieldId");
+		ElementInfo ei = env.getModifiableElementInfo(tRef);
+		FieldInfo fi = env.getClassInfo(tRef).getInstanceField(fidx);
 
-    long v = ei.getLongField(fi);
-    if (v == fExpect) {
-      ei.setLongField(fi, fUpdate);
-      return true;
-    } else {
-      return false;
-    }
-  }
+		long v = ei.getLongField(fi);
+		if (v == fExpect) {
+			ei.setLongField(fi, fUpdate);
+			return true;
+		} else {
+			return false;
+		}
+	}
 
-  @MJI
-  public boolean weakCompareAndSet__Ljava_lang_Object_2JJ__Z
-  (MJIEnv env, int objRef, int tRef, long fExpect, long fUpdate){
-    return(compareAndSet__Ljava_lang_Object_2JJ__Z(env, objRef, tRef, fExpect, fUpdate));
-  }
+	@MJI
+	public boolean weakCompareAndSet__Ljava_lang_Object_2JJ__Z(MJIEnv env,
+			int objRef, int tRef, long fExpect, long fUpdate) {
+		return (compareAndSet__Ljava_lang_Object_2JJ__Z(env, objRef, tRef,
+				fExpect, fUpdate));
+	}
 
-  @MJI
-  public void set__Ljava_lang_Object_2J__
-  (MJIEnv env, int objRef, int tRef, long fNewValue){
+	@MJI
+	public void set__Ljava_lang_Object_2J__(MJIEnv env, int objRef, int tRef,
+			long fNewValue) {
 
-    if (isNewPorFieldBoundary(env, objRef, tRef) && createAndSetFieldCG(env, tRef)) {
-      return;  // re-executed anyways
-    }
+		if (isNewPorFieldBoundary(env, objRef, tRef)
+				&& createAndSetFieldCG(env, tRef)) {
+			return; // re-executed anyways
+		}
 
-    int fidx = env.getIntField(objRef, "fieldId");
-    ElementInfo ei = env.getModifiableElementInfo(tRef);
-    FieldInfo fi = env.getClassInfo(tRef).getInstanceField(fidx);
+		int fidx = env.getIntField(objRef, "fieldId");
+		ElementInfo ei = env.getModifiableElementInfo(tRef);
+		FieldInfo fi = env.getClassInfo(tRef).getInstanceField(fidx);
 
-    ei.setLongField(fi, fNewValue);
-  }
+		ei.setLongField(fi, fNewValue);
+	}
 
-  @MJI
-  public void lazySet__Ljava_lang_Object_2J__
-  (MJIEnv env, int objRef, int tRef, long fNewValue){
-     set__Ljava_lang_Object_2J__(env, objRef, tRef, fNewValue);
-  }
+	@MJI
+	public void lazySet__Ljava_lang_Object_2J__(MJIEnv env, int objRef,
+			int tRef, long fNewValue) {
+		set__Ljava_lang_Object_2J__(env, objRef, tRef, fNewValue);
+	}
 
-  @MJI
-  public long get__Ljava_lang_Object_2__J
-  (MJIEnv env, int objRef, int tRef){
+	@MJI
+	public long get__Ljava_lang_Object_2__J(MJIEnv env, int objRef, int tRef) {
 
-    if (isNewPorFieldBoundary(env, objRef, tRef) && createAndSetFieldCG(env, tRef)) {
-      return 0;  // re-executed anyways
-    }
+		if (isNewPorFieldBoundary(env, objRef, tRef)
+				&& createAndSetFieldCG(env, tRef)) {
+			return 0; // re-executed anyways
+		}
 
-    int fidx = env.getIntField(objRef, "fieldId");
-    ElementInfo ei = env.getElementInfo(tRef);
-    FieldInfo fi = env.getClassInfo(tRef).getInstanceField(fidx);
+		int fidx = env.getIntField(objRef, "fieldId");
+		ElementInfo ei = env.getElementInfo(tRef);
+		FieldInfo fi = env.getClassInfo(tRef).getInstanceField(fidx);
 
-    return ei.getLongField(fi);
-  }
+		return ei.getLongField(fi);
+	}
 
-  @MJI
-  public long getAndSet__Ljava_lang_Object_2J__J
-  (MJIEnv env, int objRef, int tRef, long fNewValue){
+	@MJI
+	public long getAndSet__Ljava_lang_Object_2J__J(MJIEnv env, int objRef,
+			int tRef, long fNewValue) {
 
-    if (isNewPorFieldBoundary(env, objRef, tRef) && createAndSetFieldCG(env, tRef)) {
-      return 0;  // re-executed anyways
-    }
+		if (isNewPorFieldBoundary(env, objRef, tRef)
+				&& createAndSetFieldCG(env, tRef)) {
+			return 0; // re-executed anyways
+		}
 
-    int fidx = env.getIntField(objRef, "fieldId");
-    ElementInfo ei = env.getModifiableElementInfo(tRef);
-    FieldInfo fi = env.getClassInfo(tRef).getInstanceField(fidx);
-    long result = ei.getLongField(fi);
+		int fidx = env.getIntField(objRef, "fieldId");
+		ElementInfo ei = env.getModifiableElementInfo(tRef);
+		FieldInfo fi = env.getClassInfo(tRef).getInstanceField(fidx);
+		long result = ei.getLongField(fi);
 
-    ei.setLongField(fi, fNewValue);
+		ei.setLongField(fi, fNewValue);
 
-    return result;
-  }
+		return result;
+	}
 
-  @MJI
-  public long getAndAdd__Ljava_lang_Object_2J__J
-  (MJIEnv env, int objRef, int tRef, long fDelta){
+	@MJI
+	public long getAndAdd__Ljava_lang_Object_2J__J(MJIEnv env, int objRef,
+			int tRef, long fDelta) {
 
-    if (isNewPorFieldBoundary(env, objRef, tRef) && createAndSetFieldCG(env, tRef)) {
-      return 0;  // re-executed anyways
-    }
+		if (isNewPorFieldBoundary(env, objRef, tRef)
+				&& createAndSetFieldCG(env, tRef)) {
+			return 0; // re-executed anyways
+		}
 
-    int fidx = env.getIntField(objRef, "fieldId");
-    ElementInfo ei = env.getModifiableElementInfo(tRef);
-    FieldInfo fi = env.getClassInfo(tRef).getInstanceField(fidx);
-    long result = ei.getLongField(fi);
+		int fidx = env.getIntField(objRef, "fieldId");
+		ElementInfo ei = env.getModifiableElementInfo(tRef);
+		FieldInfo fi = env.getClassInfo(tRef).getInstanceField(fidx);
+		long result = ei.getLongField(fi);
 
-    ei.setLongField(fi, result + fDelta);
+		ei.setLongField(fi, result + fDelta);
 
-    return result;
-  }
+		return result;
+	}
 }

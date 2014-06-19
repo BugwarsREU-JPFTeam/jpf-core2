@@ -28,53 +28,56 @@ import gov.nasa.jpf.vm.ThreadInfo;
 /**
  * @author Nastaran Shafiei <nastaran.shafiei@gmail.com>
  * 
- * Test suit for FinalizerThread & FinalizeThreadInfo
+ *         Test suit for FinalizerThread & FinalizeThreadInfo
  */
 public class FinalizerThreadTest extends TestJPF {
-  
-  static class Finalize {
-    static void createFinalize() {
-      new Finalize();
-    }
-    
-    @Override
-    protected void finalize() throws Throwable {
-      System.out.println("finalizer executing... ");
-      throw new Exception();
-    }
-  }
-  
-  @Test
-  public void testExceptionFromFinalizer (){
-    if (verifyNoPropertyViolation( "+vm.process_finalizers=true")){
-      // FinalizerThread should swallow the exception thrown in the finalize() method
-      new Finalize();
-    }
-  }
-  
-  public static class FinalizerThreadListener extends ListenerAdapter {
 
-    @Override
-    public void stateAdvanced(Search search){
-      if(search.isEndState()) {
-        ThreadInfo currTi = search.getVM().getCurrentThread();
-        ThreadInfo finalizerTi = search.getVM().getFinalizerThread();
-        
-        // make sure a finalizer thread exists
-        assertTrue(finalizerTi!=null);
-        
-        // make sure the thread leading to the end state is finalizer
-        assertEquals(currTi, currTi);
-      }
-    }
-  }
-  
-  private static String[] JPF_ARGS = { "+vm.process_finalizers=true",
-                                       "+listener=gov.nasa.jpf.test.mc.threads.FinalizerThreadTest$FinalizerThreadListener"};  
-  @Test
-  public void testFinalizerThreadRunning () {
-    if (verifyNoPropertyViolation(JPF_ARGS)){
-      Finalize.createFinalize();
-    }
-  }
+	static class Finalize {
+		static void createFinalize() {
+			new Finalize();
+		}
+
+		@Override
+		protected void finalize() throws Throwable {
+			System.out.println("finalizer executing... ");
+			throw new Exception();
+		}
+	}
+
+	@Test
+	public void testExceptionFromFinalizer() {
+		if (verifyNoPropertyViolation("+vm.process_finalizers=true")) {
+			// FinalizerThread should swallow the exception thrown in the
+			// finalize() method
+			new Finalize();
+		}
+	}
+
+	public static class FinalizerThreadListener extends ListenerAdapter {
+
+		@Override
+		public void stateAdvanced(Search search) {
+			if (search.isEndState()) {
+				ThreadInfo currTi = search.getVM().getCurrentThread();
+				ThreadInfo finalizerTi = search.getVM().getFinalizerThread();
+
+				// make sure a finalizer thread exists
+				assertTrue(finalizerTi != null);
+
+				// make sure the thread leading to the end state is finalizer
+				assertEquals(currTi, currTi);
+			}
+		}
+	}
+
+	private static String[] JPF_ARGS = {
+			"+vm.process_finalizers=true",
+			"+listener=gov.nasa.jpf.test.mc.threads.FinalizerThreadTest$FinalizerThreadListener" };
+
+	@Test
+	public void testFinalizerThreadRunning() {
+		if (verifyNoPropertyViolation(JPF_ARGS)) {
+			Finalize.createFinalize();
+		}
+	}
 }

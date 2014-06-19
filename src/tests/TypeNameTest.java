@@ -1,5 +1,3 @@
-
-
 //
 // Copyright (C) 2007 United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration
@@ -33,44 +31,46 @@ import org.junit.Test;
  */
 class B {
 
-  int data;
+	int data;
 
-  public B(int d) {
-    data = d;
-  }
+	public B(int d) {
+		data = d;
+	}
 
-  public boolean equals(Object other) {
-    if (other == null || !(other instanceof B)) {
-      return false;
-    }
+	@Override
+	public boolean equals(Object other) {
+		if (other == null || !(other instanceof B)) {
+			return false;
+		}
 
-    return ((B) other).data == data;
-  }
+		return ((B) other).data == data;
+	}
 
-  public String toString() {
-    return "B {data=" + data + "}";
-  }
+	@Override
+	public String toString() {
+		return "B {data=" + data + "}";
+	}
 }
 
 public class TypeNameTest extends TestJPF {
 
-  @Test
-  public void testArrayCloning() {
-    if (verifyNoPropertyViolation()) {
-      // test for collisions between typecodes of builtin types
-      // and user defined classes (e.g. "B" for byte)
-      B[] b = new B[10];
-      b[3] = new B(42);
+	@Test
+	public void testArrayCloning() {
+		if (verifyNoPropertyViolation()) {
+			// test for collisions between typecodes of builtin types
+			// and user defined classes (e.g. "B" for byte)
+			B[] b = new B[10];
+			b[3] = new B(42);
 
-      Object o = b.clone();
-      B[] bb = (B[]) o;
-      assert b[3].equals(bb[3]);
+			Object o = b.clone();
+			B[] bb = (B[]) o;
+			assert b[3].equals(bb[3]);
 
-      byte[] a = new byte[10];
-      a[3] = 42;
-      o = a.clone();
-      byte[] aa = (byte[]) o;
-      assert a[3] == aa[3];
-    }
-  }
+			byte[] a = new byte[10];
+			a[3] = 42;
+			o = a.clone();
+			byte[] aa = (byte[]) o;
+			assert a[3] == aa[3];
+		}
+	}
 }

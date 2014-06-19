@@ -31,44 +31,46 @@ import gov.nasa.jpf.vm.ThreadInfo;
  * @author Nastaran Shafiei <nastaran.shafiei@gmail.com>
  */
 public class JPF_gov_nasa_jpf_vm_multiProcess_ThreadTest extends NativePeer {
-  private static List<Integer> prcIds = new ArrayList<Integer>();
+	private static List<Integer> prcIds = new ArrayList<Integer>();
 
-  protected static void resetPrcIds() {
-    prcIds.clear();
-  }
+	protected static void resetPrcIds() {
+		prcIds.clear();
+	}
 
-  private static List<ThreadInfo> threads =  new ArrayList<ThreadInfo>();
+	private static List<ThreadInfo> threads = new ArrayList<ThreadInfo>();
 
-  protected static void resetThreads() {
-    threads.clear();
-  }
+	protected static void resetThreads() {
+		threads.clear();
+	}
 
-  @MJI
-  public void keepThread__Ljava_lang_Thread_2I__V(MJIEnv env, int objRef, int thdRef, int prcId) {
-    ThreadInfo ti = env.getThreadInfoForObjRef(thdRef);
-    if(!prcIds.contains(prcId)) {
-      prcIds.add(prcId);
-      threads.add(ti);
-    }
-  }
+	@MJI
+	public void keepThread__Ljava_lang_Thread_2I__V(MJIEnv env, int objRef,
+			int thdRef, int prcId) {
+		ThreadInfo ti = env.getThreadInfoForObjRef(thdRef);
+		if (!prcIds.contains(prcId)) {
+			prcIds.add(prcId);
+			threads.add(ti);
+		}
+	}
 
-  protected static List<ThreadInfo> getThreads() {
-    return threads;
-  }
+	protected static List<ThreadInfo> getThreads() {
+		return threads;
+	}
 
-  private static List<Integer> threadIds = new ArrayList<Integer>();
+	private static List<Integer> threadIds = new ArrayList<Integer>();
 
-  @MJI
-  public static void addToThreads__Ljava_lang_Thread_2__V (MJIEnv env, int objRef, int thdRef) {
-    ThreadInfo ti = env.getThreadInfoForObjRef(thdRef);
+	@MJI
+	public static void addToThreads__Ljava_lang_Thread_2__V(MJIEnv env,
+			int objRef, int thdRef) {
+		ThreadInfo ti = env.getThreadInfoForObjRef(thdRef);
 
-    int id = ti.getId();
-    if(!threadIds.contains(id)) {
-      threadIds.add(id);
-    }
-  }
+		int id = ti.getId();
+		if (!threadIds.contains(id)) {
+			threadIds.add(id);
+		}
+	}
 
-  protected static List<Integer> getThreadIds() {
-    return threadIds;
-  }
+	protected static List<Integer> getThreadIds() {
+		return threadIds;
+	}
 }

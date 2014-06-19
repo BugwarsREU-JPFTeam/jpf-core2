@@ -21,16 +21,16 @@ package gov.nasa.jpf.vm;
 /**
  * @author Nastaran Shafiei <nastaran.shafiei@gmail.com>
  * 
- * This is used where a customized classloader loads a class, and needs
- * to resolve it. To do the resolve, a standard VM invokes the classloader 
- * loadClass() method on the superclass. Therefore to mimic this JPF need
- * to do a round trip back and forth to JPF, to execute the user implemented
- * user code.
+ *         This is used where a customized classloader loads a class, and needs
+ *         to resolve it. To do the resolve, a standard VM invokes the
+ *         classloader loadClass() method on the superclass. Therefore to mimic
+ *         this JPF need to do a round trip back and forth to JPF, to execute
+ *         the user implemented user code.
  */
 public class LoadOnJPFRequired extends RuntimeException {
-  String className;
+	String className;
 
-  public LoadOnJPFRequired (String className){
-    this.className = className;
-  }
+	public LoadOnJPFRequired(String className) {
+		this.className = className;
+	}
 }

@@ -30,36 +30,41 @@ import org.junit.Test;
  */
 public class ExceptionalThreadChoiceTest extends TestJPF {
 
-  native void foo() throws IOException, SocketTimeoutException; // this gets rescheduled with exceptions
-  
-  @Test
-  public void testExceptions (){
-    if (!isJPFRun()){
-      Verify.resetCounter(0);
-      Verify.resetCounter(1);
-      Verify.resetCounter(2);
-    }
-    
-    if (verifyNoPropertyViolation()){
-      try {
-        foo();
-        System.out.println("main no exception");
-        Verify.incrementCounter(0);
-      }  catch (SocketTimeoutException stox){ // order matters since SocketTimeoutException is also a IOException
-        System.out.println("main got SocketTimeoutException");
-        Verify.incrementCounter(1);
-      } catch (IOException iox){
-        System.out.println("main got IOException");
-        Verify.incrementCounter(2);
-      }
-    }
-    
-    if (!isJPFRun()){
-      assertTrue( "nominal path missing", Verify.getCounter(0) > 0);
-      assertTrue( "SocketTimeoutException missing", Verify.getCounter(1) > 0);
-      assertTrue( "IOException missing", Verify.getCounter(2) > 0);
-    }    
-  }
-  
-  
+	native void foo() throws IOException, SocketTimeoutException; // this gets
+																	// rescheduled
+																	// with
+																	// exceptions
+
+	@Test
+	public void testExceptions() {
+		if (!isJPFRun()) {
+			Verify.resetCounter(0);
+			Verify.resetCounter(1);
+			Verify.resetCounter(2);
+		}
+
+		if (verifyNoPropertyViolation()) {
+			try {
+				foo();
+				System.out.println("main no exception");
+				Verify.incrementCounter(0);
+			} catch (SocketTimeoutException stox) { // order matters since
+													// SocketTimeoutException is
+													// also a IOException
+				System.out.println("main got SocketTimeoutException");
+				Verify.incrementCounter(1);
+			} catch (IOException iox) {
+				System.out.println("main got IOException");
+				Verify.incrementCounter(2);
+			}
+		}
+
+		if (!isJPFRun()) {
+			assertTrue("nominal path missing", Verify.getCounter(0) > 0);
+			assertTrue("SocketTimeoutException missing",
+					Verify.getCounter(1) > 0);
+			assertTrue("IOException missing", Verify.getCounter(2) > 0);
+		}
+	}
+
 }

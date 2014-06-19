@@ -19,7 +19,7 @@
 package gov.nasa.jpf.annotation;
 
 public @interface JPFOptions {
-  
-  JPFOption[] value();
-  
+
+	JPFOption[] value();
+
 }

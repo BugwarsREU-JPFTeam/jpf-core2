@@ -33,161 +33,171 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * this is a specialized MethodAnalyzer that looks for overlapping method
- * calls on the same object from different threads.
+ * this is a specialized MethodAnalyzer that looks for overlapping method calls
+ * on the same object from different threads.
  */
 public class OverlappingMethodAnalyzer extends MethodAnalyzer {
 
-  public OverlappingMethodAnalyzer (Config config, JPF jpf){
-    super(config,jpf);
-  }
+	public OverlappingMethodAnalyzer(Config config, JPF jpf) {
+		super(config, jpf);
+	}
 
-  MethodOp getReturnOp (MethodOp op, boolean withinSameThread){
-    MethodInfo mi = op.mi;
-    int stateId = op.stateId;
-    int stackDepth = op.stackDepth;
-    ElementInfo ei = op.ei;
-    ThreadInfo ti = op.ti;
+	MethodOp getReturnOp(MethodOp op, boolean withinSameThread) {
+		MethodInfo mi = op.mi;
+		int stateId = op.stateId;
+		int stackDepth = op.stackDepth;
+		ElementInfo ei = op.ei;
+		ThreadInfo ti = op.ti;
 
-    for (MethodOp o = op.p; o != null; o = o.p){
-      if (withinSameThread && o.ti != ti){
-        break;
-      }
+		for (MethodOp o = op.p; o != null; o = o.p) {
+			if (withinSameThread && o.ti != ti) {
+				break;
+			}
 
-      if ((o.mi == mi) && (o.ti == ti) && (o.stackDepth == stackDepth) && (o.ei == ei)){
-        return o;
-      }
-    }
+			if ((o.mi == mi) && (o.ti == ti) && (o.stackDepth == stackDepth)
+					&& (o.ei == ei)) {
+				return o;
+			}
+		}
 
-    return null;
-  }
+		return null;
+	}
 
-  // check if there is an open exec from another thread for the same ElementInfo
-  boolean isOpenExec (HashMap<ThreadInfo,Deque<MethodOp>> openExecs, MethodOp op){
-    ThreadInfo ti = op.ti;
-    ElementInfo ei = op.ei;
+	// check if there is an open exec from another thread for the same
+	// ElementInfo
+	boolean isOpenExec(HashMap<ThreadInfo, Deque<MethodOp>> openExecs,
+			MethodOp op) {
+		ThreadInfo ti = op.ti;
+		ElementInfo ei = op.ei;
 
-    for (Map.Entry<ThreadInfo, Deque<MethodOp>> e : openExecs.entrySet()) {
-      if (e.getKey() != ti) {
-        Deque<MethodOp> s = e.getValue();
-        for (Iterator<MethodOp> it = s.descendingIterator(); it.hasNext();) {
-          MethodOp o = it.next();
-          if (o.ei == ei) {
-            return true;
-          }
-        }
-      }
-    }
+		for (Map.Entry<ThreadInfo, Deque<MethodOp>> e : openExecs.entrySet()) {
+			if (e.getKey() != ti) {
+				Deque<MethodOp> s = e.getValue();
+				for (Iterator<MethodOp> it = s.descendingIterator(); it
+						.hasNext();) {
+					MethodOp o = it.next();
+					if (o.ei == ei) {
+						return true;
+					}
+				}
+			}
+		}
 
-    return false;
-  }
+		return false;
+	}
 
-  // clean up (if necessary) - both RETURNS and exceptions
-  void cleanUpOpenExec (HashMap<ThreadInfo,Deque<MethodOp>> openExecs, MethodOp op){
-    ThreadInfo ti = op.ti;
-    int stackDepth = op.stackDepth;
+	// clean up (if necessary) - both RETURNS and exceptions
+	void cleanUpOpenExec(HashMap<ThreadInfo, Deque<MethodOp>> openExecs,
+			MethodOp op) {
+		ThreadInfo ti = op.ti;
+		int stackDepth = op.stackDepth;
 
-    Deque<MethodOp> stack = openExecs.get(ti);
-    if (stack != null && !stack.isEmpty()) {
-      for (MethodOp o = stack.peek(); o != null && o.stackDepth >= stackDepth; o = stack.peek()) {
-        stack.pop();
-      }
-    }
-  }
+		Deque<MethodOp> stack = openExecs.get(ti);
+		if (stack != null && !stack.isEmpty()) {
+			for (MethodOp o = stack.peek(); o != null
+					&& o.stackDepth >= stackDepth; o = stack.peek()) {
+				stack.pop();
+			}
+		}
+	}
 
-  void addOpenExec (HashMap<ThreadInfo,Deque<MethodOp>> openExecs, MethodOp op){
-    ThreadInfo ti = op.ti;
-    Deque<MethodOp> stack = openExecs.get(ti);
+	void addOpenExec(HashMap<ThreadInfo, Deque<MethodOp>> openExecs, MethodOp op) {
+		ThreadInfo ti = op.ti;
+		Deque<MethodOp> stack = openExecs.get(ti);
 
-    if (stack == null){
-      stack = new ArrayDeque<MethodOp>();
-      stack.push(op);
-      openExecs.put(ti, stack);
+		if (stack == null) {
+			stack = new ArrayDeque<MethodOp>();
+			stack.push(op);
+			openExecs.put(ti, stack);
 
-    } else {
-      stack.push(op);
-    }
-  }
+		} else {
+			stack.push(op);
+		}
+	}
 
-  void printOn (PrintWriter pw) {
-    MethodOp start = firstOp;
+	@Override
+	void printOn(PrintWriter pw) {
+		MethodOp start = firstOp;
 
-    HashMap<ThreadInfo,Deque<MethodOp>> openExecs = new HashMap<ThreadInfo,Deque<MethodOp>>();
+		HashMap<ThreadInfo, Deque<MethodOp>> openExecs = new HashMap<ThreadInfo, Deque<MethodOp>>();
 
-    int lastStateId  = Integer.MIN_VALUE;
-    int transition = skipInit ? 1 : 0;
-    int lastTid = start.ti.getId();
+		int lastStateId = Integer.MIN_VALUE;
+		int transition = skipInit ? 1 : 0;
+		int lastTid = start.ti.getId();
 
-    for (MethodOp op = start; op != null; op = op.p) {
+		for (MethodOp op = start; op != null; op = op.p) {
 
-      if (showTransition) {
-        if (op.stateId != lastStateId) {
-          lastStateId = op.stateId;
-          pw.print("------------------------------------------ #");
-          pw.println(transition++);
-        }
-      } else {
-        int tid = op.ti.getId();
-        if (tid != lastTid) {
-          lastTid = tid;
-          pw.println("------------------------------------------");
-        }
-      }
+			if (showTransition) {
+				if (op.stateId != lastStateId) {
+					lastStateId = op.stateId;
+					pw.print("------------------------------------------ #");
+					pw.println(transition++);
+				}
+			} else {
+				int tid = op.ti.getId();
+				if (tid != lastTid) {
+					lastTid = tid;
+					pw.println("------------------------------------------");
+				}
+			}
 
-      cleanUpOpenExec(openExecs, op);
+			cleanUpOpenExec(openExecs, op);
 
-      if (op.isMethodEnter()) {  // EXEC or CALL_EXEC
-        MethodOp retOp = getReturnOp(op, true);
-        if (retOp != null) { // completed, skip
-          if (!isOpenExec(openExecs, op)) {
-            op = retOp;
-            continue;
-          }
-        } else { // this is an open method exec, record it
-          addOpenExec(openExecs, op);
-        }
-      }
+			if (op.isMethodEnter()) { // EXEC or CALL_EXEC
+				MethodOp retOp = getReturnOp(op, true);
+				if (retOp != null) { // completed, skip
+					if (!isOpenExec(openExecs, op)) {
+						op = retOp;
+						continue;
+					}
+				} else { // this is an open method exec, record it
+					addOpenExec(openExecs, op);
+				}
+			}
 
-      op = consolidateOp(op);
+			op = consolidateOp(op);
 
-      op.printOn(pw, this);
-      pw.println();
-    }
-  }
+			op.printOn(pw, this);
+			pw.println();
+		}
+	}
 
-  MethodOp consolidateOp (MethodOp op){
-    for (MethodOp o = op.p; o != null; o = o.p){
-      if (showTransition && (o.stateId != op.stateId)){
-        break;
-      }
-      if (o.isSameMethod(op)){
-        switch (o.type) {
-          case RETURN:
-            switch (op.type){
-              case CALL_EXECUTE:
-                op = o.clone(OpType.CALL_EXEC_RETURN); break;
-              case EXECUTE:
-                op = o.clone(OpType.EXEC_RETURN); break;
-            }
-            break;
-          case EXEC_RETURN:
-            switch (op.type){
-              case CALL:
-                op = o.clone(OpType.CALL_EXEC_RETURN); break;
-            }
-            break;
-          case CALL_EXECUTE:  // simple loop
-            switch (op.type){
-              case CALL_EXEC_RETURN:
-                op = o;
-            }
-            break;
-        }
-      } else {
-        break;
-      }
-    }
+	MethodOp consolidateOp(MethodOp op) {
+		for (MethodOp o = op.p; o != null; o = o.p) {
+			if (showTransition && (o.stateId != op.stateId)) {
+				break;
+			}
+			if (o.isSameMethod(op)) {
+				switch (o.type) {
+				case RETURN:
+					switch (op.type) {
+					case CALL_EXECUTE:
+						op = o.clone(OpType.CALL_EXEC_RETURN);
+						break;
+					case EXECUTE:
+						op = o.clone(OpType.EXEC_RETURN);
+						break;
+					}
+					break;
+				case EXEC_RETURN:
+					switch (op.type) {
+					case CALL:
+						op = o.clone(OpType.CALL_EXEC_RETURN);
+						break;
+					}
+					break;
+				case CALL_EXECUTE: // simple loop
+					switch (op.type) {
+					case CALL_EXEC_RETURN:
+						op = o;
+					}
+					break;
+				}
+			} else {
+				break;
+			}
+		}
 
-    return op;
-  }
+		return op;
+	}
 }

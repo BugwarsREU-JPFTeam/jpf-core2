@@ -23,29 +23,30 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Shift left int
- * ..., value1, value2 => ..., result
+ * Shift left int ..., value1, value2 => ..., result
  */
 public class ISHL extends JVMInstruction {
 
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    int v1 = frame.pop();
-    int v2 = frame.pop();
+		int v1 = frame.pop();
+		int v2 = frame.pop();
 
-    frame.push(v2 << v1);
+		frame.push(v2 << v1);
 
-    return getNext(ti);
-  }
+		return getNext(ti);
+	}
 
-  public int getByteCode () {
-    return 0x78;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public int getByteCode() {
+		return 0x78;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

@@ -27,30 +27,29 @@ import java.text.Format;
 import java.util.HashMap;
 
 /**
- * native peer for java.text.Format delegation. This is the place where
- * we keep a map between real formatters and their JPF counterparts
- * (which are just proxies)
+ * native peer for java.text.Format delegation. This is the place where we keep
+ * a map between real formatters and their JPF counterparts (which are just
+ * proxies)
  */
 public class JPF_java_text_Format extends NativePeer {
 
-  static HashMap<Integer,Format> formatters;
+	static HashMap<Integer, Format> formatters;
 
-  public static boolean init (Config conf){
-    formatters = new HashMap<Integer,Format>();
-    return true;
-  }
-  
-  static void putInstance (MJIEnv env, int objref, Format fmt) {
-    int id = env.getIntField(objref,  "id");
-    formatters.put(new Integer(id), fmt);
-  }
+	public static boolean init(Config conf) {
+		formatters = new HashMap<Integer, Format>();
+		return true;
+	}
 
-  static Format getInstance (MJIEnv env, int objref) {
-    // <2do> that's braindead
-    
-    int id = env.getIntField(objref,  "id");
-    return formatters.get(id);
-  }
+	static void putInstance(MJIEnv env, int objref, Format fmt) {
+		int id = env.getIntField(objref, "id");
+		formatters.put(new Integer(id), fmt);
+	}
 
-  
+	static Format getInstance(MJIEnv env, int objref) {
+		// <2do> that's braindead
+
+		int id = env.getIntField(objref, "id");
+		return formatters.get(id);
+	}
+
 }

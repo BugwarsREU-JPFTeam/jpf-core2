@@ -27,33 +27,35 @@ import gov.nasa.jpf.vm.SystemState;
 import gov.nasa.jpf.vm.ThreadInfo;
 
 /**
- * base class for atomic field updaters
- * NOTE - since all native methods are static, we have to be too
+ * base class for atomic field updaters NOTE - since all native methods are
+ * static, we have to be too
  */
 public class AtomicFieldUpdater extends NativePeer {
-  
-  static boolean isNewPorFieldBoundary(MJIEnv env, int updaterRef, int tRef) {
-    ThreadInfo ti = env.getThreadInfo();
-    
-    // >2do> do we also have to check if the updater is shared?
-    
-    return !ti.isFirstStepInsn() && ti.usePorFieldBoundaries()
-        && ti.hasOtherRunnables() && env.isSchedulingRelevantObject(tRef);
-  }
 
-  static boolean createAndSetFieldCG(MJIEnv env, int tRef) {
-    ThreadInfo ti = env.getThreadInfo();
-    ElementInfo ei = env.getElementInfo(tRef);
-    SystemState ss = env.getSystemState();
+	static boolean isNewPorFieldBoundary(MJIEnv env, int updaterRef, int tRef) {
+		ThreadInfo ti = env.getThreadInfo();
 
-    ChoiceGenerator<?> cg = ss.getSchedulerFactory().createSharedFieldAccessCG(ei, ti);
-    if (cg != null) {
-      ss.setNextChoiceGenerator(cg);
-      env.repeatInvocation();
-      return true;
-    }
+		// >2do> do we also have to check if the updater is shared?
 
-    return false;
-  }
+		return !ti.isFirstStepInsn() && ti.usePorFieldBoundaries()
+				&& ti.hasOtherRunnables()
+				&& env.isSchedulingRelevantObject(tRef);
+	}
+
+	static boolean createAndSetFieldCG(MJIEnv env, int tRef) {
+		ThreadInfo ti = env.getThreadInfo();
+		ElementInfo ei = env.getElementInfo(tRef);
+		SystemState ss = env.getSystemState();
+
+		ChoiceGenerator<?> cg = ss.getSchedulerFactory()
+				.createSharedFieldAccessCG(ei, ti);
+		if (cg != null) {
+			ss.setNextChoiceGenerator(cg);
+			env.repeatInvocation();
+			return true;
+		}
+
+		return false;
+	}
 
 }

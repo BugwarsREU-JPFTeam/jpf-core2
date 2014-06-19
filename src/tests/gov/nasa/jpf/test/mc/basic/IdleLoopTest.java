@@ -27,59 +27,63 @@ import org.junit.Test;
  */
 public class IdleLoopTest extends TestJPF {
 
-  static final String LISTENER = "+listener=.listener.IdleFilter";
+	static final String LISTENER = "+listener=.listener.IdleFilter";
 
-  @Test public void testBreak () {
-    if (verifyNoPropertyViolation(LISTENER, "+idle.action=break", 
-                                  "+log.warning=gov.nasa.jpf.listener.IdleFilter",
-                                  "+vm.max_transition_length=MAX")) {
-      int y = 4;
-      int x = 0;
+	@Test
+	public void testBreak() {
+		if (verifyNoPropertyViolation(LISTENER, "+idle.action=break",
+				"+log.warning=gov.nasa.jpf.listener.IdleFilter",
+				"+vm.max_transition_length=MAX")) {
+			int y = 4;
+			int x = 0;
 
-      while (x != y) { // JPF should state match on the backjump
-        x = x + 1;
-        if (x > 3) {
-          x = 0;
-        }
-      }
+			while (x != y) { // JPF should state match on the backjump
+				x = x + 1;
+				if (x > 3) {
+					x = 0;
+				}
+			}
 
-      assert false : "we should never get here";
-    }
-  }
+			assert false : "we should never get here";
+		}
+	}
 
-  @Test public void testPrune () {
-    if (verifyNoPropertyViolation(LISTENER, "+idle.action=prune",
-                                  "+log.warning=gov.nasa.jpf.listener.IdleFilter",
-                                  "+vm.max_transition_length=MAX")) {
-      int y = 4;
-      int x = 0;
+	@Test
+	public void testPrune() {
+		if (verifyNoPropertyViolation(LISTENER, "+idle.action=prune",
+				"+log.warning=gov.nasa.jpf.listener.IdleFilter",
+				"+vm.max_transition_length=MAX")) {
+			int y = 4;
+			int x = 0;
 
-      int loopCount = 0;
+			int loopCount = 0;
 
-      while (x != y) { // JPF should prune on the backjump despite of changed 'loopCount'
-        loopCount++;
-        x = x + 1;
-        if (x > 3) {
-          x = 0;
-        }
-      }
+			while (x != y) { // JPF should prune on the backjump despite of
+								// changed 'loopCount'
+				loopCount++;
+				x = x + 1;
+				if (x > 3) {
+					x = 0;
+				}
+			}
 
-      assert false : "we should never get here";
-    }
-  }
+			assert false : "we should never get here";
+		}
+	}
 
-  @Test public void testJump () {
-    if (verifyNoPropertyViolation(LISTENER, "+idle.action=jump",
-                                  "+idle.max_backjumps=100",
-                                  "+log.warning=gov.nasa.jpf.listener.IdleFilter",
-                                  "+vm.max_transition_length=MAX")) {
+	@Test
+	public void testJump() {
+		if (verifyNoPropertyViolation(LISTENER, "+idle.action=jump",
+				"+idle.max_backjumps=100",
+				"+log.warning=gov.nasa.jpf.listener.IdleFilter",
+				"+vm.max_transition_length=MAX")) {
 
-      for (int i=0; i<1000; i++){
-        assert i < 500 : "JPF failed to jump past idle loop";
-      }
+			for (int i = 0; i < 1000; i++) {
+				assert i < 500 : "JPF failed to jump past idle loop";
+			}
 
-      System.out.println("Ok, jumped past loop");
-    }
-  }
+			System.out.println("Ok, jumped past loop");
+		}
+	}
 
 }

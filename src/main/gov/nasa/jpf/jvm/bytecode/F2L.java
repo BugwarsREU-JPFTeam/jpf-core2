@@ -22,29 +22,29 @@ import gov.nasa.jpf.jvm.JVMInstruction;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
-import gov.nasa.jpf.vm.Types;
-
 
 /**
- * Convert float to long
- * ..., value => ..., result
+ * Convert float to long ..., value => ..., result
  */
 public class F2L extends JVMInstruction {
 
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
-    float v = frame.popFloat();
-    
-    frame.pushLong((long)v);
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
+		float v = frame.popFloat();
 
-    return getNext(ti);
-  }
+		frame.pushLong((long) v);
 
-  public int getByteCode () {
-    return 0x8C;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		return getNext(ti);
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0x8C;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

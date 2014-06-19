@@ -24,106 +24,120 @@ import java.util.NoSuchElementException;
 
 /**
  * Wrapper for arrays of objects which provides proper equals() and hashCode()
- * methods, and behaves nicely with Java 1.5 generics. 
+ * methods, and behaves nicely with Java 1.5 generics.
  */
-public final class ObjArray<E> implements ReadOnlyObjList<E>, Iterable<E>, Cloneable  {
-  final Object[] data;
+public final class ObjArray<E> implements ReadOnlyObjList<E>, Iterable<E>,
+		Cloneable {
+	final Object[] data;
 
-  public ObjArray(int size) {
-    data = new Object[size];
-  }
-  
-  public ObjArray(E[] data) {
-    this.data = data;
-  }
+	public ObjArray(int size) {
+		data = new Object[size];
+	}
 
-  public ObjArray<E> clone() {
-    return new ObjArray( data.clone());
-  }
+	public ObjArray(E[] data) {
+		this.data = data;
+	}
 
+	@Override
+	public ObjArray<E> clone() {
+		return new ObjArray(data.clone());
+	}
 
-  public E[] toArray (E[] a) {
-    if (a.length >= data.length) {
-      System.arraycopy(data,0,a,0,data.length);
-      return a;
-    } else {
-      return null;
-    }
-  }
-  
-  
-  @SuppressWarnings("unchecked")
-  public E get(int idx) {
-    return (E) data[idx];
-  }
-  
-  public void set(int idx, E e) {
-    data[idx] = e;
-  }
-  
-  public int length() {
-    return data.length;
-  }
-  
-  public int hashCode() {
-    return Arrays.hashCode(data);
-  }
-  
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (! (o instanceof ObjArray)) return false;
-    Object[] thatData = ((ObjArray)o).data;
-    Object[] thisData = this.data;
-    
-    // could cause NullPointerException for non-robust .equals 
-    // return Arrays.equals(thisData, thatData);
-    
-    if (thisData == thatData) return true;
-    if (thisData.length != thatData.length) return false;
-    for (int i = 0; i < thisData.length; i++) {
-      if (!Misc.equal(thisData[i], thatData[i])) {
-        return false;
-      }
-    }
-    return true;
-  }
+	public E[] toArray(E[] a) {
+		if (a.length >= data.length) {
+			System.arraycopy(data, 0, a, 0, data.length);
+			return a;
+		} else {
+			return null;
+		}
+	}
 
-  public void fill(E e) {
-    Arrays.fill(data, e);
-  }
-  
-  public void nullify () {
-    Arrays.fill(data, null);
-  }
-  
-  public static <T> void copy(ObjArray<? extends T> src, int srcPos,
-                              ObjArray<T> dst, int dstPos, int len) {
-    System.arraycopy(src.data, srcPos, dst.data, dstPos, len);
-  }
+	@Override
+	@SuppressWarnings("unchecked")
+	public E get(int idx) {
+		return (E) data[idx];
+	}
 
-  static final ObjArray<Object> zero = new ObjArray<Object>(0);
-  @SuppressWarnings("unchecked")
-  public static <T> ObjArray<T> zeroLength() {
-    return (ObjArray<T>) zero;
-  }
-  
-  public Iterator<E> iterator () {
-    return new Iterator<E>() {
-      int idx = 0;
+	public void set(int idx, E e) {
+		data[idx] = e;
+	}
 
-      public boolean hasNext () {
-        return idx < data.length;
-      }
+	@Override
+	public int length() {
+		return data.length;
+	}
 
-      @SuppressWarnings("unchecked")
-      public E next () {
-        if (idx >= data.length) throw new NoSuchElementException();
-        return (E) data[idx++];
-      }
+	@Override
+	public int hashCode() {
+		return Arrays.hashCode(data);
+	}
 
-      public void remove () {
-        throw new UnsupportedOperationException();
-      }
-    };
-  }
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (!(o instanceof ObjArray))
+			return false;
+		Object[] thatData = ((ObjArray) o).data;
+		Object[] thisData = this.data;
+
+		// could cause NullPointerException for non-robust .equals
+		// return Arrays.equals(thisData, thatData);
+
+		if (thisData == thatData)
+			return true;
+		if (thisData.length != thatData.length)
+			return false;
+		for (int i = 0; i < thisData.length; i++) {
+			if (!Misc.equal(thisData[i], thatData[i])) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public void fill(E e) {
+		Arrays.fill(data, e);
+	}
+
+	public void nullify() {
+		Arrays.fill(data, null);
+	}
+
+	public static <T> void copy(ObjArray<? extends T> src, int srcPos,
+			ObjArray<T> dst, int dstPos, int len) {
+		System.arraycopy(src.data, srcPos, dst.data, dstPos, len);
+	}
+
+	static final ObjArray<Object> zero = new ObjArray<Object>(0);
+
+	@SuppressWarnings("unchecked")
+	public static <T> ObjArray<T> zeroLength() {
+		return (ObjArray<T>) zero;
+	}
+
+	@Override
+	public Iterator<E> iterator() {
+		return new Iterator<E>() {
+			int idx = 0;
+
+			@Override
+			public boolean hasNext() {
+				return idx < data.length;
+			}
+
+			@Override
+			@SuppressWarnings("unchecked")
+			public E next() {
+				if (idx >= data.length)
+					throw new NoSuchElementException();
+				return (E) data[idx++];
+			}
+
+			@Override
+			public void remove() {
+				throw new UnsupportedOperationException();
+			}
+		};
+	}
 }

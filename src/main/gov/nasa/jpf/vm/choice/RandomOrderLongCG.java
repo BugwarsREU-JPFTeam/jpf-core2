@@ -25,56 +25,64 @@ import gov.nasa.jpf.vm.LongChoiceGenerator;
 /**
  *
  */
-public class RandomOrderLongCG extends ChoiceGeneratorBase<Long> implements LongChoiceGenerator {
-  protected long[] choices;
+public class RandomOrderLongCG extends ChoiceGeneratorBase<Long> implements
+		LongChoiceGenerator {
+	protected long[] choices;
 
-  protected int nextIdx;
+	protected int nextIdx;
 
-  public RandomOrderLongCG (LongChoiceGenerator sub) {
-    super(sub.getId());
-    setPreviousChoiceGenerator(sub.getPreviousChoiceGenerator());
-    choices = new long[sub.getTotalNumberOfChoices()];
-    for (int i = 0; i < choices.length; i++) {
-      sub.advance();
-      choices[i] = sub.getNextChoice();
-    }
-    for (int i = choices.length - 1; i > 0; i--) { // all but first
-      int j = random.nextInt(i + 1);
-      long tmp = choices[i];
-      choices[i] = choices[j];
-      choices[j] = tmp;
-    }
-    nextIdx = -1;
-  }
+	public RandomOrderLongCG(LongChoiceGenerator sub) {
+		super(sub.getId());
+		setPreviousChoiceGenerator(sub.getPreviousChoiceGenerator());
+		choices = new long[sub.getTotalNumberOfChoices()];
+		for (int i = 0; i < choices.length; i++) {
+			sub.advance();
+			choices[i] = sub.getNextChoice();
+		}
+		for (int i = choices.length - 1; i > 0; i--) { // all but first
+			int j = random.nextInt(i + 1);
+			long tmp = choices[i];
+			choices[i] = choices[j];
+			choices[j] = tmp;
+		}
+		nextIdx = -1;
+	}
 
-  public Long getNextChoice() {
-    return new Long(choices[nextIdx]);
-  }
+	@Override
+	public Long getNextChoice() {
+		return new Long(choices[nextIdx]);
+	}
 
-  public void advance() {
-    if (nextIdx + 1 < choices.length) nextIdx++;
-  }
+	@Override
+	public void advance() {
+		if (nextIdx + 1 < choices.length)
+			nextIdx++;
+	}
 
-  public int getProcessedNumberOfChoices() {
-    return nextIdx+1;
-  }
+	@Override
+	public int getProcessedNumberOfChoices() {
+		return nextIdx + 1;
+	}
 
-  public int getTotalNumberOfChoices() {
-    return choices.length;
-  }
+	@Override
+	public int getTotalNumberOfChoices() {
+		return choices.length;
+	}
 
-  public boolean hasMoreChoices() {
-    return !isDone && (nextIdx + 1 < choices.length);
-  }
+	@Override
+	public boolean hasMoreChoices() {
+		return !isDone && (nextIdx + 1 < choices.length);
+	}
 
-  public void reset() {
-    nextIdx = -1;
+	@Override
+	public void reset() {
+		nextIdx = -1;
 
-    isDone = false;
-  }
+		isDone = false;
+	}
 
-  @Override
-  public Class<Long> getChoiceType() {
-    return Long.class;
-  }
+	@Override
+	public Class<Long> getChoiceType() {
+		return Long.class;
+	}
 }

@@ -18,7 +18,6 @@
 //
 package gov.nasa.jpf.test.mc.data;
 
-
 import gov.nasa.jpf.util.test.TestJPF;
 import gov.nasa.jpf.vm.Verify;
 
@@ -30,67 +29,70 @@ import org.junit.Test;
  * test of gov.nasa.jpf.vm.Verify nondeterministic data initailization
  */
 public class RandomTest extends TestJPF {
-  private void run (int n){
-    int i = Verify.getInt(0,n); // we should backtrack 0..n times to this location
-    Verify.incrementCounter(0); // counter '0' should have value (n+1) after JPF is done
-    System.out.println(i);
-  }
+	private void run(int n) {
+		int i = Verify.getInt(0, n); // we should backtrack 0..n times to this
+										// location
+		Verify.incrementCounter(0); // counter '0' should have value (n+1) after
+									// JPF is done
+		System.out.println(i);
+	}
 
-  @Test public void testRandom () {
-    if (!isJPFRun()){
-      Verify.resetCounter(0);
-    }
-    if (verifyNoPropertyViolation()){
-      run(3);
-    }
-    if (!isJPFRun()){
-      if (Verify.getCounter(0) != 4){
-        fail("wrong number of paths");
-      }
-    }
-  }
+	@Test
+	public void testRandom() {
+		if (!isJPFRun()) {
+			Verify.resetCounter(0);
+		}
+		if (verifyNoPropertyViolation()) {
+			run(3);
+		}
+		if (!isJPFRun()) {
+			if (Verify.getCounter(0) != 4) {
+				fail("wrong number of paths");
+			}
+		}
+	}
 
-  @Test public void testRandomBFS () {
-    if (!isJPFRun()){
-      Verify.resetCounter(0);
-    }
-    if (verifyNoPropertyViolation("+search.class=gov.nasa.jpf.search.heuristic.BFSHeuristic")){
-      run(3);
-    }
-    if (!isJPFRun()){
-      if (Verify.getCounter(0) != 4){
-        fail("wrong number of paths");
-      }
-    }
-  }
+	@Test
+	public void testRandomBFS() {
+		if (!isJPFRun()) {
+			Verify.resetCounter(0);
+		}
+		if (verifyNoPropertyViolation("+search.class=gov.nasa.jpf.search.heuristic.BFSHeuristic")) {
+			run(3);
+		}
+		if (!isJPFRun()) {
+			if (Verify.getCounter(0) != 4) {
+				fail("wrong number of paths");
+			}
+		}
+	}
 
+	@Test
+	public void testJavaUtilRandom() {
 
-  
-  @Test public void testJavaUtilRandom () {
+		if (verifyUnhandledException("java.lang.ArithmeticException",
+				"+cg.enumerate_random=true")) {
+			Random random = new Random(42); // (1)
 
-    if (verifyUnhandledException("java.lang.ArithmeticException", "+cg.enumerate_random=true")) {
-      Random random = new Random(42);      // (1)
+			int a = random.nextInt(4); // (2)
+			System.out.print("a=");
+			System.out.println(a);
 
-      int a = random.nextInt(4);           // (2)
-      System.out.print("a=");
-      System.out.println(a);
+			// ... lots of code here
 
-      //... lots of code here
+			int b = random.nextInt(3); // (3)
+			System.out.print("a=");
+			System.out.print(a);
+			System.out.print(",b=");
+			System.out.println(b);
 
-      int b = random.nextInt(3);           // (3)
-      System.out.print("a=");
-      System.out.print(a);
-      System.out.print(",b=");
-      System.out.println(b);
-
-
-      int c = a / (b + a - 2);                  // (4)
-      System.out.print("a=");
-      System.out.print(a);
-      System.out.print(",b=");
-      System.out.print(b);
-      System.out.print(",c=");
-      System.out.println(c);
-    }
-  }
+			int c = a / (b + a - 2); // (4)
+			System.out.print("a=");
+			System.out.print(a);
+			System.out.print(",b=");
+			System.out.print(b);
+			System.out.print(",c=");
+			System.out.println(c);
+		}
+	}
 }

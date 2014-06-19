@@ -29,84 +29,85 @@ import java.io.StringReader;
  */
 public class SequenceInterpreter implements Cloneable {
 
-  ScriptElementContainer.SECIterator top;
+	ScriptElementContainer.SECIterator top;
 
-  public SequenceInterpreter (ScriptElementContainer seq) {
-    top = seq.iterator();
-  }
+	public SequenceInterpreter(ScriptElementContainer seq) {
+		top = seq.iterator();
+	}
 
-  void push (SECIterator it) {
-    it.prev = top;
-    top = it;
-  }
+	void push(SECIterator it) {
+		it.prev = top;
+		top = it;
+	}
 
-  SECIterator pop () {
-    if (top != null) {
-      top = top.getPrev();
-    }
-    return top;
-  }
+	SECIterator pop() {
+		if (top != null) {
+			top = top.getPrev();
+		}
+		return top;
+	}
 
-  public ScriptElement getNext() {
-    if (top != null) {
-      ScriptElement e = top.next();
-      if (e != null) {
-        if ((e instanceof ScriptElementContainer) && !(e instanceof Alternative) ) {
-          push( ((ScriptElementContainer)e).iterator());
-          return getNext();
-        } else {
-          return e;
-        }
-      } else {
-        pop();
-        return (top != null) ? getNext() : null;
-      }
-    } else {
-      return null;
-    }
-  }
+	public ScriptElement getNext() {
+		if (top != null) {
+			ScriptElement e = top.next();
+			if (e != null) {
+				if ((e instanceof ScriptElementContainer)
+						&& !(e instanceof Alternative)) {
+					push(((ScriptElementContainer) e).iterator());
+					return getNext();
+				} else {
+					return e;
+				}
+			} else {
+				pop();
+				return (top != null) ? getNext() : null;
+			}
+		} else {
+			return null;
+		}
+	}
 
-  public Object clone() {
-    // has to deep copy all iterators
+	@Override
+	public Object clone() {
+		// has to deep copy all iterators
 
-    try {
-      SequenceInterpreter si = (SequenceInterpreter) super.clone();
-      if (top != null) {
-        si.top = (SECIterator)top.clone();
-      }
-      return si;
-    } catch (CloneNotSupportedException nonsense) {
-      return null; // we are a Cloneable, so we don't get here
-    }
-  }
+		try {
+			SequenceInterpreter si = (SequenceInterpreter) super.clone();
+			if (top != null) {
+				si.top = (SECIterator) top.clone();
+			}
+			return si;
+		} catch (CloneNotSupportedException nonsense) {
+			return null; // we are a Cloneable, so we don't get here
+		}
+	}
 
-  public boolean isDone() {
-    return (top == null);
-  }
+	public boolean isDone() {
+		return (top == null);
+	}
 
-  //---- test driver
-  public static void main (String[] args) {
-    //String s = "";
-    //String s = "a; b; c ";
-    //String s = "REPEAT 2 { e1, REPEAT 1 { r1, r2 }, e2 }";
-    //String s = "x, ANY {a1,a2}, y";
-    String s = "REPEAT 2 { start, ANY {a1,a2}, REPEAT 2 {r}, end }";
+	// ---- test driver
+	public static void main(String[] args) {
+		// String s = "";
+		// String s = "a; b; c ";
+		// String s = "REPEAT 2 { e1, REPEAT 1 { r1, r2 }, e2 }";
+		// String s = "x, ANY {a1,a2}, y";
+		String s = "REPEAT 2 { start, ANY {a1,a2}, REPEAT 2 {r}, end }";
 
+		StringReader r = new StringReader(s);
 
-    StringReader r = new StringReader(s);
+		try {
+			ESParser parser = new ESParser("test", r);
+			Script script = parser.parse();
 
-    try {
-      ESParser parser = new ESParser("test", r);
-      Script script = parser.parse();
+			SequenceInterpreter si = new SequenceInterpreter(script);
 
-      SequenceInterpreter si = new SequenceInterpreter(script);
+			for (ScriptElement e = si.getNext(); e != null; e = si.getNext()) {
+				System.out.println(e);
+			}
 
-      for (ScriptElement e = si.getNext(); e != null; e = si.getNext()) {
-        System.out.println(e);
-      }
-
-    } catch (Throwable t){
-      t.printStackTrace();
-    }
-  }
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
+	}
 }

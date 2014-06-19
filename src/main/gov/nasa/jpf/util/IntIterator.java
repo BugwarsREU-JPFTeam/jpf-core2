@@ -20,11 +20,13 @@
 package gov.nasa.jpf.util;
 
 /**
- * just a little helper to iterate over collections of ints without doing
- * a lot of boxing/unboxing
+ * just a little helper to iterate over collections of ints without doing a lot
+ * of boxing/unboxing
  */
 public interface IntIterator {
-  void remove();
-  boolean hasNext();
-  int next();
+	void remove();
+
+	boolean hasNext();
+
+	int next();
 }

@@ -26,52 +26,56 @@ import java.io.PrintWriter;
  */
 public abstract class StructuredPrinter {
 
-  protected PrintWriter pw;
+	protected PrintWriter pw;
 
-  protected int indentLevel = 0;
-  protected String indent = "";
-  
-  protected StructuredPrinter(){
-    pw = new PrintWriter(System.out, true);
-  }
-  
-  protected StructuredPrinter (PrintWriter pw){
-    this.pw = pw;
-  }
-  
-  protected void incIndent(){
-    indentLevel++;
-    indent = indent();
-  }
+	protected int indentLevel = 0;
+	protected String indent = "";
 
-  protected void decIndent(){
-    if (indentLevel > 0){
-      indentLevel--;
-      indent = indent();
-    }
-  }
+	protected StructuredPrinter() {
+		pw = new PrintWriter(System.out, true);
+	}
 
-  protected String indent(){
-    switch (indentLevel){
-      case 0: return "";
-      case 1: return "    ";
-      case 2: return "        ";
-      case 3: return "            ";
-      case 4: return "                ";
-      default:
-        StringBuilder sb = new StringBuilder();
-        for (int i=0; i<indentLevel; i++){
-          sb.append("    ");
-        }
-        return sb.toString();
-    }
-  }
-  
-  protected void printSectionHeader(String id){
-    pw.println();
-    pw.print("--------------------------------------------------- ");
-    pw.println(id);
-  }
+	protected StructuredPrinter(PrintWriter pw) {
+		this.pw = pw;
+	}
 
-  
+	protected void incIndent() {
+		indentLevel++;
+		indent = indent();
+	}
+
+	protected void decIndent() {
+		if (indentLevel > 0) {
+			indentLevel--;
+			indent = indent();
+		}
+	}
+
+	protected String indent() {
+		switch (indentLevel) {
+		case 0:
+			return "";
+		case 1:
+			return "    ";
+		case 2:
+			return "        ";
+		case 3:
+			return "            ";
+		case 4:
+			return "                ";
+		default:
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < indentLevel; i++) {
+				sb.append("    ");
+			}
+			return sb.toString();
+		}
+	}
+
+	protected void printSectionHeader(String id) {
+		pw.println();
+		pw.print("--------------------------------------------------- ");
+		pw.println(id);
+	}
+
 }

@@ -34,131 +34,133 @@ import java.io.PrintWriter;
 
 /**
  * simple tool to log method invocations
- *
- * at this point, it doesn't do fancy things yet, but gives a more high
- * level idea of what got executed by JPF than the ExecTracker
+ * 
+ * at this point, it doesn't do fancy things yet, but gives a more high level
+ * idea of what got executed by JPF than the ExecTracker
  */
 public class MethodTracker extends ListenerAdapter {
 
-  static final String INDENT = "  ";
+	static final String INDENT = "  ";
 
-  MethodInfo lastMi;
-  PrintWriter out;
+	MethodInfo lastMi;
+	PrintWriter out;
 
-  public MethodTracker (Config conf, JPF jpf) {
-    out = new PrintWriter(System.out, true);
-  }
+	public MethodTracker(Config conf, JPF jpf) {
+		out = new PrintWriter(System.out, true);
+	}
 
-  void logMethodCall(ThreadInfo ti, MethodInfo mi, int stackDepth) {
-    out.print(ti.getId());
-    out.print(":");
+	void logMethodCall(ThreadInfo ti, MethodInfo mi, int stackDepth) {
+		out.print(ti.getId());
+		out.print(":");
 
-    for (int i=0; i<stackDepth%80; i++) {
-      out.print(INDENT);
-    }
+		for (int i = 0; i < stackDepth % 80; i++) {
+			out.print(INDENT);
+		}
 
-    if (mi.isMJI()) {
-      out.print("native ");
-    }
+		if (mi.isMJI()) {
+			out.print("native ");
+		}
 
-    out.print(mi.getFullName());
+		out.print(mi.getFullName());
 
-    if (ti.isFirstStepInsn()) {
-      out.print("...");
-    }
+		if (ti.isFirstStepInsn()) {
+			out.print("...");
+		}
 
-    out.println();
-  }
+		out.println();
+	}
 
-  @Override
-  public void executeInstruction (VM vm, ThreadInfo ti, Instruction insnToExecute) {
-    MethodInfo mi = insnToExecute.getMethodInfo();
+	@Override
+	public void executeInstruction(VM vm, ThreadInfo ti,
+			Instruction insnToExecute) {
+		MethodInfo mi = insnToExecute.getMethodInfo();
 
-    if (mi != lastMi) {
-      logMethodCall(ti, mi, ti.getStackDepth());
-      lastMi = mi;
+		if (mi != lastMi) {
+			logMethodCall(ti, mi, ti.getStackDepth());
+			lastMi = mi;
 
-    } else if (insnToExecute instanceof InvokeInstruction) {
-      MethodInfo callee;
+		} else if (insnToExecute instanceof InvokeInstruction) {
+			MethodInfo callee;
 
-      // that's the only little gist of it - if this is a VirtualInvocation,
-      // we have to dig the callee out by ourselves (it's not known
-      // before execution)
+			// that's the only little gist of it - if this is a
+			// VirtualInvocation,
+			// we have to dig the callee out by ourselves (it's not known
+			// before execution)
 
-      if (insnToExecute instanceof VirtualInvocation) {
-        VirtualInvocation callInsn = (VirtualInvocation)insnToExecute;
-        int objref = callInsn.getCalleeThis(ti);
-        callee = callInsn.getInvokedMethod(ti, objref);
+			if (insnToExecute instanceof VirtualInvocation) {
+				VirtualInvocation callInsn = (VirtualInvocation) insnToExecute;
+				int objref = callInsn.getCalleeThis(ti);
+				callee = callInsn.getInvokedMethod(ti, objref);
 
-      } else if (insnToExecute instanceof INVOKESPECIAL) {
-        INVOKESPECIAL callInsn = (INVOKESPECIAL)insnToExecute;
-        callee = callInsn.getInvokedMethod(ti);
+			} else if (insnToExecute instanceof INVOKESPECIAL) {
+				INVOKESPECIAL callInsn = (INVOKESPECIAL) insnToExecute;
+				callee = callInsn.getInvokedMethod(ti);
 
-      } else {
-        InvokeInstruction callInsn = (InvokeInstruction)insnToExecute;
-        callee = callInsn.getInvokedMethod(ti);
-      }
+			} else {
+				InvokeInstruction callInsn = (InvokeInstruction) insnToExecute;
+				callee = callInsn.getInvokedMethod(ti);
+			}
 
-      if (callee != null) {
-        if (callee.isMJI()) {
-          logMethodCall(ti, callee, ti.getStackDepth()+1);
-        }
-      } else {
-        out.println("ERROR: unknown callee of: " + insnToExecute);
-      }
-    }
-  }
+			if (callee != null) {
+				if (callee.isMJI()) {
+					logMethodCall(ti, callee, ti.getStackDepth() + 1);
+				}
+			} else {
+				out.println("ERROR: unknown callee of: " + insnToExecute);
+			}
+		}
+	}
 
-  /*
-   * those are not really required, but mark the transition boundaries
-   */
-  @Override
-  public void stateRestored(Search search) {
-    int id = search.getStateId();
-    out.println("----------------------------------- [" +
-                       search.getDepth() + "] restored: " + id);
-  }
+	/*
+	 * those are not really required, but mark the transition boundaries
+	 */
+	@Override
+	public void stateRestored(Search search) {
+		int id = search.getStateId();
+		out.println("----------------------------------- [" + search.getDepth()
+				+ "] restored: " + id);
+	}
 
-  //--- the ones we are interested in
-  @Override
-  public void searchStarted(Search search) {
-    out.println("----------------------------------- search started");
-  }
+	// --- the ones we are interested in
+	@Override
+	public void searchStarted(Search search) {
+		out.println("----------------------------------- search started");
+	}
 
-  @Override
-  public void stateAdvanced(Search search) {
-    int id = search.getStateId();
+	@Override
+	public void stateAdvanced(Search search) {
+		int id = search.getStateId();
 
-    out.print("----------------------------------- [" +
-                     search.getDepth() + "] forward: " + id);
-    if (search.isNewState()) {
-      out.print(" new");
-    } else {
-      out.print(" visited");
-    }
+		out.print("----------------------------------- [" + search.getDepth()
+				+ "] forward: " + id);
+		if (search.isNewState()) {
+			out.print(" new");
+		} else {
+			out.print(" visited");
+		}
 
-    if (search.isEndState()) {
-      out.print(" end");
-    }
+		if (search.isEndState()) {
+			out.print(" end");
+		}
 
-    out.println();
+		out.println();
 
-    lastMi = null;
-  }
+		lastMi = null;
+	}
 
-  @Override
-  public void stateBacktracked(Search search) {
-    int id = search.getStateId();
+	@Override
+	public void stateBacktracked(Search search) {
+		int id = search.getStateId();
 
-    lastMi = null;
+		lastMi = null;
 
-    out.println("----------------------------------- [" +
-                       search.getDepth() + "] backtrack: " + id);
-  }
+		out.println("----------------------------------- [" + search.getDepth()
+				+ "] backtrack: " + id);
+	}
 
-  @Override
-  public void searchFinished(Search search) {
-    out.println("----------------------------------- search finished");
-  }
+	@Override
+	public void searchFinished(Search search) {
+		out.println("----------------------------------- search finished");
+	}
 
 }

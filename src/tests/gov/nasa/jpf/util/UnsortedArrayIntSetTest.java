@@ -20,14 +20,14 @@ package gov.nasa.jpf.util;
 
 public class UnsortedArrayIntSetTest extends ArrayIntSetTestBase {
 
-  @Override
-  protected ArrayIntSet createArrayIntSet() {
-    return new UnsortedArrayIntSet();
-  }
+	@Override
+	protected ArrayIntSet createArrayIntSet() {
+		return new UnsortedArrayIntSet();
+	}
 
-  @Override
-  protected ArrayIntSet createArrayIntSet(int n) {
-    return new UnsortedArrayIntSet(n);
-  }
+	@Override
+	protected ArrayIntSet createArrayIntSet(int n) {
+		return new UnsortedArrayIntSet(n);
+	}
 
 }

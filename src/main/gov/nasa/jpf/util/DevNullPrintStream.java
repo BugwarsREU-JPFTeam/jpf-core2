@@ -27,47 +27,149 @@ import java.util.Locale;
  * a PrintStream that doesn't print anything
  */
 public class DevNullPrintStream extends PrintStream {
-  
-  public DevNullPrintStream(){
-    super( new ByteArrayOutputStream());
-  }
-  
-  public void flush(){}
-  public void close(){}
-  public boolean checkError(){
-    return false;
-  }
-  protected void setError(){}
-  protected void clearError(){}
-  
-  public void write(int a){}
-  public void write(byte[] a, int b, int c){}
-  public void print(boolean a){}
-  public void print(char a){}
-  public void print(int a){}
-  public void print(long a){}
-  public void print(float a){}
-  public void print(double a){}
-  public void print(char[] a){}
-  public void print(String a){}
-  public void print(Object a){}
-  public void println(){}
-  public void println(boolean a){}
-  public void println(char a){}
-  public void println(int a){}
-  public void println(long a){}
-  public void println(float a){}
-  public void println(double a){}
-  public void println(char[] a){}
-  public void println(String a){}
-  public void println(Object a){}
-  
-  public PrintStream printf(String a, Object... b){ return this; }
-  public PrintStream printf(Locale a, String b, Object... c){ return this; }
-  public PrintStream format(String a, Object... b){ return this; }
-  public PrintStream format(Locale a, String b, Object... c){ return this; }
-  public PrintStream append(CharSequence a){ return this; }
-  public PrintStream append(CharSequence a, int b, int c){ return this; }
-  public PrintStream append(char a){ return this; }
+
+	public DevNullPrintStream() {
+		super(new ByteArrayOutputStream());
+	}
+
+	@Override
+	public void flush() {
+	}
+
+	@Override
+	public void close() {
+	}
+
+	@Override
+	public boolean checkError() {
+		return false;
+	}
+
+	@Override
+	protected void setError() {
+	}
+
+	@Override
+	protected void clearError() {
+	}
+
+	@Override
+	public void write(int a) {
+	}
+
+	@Override
+	public void write(byte[] a, int b, int c) {
+	}
+
+	@Override
+	public void print(boolean a) {
+	}
+
+	@Override
+	public void print(char a) {
+	}
+
+	@Override
+	public void print(int a) {
+	}
+
+	@Override
+	public void print(long a) {
+	}
+
+	@Override
+	public void print(float a) {
+	}
+
+	@Override
+	public void print(double a) {
+	}
+
+	@Override
+	public void print(char[] a) {
+	}
+
+	@Override
+	public void print(String a) {
+	}
+
+	@Override
+	public void print(Object a) {
+	}
+
+	@Override
+	public void println() {
+	}
+
+	@Override
+	public void println(boolean a) {
+	}
+
+	@Override
+	public void println(char a) {
+	}
+
+	@Override
+	public void println(int a) {
+	}
+
+	@Override
+	public void println(long a) {
+	}
+
+	@Override
+	public void println(float a) {
+	}
+
+	@Override
+	public void println(double a) {
+	}
+
+	@Override
+	public void println(char[] a) {
+	}
+
+	@Override
+	public void println(String a) {
+	}
+
+	@Override
+	public void println(Object a) {
+	}
+
+	@Override
+	public PrintStream printf(String a, Object... b) {
+		return this;
+	}
+
+	@Override
+	public PrintStream printf(Locale a, String b, Object... c) {
+		return this;
+	}
+
+	@Override
+	public PrintStream format(String a, Object... b) {
+		return this;
+	}
+
+	@Override
+	public PrintStream format(Locale a, String b, Object... c) {
+		return this;
+	}
+
+	@Override
+	public PrintStream append(CharSequence a) {
+		return this;
+	}
+
+	@Override
+	public PrintStream append(CharSequence a, int b, int c) {
+		return this;
+	}
+
+	@Override
+	public PrintStream append(char a) {
+		return this;
+	}
 
 }

@@ -18,18 +18,21 @@
 //
 package gov.nasa.jpf.vm;
 
-
 public interface Backtracker {
-  static interface RestorableState {};
-  
-  void attach(VM vm);
-  
-  // the backtracking interface (depth first search only)
-  boolean backtrack ();
-  void pushSystemState (); 
-  void pushKernelState ();
-  
-  // the general restore interface
-  RestorableState getRestorableState();
-  void restoreState (RestorableState bs);
+	static interface RestorableState {
+	};
+
+	void attach(VM vm);
+
+	// the backtracking interface (depth first search only)
+	boolean backtrack();
+
+	void pushSystemState();
+
+	void pushKernelState();
+
+	// the general restore interface
+	RestorableState getRestorableState();
+
+	void restoreState(RestorableState bs);
 }

@@ -26,5 +26,6 @@ import java.util.List;
  */
 public interface EventFactory {
 
-  Event createEvent(ScriptElement parent, String id, List<String> args, int line);
+	Event createEvent(ScriptElement parent, String id, List<String> args,
+			int line);
 }

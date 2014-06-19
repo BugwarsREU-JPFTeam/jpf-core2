@@ -32,258 +32,250 @@ import java.util.List;
 
 import org.junit.Test;
 
-
 /**
  * unit test for gov.nasa.jpf.util.script.ScriptEnvironment
- *
+ * 
  * <2do> tests are very incomplete
  */
 public class ScriptEnvironmentTest extends TestJPF {
 
-  static class EventChoice extends ChoiceGeneratorBase<Event> {
-    int cur = -1;
-    Event e;
+	static class EventChoice extends ChoiceGeneratorBase<Event> {
+		int cur = -1;
+		Event e;
 
-    protected EventChoice(String id) {
-      super(id);
-    }
+		protected EventChoice(String id) {
+			super(id);
+		}
 
-    EventChoice (String id, Event e){
-      super(id);
+		EventChoice(String id, Event e) {
+			super(id);
 
-      this.e = e;
-    }
+			this.e = e;
+		}
 
-    public void advance() {
-      cur++;
-    }
+		@Override
+		public void advance() {
+			cur++;
+		}
 
-    public boolean hasMoreChoices() {
-      return (cur<0);
-    }
+		@Override
+		public boolean hasMoreChoices() {
+			return (cur < 0);
+		}
 
-    public Class<Event> getChoiceType() {
-      return Event.class;
-    }
+		@Override
+		public Class<Event> getChoiceType() {
+			return Event.class;
+		}
 
-    public Event getNextChoice() {
-      return (cur == 0) ? e : null;
-    }
+		@Override
+		public Event getNextChoice() {
+			return (cur == 0) ? e : null;
+		}
 
-    public int getProcessedNumberOfChoices() {
-      return cur+1;
-    }
+		@Override
+		public int getProcessedNumberOfChoices() {
+			return cur + 1;
+		}
 
-    public int getTotalNumberOfChoices() {
-      return 1;
-    }
+		@Override
+		public int getTotalNumberOfChoices() {
+			return 1;
+		}
 
-    public void reset() {
-      cur = -1;
-    }
+		@Override
+		public void reset() {
+			cur = -1;
+		}
 
-    public String toString() {
-      StringBuilder sb = new StringBuilder();
-      sb.append(getClass().getName());
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder();
+			sb.append(getClass().getName());
 
-      sb.append("[id=\"");
-      sb.append(id);
-      sb.append("\",");
+			sb.append("[id=\"");
+			sb.append(id);
+			sb.append("\",");
 
-      if (cur >= 0) {
-        sb.append(MARKER);
-      }
-      sb.append(e.toString());
+			if (cur >= 0) {
+				sb.append(MARKER);
+			}
+			sb.append(e.toString());
 
-      sb.append(']');
-      return sb.toString();
-    }
+			sb.append(']');
+			return sb.toString();
+		}
 
-  }
+	}
 
-  static class EventChoiceSet extends EventChoice {
-    ArrayList<Event> list = new ArrayList<Event>();
+	static class EventChoiceSet extends EventChoice {
+		ArrayList<Event> list = new ArrayList<Event>();
 
-    public EventChoiceSet (String id) {
-      super(id);
-    }
+		public EventChoiceSet(String id) {
+			super(id);
+		}
 
-    public void add (Event e) {
-      list.add(e);
-    }
+		public void add(Event e) {
+			list.add(e);
+		}
 
-    public boolean hasMoreChoices() {
-      return (cur<list.size());
-    }
+		@Override
+		public boolean hasMoreChoices() {
+			return (cur < list.size());
+		}
 
-    public Event getNextChoice() {
-      return (cur >= 0 && cur < list.size()) ? list.get(cur) : null;
-    }
+		@Override
+		public Event getNextChoice() {
+			return (cur >= 0 && cur < list.size()) ? list.get(cur) : null;
+		}
 
-    public int getTotalNumberOfChoices() {
-      return list.size();
-    }
+		@Override
+		public int getTotalNumberOfChoices() {
+			return list.size();
+		}
 
-    public String toString() {
-      StringBuilder sb = new StringBuilder();
-      sb.append(getClass().getName());
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder();
+			sb.append(getClass().getName());
 
-      sb.append("[id=\"");
-      sb.append(id);
-      sb.append("\",");
+			sb.append("[id=\"");
+			sb.append(id);
+			sb.append("\",");
 
-      for (int i=0; i<list.size(); i++) {
-        if (i > 0) {
-          sb.append(',');
-        }
-        if (i == cur) {
-          sb.append(MARKER);
-        }
-        sb.append(list.get(i).toString());
-      }
-      sb.append(']');
-      return sb.toString();
-    }
-  }
+			for (int i = 0; i < list.size(); i++) {
+				if (i > 0) {
+					sb.append(',');
+				}
+				if (i == cur) {
+					sb.append(MARKER);
+				}
+				sb.append(list.get(i).toString());
+			}
+			sb.append(']');
+			return sb.toString();
+		}
+	}
 
+	static class EventEnv extends ScriptEnvironment<EventChoice> {
 
-  static class EventEnv extends ScriptEnvironment<EventChoice> {
+		public EventEnv(String fname) throws FileNotFoundException {
+			super(fname);
+		}
 
-    public EventEnv (String fname) throws FileNotFoundException {
-      super(fname);
-    }
+		public EventEnv(String name, Reader r) {
+			super(name, r);
+		}
 
-    public EventEnv(String name, Reader r) {
-      super(name,r);
-    }
+		@Override
+		protected EventChoice createCGFromEvents(String id, List<Event> events) {
+			if (events.isEmpty()) {
+				return null;
+			} else if (events.size() == 1) {
+				return new EventChoice(id, events.get(0));
+			} else {
+				EventChoiceSet cg = new EventChoiceSet(id);
+				for (Event e : events) {
+					cg.add(e);
+				}
+				return cg;
+			}
+		}
+	}
 
-    protected EventChoice createCGFromEvents(String id, List<Event> events) {
-      if (events.isEmpty()) {
-        return null;
-      } else if (events.size() == 1) {
-        return new EventChoice( id, events.get(0));
-      } else {
-        EventChoiceSet cg = new EventChoiceSet(id);
-        for (Event e : events) {
-          cg.add( e);
-        }
-        return cg;
-      }
-    }
-  }
+	// <2do> - need to add more test conditions than just unexpected exceptions!
 
+	@Test
+	public void testNoMoveSequence() {
+		String s = "SECTION A {\n"
+				+ "  start, ANY {a1,a2}, REPEAT 2 {r}, end \n" + "}\n"
+				+ "SECTION B {\n" + "  foo, bar, baz \n" + "}";
 
-  // <2do> - need to add more test conditions than just unexpected exceptions!
-  
-  @Test
-  public void testNoMoveSequence () {
-    String s = "SECTION A {\n" +
-               "  start, ANY {a1,a2}, REPEAT 2 {r}, end \n" +
-               "}\n" +
-               "SECTION B {\n" +
-               "  foo, bar, baz \n" +
-               "}";
+		String[][] a = { { "A", "B" }, { "A", "B" }, { "A", "B" },
+				{ "A", "B" }, { "A", "B" }, { "A", "B" } };
 
-    String[][] a = { { "A", "B" },
-                     { "A", "B" },
-                     { "A", "B" },
-                     { "A", "B" },
-                     { "A", "B" },
-                     { "A", "B" } };
+		try {
+			ScriptEnvironment env = new EventEnv("test", new StringReader(s));
+			env.parseScript();
 
-    try {
-      ScriptEnvironment env = new EventEnv("test", new StringReader(s));
-      env.parseScript();
+			for (String[] sections : a) {
+				ChoiceGenerator<?> cg = env.getNext("testNoMove", sections);
+				System.out.println(Misc.toString(sections, "[", ",", "]")
+						+ " => " + cg);
+			}
 
-      for (String[] sections : a) {
-        ChoiceGenerator<?> cg = env.getNext("testNoMove", sections);
-        System.out.println(Misc.toString(sections, "[", ",", "]") + " => " + cg);
-      }
+		} catch (Throwable t) {
+			// t.printStackTrace();
+			assert false : "unexpected exception in testNoMoveSequence";
+		}
+	}
 
-    } catch (Throwable t){
-      // t.printStackTrace();
-      assert false : "unexpected exception in testNoMoveSequence";
-    }
-  }
+	@Test
+	public void testMoveSequence() {
+		String s = "SECTION A {\n"
+				+ "  start, ANY {a1,a2}, REPEAT 2 {r}, end \n" + "}\n"
+				+ "SECTION B {\n" + "  foo, bar, baz \n" + "}\n"
+				+ "SECTION C {\n" + "  du, da \n" + "}";
 
-  @Test
-  public void testMoveSequence () {
-    String s = "SECTION A {\n" +
-               "  start, ANY {a1,a2}, REPEAT 2 {r}, end \n" +
-               "}\n" +
-               "SECTION B {\n" +
-               "  foo, bar, baz \n" +
-               "}\n" +
-               "SECTION C {\n" +
-               "  du, da \n" +
-               "}";
+		String[][] a = { { "A", "B" }, { "A", "B" }, { "A", "C" }, { "B" } };
 
+		try {
+			EventEnv env = new EventEnv("test", new StringReader(s));
+			env.parseScript();
 
-    String[][] a = { { "A", "B" },
-                     { "A", "B" },
-                     { "A", "C" },
-                     { "B" } };
+			for (String[] sections : a) {
+				ChoiceGenerator<?> cg = env.getNext("testMove", sections);
+				System.out.println(Misc.toString(sections, "[", ",", "]")
+						+ " => " + cg);
+			}
 
-    try {
-      EventEnv env = new EventEnv("test", new StringReader(s));
-      env.parseScript();
+		} catch (Throwable t) {
+			// t.printStackTrace();
+			assert false : "unexpected exception in testMoveSequence";
+		}
+	}
 
-      for (String[] sections : a) {
-        ChoiceGenerator<?> cg = env.getNext("testMove", sections);
-        System.out.println(Misc.toString(sections, "[", ",", "]") + " => " + cg);
-      }
+	@Test
+	public void testBacktrack() {
+		String s = "SECTION A {\n"
+				+ "  start, ANY {a1,a2}, REPEAT 2 {r}, end \n" + "}\n"
+				+ "SECTION B {\n" + "  foo, bar, baz \n" + "}";
 
-    } catch (Throwable t){
-      //t.printStackTrace();
-      assert false : "unexpected exception in testMoveSequence";
-    }
-  }
+		String[][] a = { { "A", "B" }, { "A", "B" }, { "A", "B" },
+				{ "A", "B" }, { "A", "B" }, { "A", "B" } };
 
+		try {
+			EventEnv env = new EventEnv("test", new StringReader(s));
+			env.parseScript();
 
-  @Test
-  public void testBacktrack () {
-    String s = "SECTION A {\n" +
-               "  start, ANY {a1,a2}, REPEAT 2 {r}, end \n" +
-               "}\n" +
-               "SECTION B {\n" +
-               "  foo, bar, baz \n" +
-               "}";
+			ChoiceGenerator<?> cg = null;
+			int i = 0;
 
-    String[][] a = { { "A", "B" },
-                     { "A", "B" },
-                     { "A", "B" },
-                     { "A", "B" },
-                     { "A", "B" },
-                     { "A", "B" } };
+			cg = env.getNext("testBacktrack-1", a[i]);
+			System.out
+					.println(Misc.toString(a[i], "[", ",", "]") + " => " + cg);
+			i++;
 
-    try {
-      EventEnv env = new EventEnv("test", new StringReader(s));
-      env.parseScript();
+			cg = env.getNext("testBacktrack-2", a[i]);
+			System.out
+					.println(Misc.toString(a[i], "[", ",", "]") + " => " + cg);
+			i++;
 
-      ChoiceGenerator<?> cg = null;
-      int i =0;
+			ScriptEnvironment.ActiveSnapshot snap = env.getStateExtension();
 
-      cg = env.getNext("testBacktrack-1", a[i]);
-      System.out.println(Misc.toString(a[i], "[", ",", "]") + " => " + cg);
-      i++;
+			cg = env.getNext("testBacktrack-3", a[i]);
+			System.out
+					.println(Misc.toString(a[i], "[", ",", "]") + " => " + cg);
+			// i++;
 
-      cg = env.getNext("testBacktrack-2", a[i]);
-      System.out.println(Misc.toString(a[i], "[", ",", "]") + " => " + cg);
-      i++;
-
-      ScriptEnvironment.ActiveSnapshot snap = env.getStateExtension();
-
-      cg = env.getNext("testBacktrack-3", a[i]);
-      System.out.println(Misc.toString(a[i], "[", ",", "]") + " => " + cg);
-      //i++;
-
-      env.restore(snap);
-      cg = env.getNext("testBacktrack-4", a[i]);
-      System.out.println(Misc.toString(a[i], "[", ",", "]") + " => " + cg);
-    } catch (Throwable t){
-      //t.printStackTrace();
-      assert false : "unexpected exception in testBacktrack";
-    }
-  }
+			env.restore(snap);
+			cg = env.getNext("testBacktrack-4", a[i]);
+			System.out
+					.println(Misc.toString(a[i], "[", ",", "]") + " => " + cg);
+		} catch (Throwable t) {
+			// t.printStackTrace();
+			assert false : "unexpected exception in testBacktrack";
+		}
+	}
 
 }

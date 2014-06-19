@@ -23,45 +23,44 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Jump subroutine
- * ... => ..., address
+ * Jump subroutine ... => ..., address
  */
 public class JSR extends JVMInstruction {
-  private int target;
+	private int target;
 
-  public JSR(int targetPc){
-    target = targetPc;
-  }
+	public JSR(int targetPc) {
+		target = targetPc;
+	}
 
-  @Override
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
-    
-    int tgtAdr = getNext(ti).getPosition();
-    
-    frame.push( tgtAdr);
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    return mi.getInstructionAt(target);
-  }
+		int tgtAdr = getNext(ti).getPosition();
 
-  public int getLength() {
-    return 3; // opcode, bb1, bb2
-  }
-  
-  @Override
-  public int getByteCode () {
-    return 0xA8;
-  }
-  
-  @Override
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		frame.push(tgtAdr);
 
-  public int getTarget() {
-	return target;
-  }
+		return mi.getInstructionAt(target);
+	}
+
+	@Override
+	public int getLength() {
+		return 3; // opcode, bb1, bb2
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0xA8;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
+
+	public int getTarget() {
+		return target;
+	}
 
 }

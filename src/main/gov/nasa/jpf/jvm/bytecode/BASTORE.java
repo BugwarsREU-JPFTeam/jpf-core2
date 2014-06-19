@@ -24,43 +24,46 @@ import gov.nasa.jpf.vm.ByteArrayFields;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.Fields;
 import gov.nasa.jpf.vm.StackFrame;
-import gov.nasa.jpf.vm.ThreadInfo;
 
 /**
- * Store into byte or boolean array
- * ..., arrayref, index, value  => ...
+ * Store into byte or boolean array ..., arrayref, index, value => ...
  */
 public class BASTORE extends ArrayStoreInstruction {
 
-  byte value;
+	byte value;
 
-  protected void popValue(StackFrame frame){
-    value = (byte)frame.pop();
-  }
+	@Override
+	protected void popValue(StackFrame frame) {
+		value = (byte) frame.pop();
+	}
 
-  protected void setField (ElementInfo ei, int index) throws ArrayIndexOutOfBoundsExecutiveException {
-    ei.checkArrayBounds(index);
+	@Override
+	protected void setField(ElementInfo ei, int index)
+			throws ArrayIndexOutOfBoundsExecutiveException {
+		ei.checkArrayBounds(index);
 
-    Fields f = ei.getFields();
+		Fields f = ei.getFields();
 
-    if (f instanceof ByteArrayFields){
-      ei.setByteElement(index, value);
+		if (f instanceof ByteArrayFields) {
+			ei.setByteElement(index, value);
 
-    } else if (f instanceof BooleanArrayFields){
-      ei.setBooleanElement(index, value != 0 ? true : false);
-    }
+		} else if (f instanceof BooleanArrayFields) {
+			ei.setBooleanElement(index, value != 0 ? true : false);
+		}
 
-  }
+	}
 
-  public int getByteCode () {
-    return 0x54;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
-  
-  public byte getValue(){
-    return value;
-  }
+	@Override
+	public int getByteCode() {
+		return 0x54;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
+
+	public byte getValue() {
+		return value;
+	}
 }

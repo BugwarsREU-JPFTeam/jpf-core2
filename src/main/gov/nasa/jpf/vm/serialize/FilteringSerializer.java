@@ -18,7 +18,6 @@
 //
 package gov.nasa.jpf.vm.serialize;
 
-
 import gov.nasa.jpf.util.ArrayObjectQueue;
 import gov.nasa.jpf.util.BitArray;
 import gov.nasa.jpf.util.FinalBitSet;
@@ -48,422 +47,436 @@ import gov.nasa.jpf.vm.ThreadList;
 import java.util.HashMap;
 import java.util.List;
 
-
 /**
  * serializer that can ignore marked fields and stackframes for state matching
- *
+ * 
  * <2do> rework filter policies
  */
-public class FilteringSerializer extends AbstractSerializer implements ReferenceProcessor, Processor<ElementInfo> {
+public class FilteringSerializer extends AbstractSerializer implements
+		ReferenceProcessor, Processor<ElementInfo> {
 
-  // indexed by method globalId
-  final ObjVector<FramePolicy> methodCache = new ObjVector<FramePolicy>();
+	// indexed by method globalId
+	final ObjVector<FramePolicy> methodCache = new ObjVector<FramePolicy>();
 
-  //--- search global bitmask caches
-  final HashMap<ClassInfo,FinalBitSet> instanceRefMasks = new HashMap<ClassInfo,FinalBitSet>();
-  final HashMap<ClassInfo,FinalBitSet> staticRefMasks   = new HashMap<ClassInfo,FinalBitSet>();
+	// --- search global bitmask caches
+	final HashMap<ClassInfo, FinalBitSet> instanceRefMasks = new HashMap<ClassInfo, FinalBitSet>();
+	final HashMap<ClassInfo, FinalBitSet> staticRefMasks = new HashMap<ClassInfo, FinalBitSet>();
 
-  final HashMap<ClassInfo,FinalBitSet> instanceFilterMasks = new HashMap<ClassInfo,FinalBitSet>();
-  final HashMap<ClassInfo,FinalBitSet> staticFilterMasks   = new HashMap<ClassInfo,FinalBitSet>();
+	final HashMap<ClassInfo, FinalBitSet> instanceFilterMasks = new HashMap<ClassInfo, FinalBitSet>();
+	final HashMap<ClassInfo, FinalBitSet> staticFilterMasks = new HashMap<ClassInfo, FinalBitSet>();
 
-  protected FilterConfiguration filter;
+	protected FilterConfiguration filter;
 
-  protected transient IntVector buf = new IntVector(4096);
+	protected transient IntVector buf = new IntVector(4096);
 
-  // the reference queue for heap traversal
-  protected ObjectQueue<ElementInfo> refQueue;
-  
-  Heap heap;
+	// the reference queue for heap traversal
+	protected ObjectQueue<ElementInfo> refQueue;
 
+	Heap heap;
 
-  @Override
-  public void attach(VM vm) {
-    super.attach(vm);
-    
-    filter = vm.getConfig().getInstance("filter.class", FilterConfiguration.class);
-    if (filter == null) {
-      filter = new DefaultFilterConfiguration();
-    }
-    filter.init(vm.getConfig());
-  }
+	@Override
+	public void attach(VM vm) {
+		super.attach(vm);
 
-  protected FramePolicy getFramePolicy(MethodInfo mi) {
-    FramePolicy p = null;
+		filter = vm.getConfig().getInstance("filter.class",
+				FilterConfiguration.class);
+		if (filter == null) {
+			filter = new DefaultFilterConfiguration();
+		}
+		filter.init(vm.getConfig());
+	}
 
-    int mid = mi.getGlobalId();
-    if (mid >= 0){
-      p = methodCache.get(mid);
-    if (p == null) {
-      p = filter.getFramePolicy(mi);
-      methodCache.set(mid, p);
-    }
-    } else {
-      p = filter.getFramePolicy(mi);
-    }
+	protected FramePolicy getFramePolicy(MethodInfo mi) {
+		FramePolicy p = null;
 
-    return p;
-  }
+		int mid = mi.getGlobalId();
+		if (mid >= 0) {
+			p = methodCache.get(mid);
+			if (p == null) {
+				p = filter.getFramePolicy(mi);
+				methodCache.set(mid, p);
+			}
+		} else {
+			p = filter.getFramePolicy(mi);
+		}
 
-  protected FinalBitSet getInstanceRefMask(ClassInfo ci) {
-    FinalBitSet v = instanceRefMasks.get(ci);
-    if (v == null) {
-      BitArray b = new BitArray(ci.getInstanceDataSize());
-      for (FieldInfo fi : filter.getMatchedInstanceFields(ci)) {
-        if (fi.isReference()) {
-          b.set(fi.getStorageOffset());
-        }
-      }
-      v = FinalBitSet.create(b);
-      if (v == null) throw new IllegalStateException("Null BitArray returned.");
-      instanceRefMasks.put(ci, v);
-    }
-    return v;
-  }
+		return p;
+	}
 
-  protected FinalBitSet getStaticRefMask(ClassInfo ci) {
-    FinalBitSet v = staticRefMasks.get(ci);
-    if (v == null) {
-      BitArray b = new BitArray(ci.getStaticDataSize());
-      for (FieldInfo fi : filter.getMatchedStaticFields(ci)) {
-        if (fi.isReference()) {
-          b.set(fi.getStorageOffset());
-        }
-      }
-      v = FinalBitSet.create(b);
-      if (v == null) throw new IllegalStateException("Null BitArray returned.");
-      staticRefMasks.put(ci, v);
-    }
-    return v;
-  }
+	protected FinalBitSet getInstanceRefMask(ClassInfo ci) {
+		FinalBitSet v = instanceRefMasks.get(ci);
+		if (v == null) {
+			BitArray b = new BitArray(ci.getInstanceDataSize());
+			for (FieldInfo fi : filter.getMatchedInstanceFields(ci)) {
+				if (fi.isReference()) {
+					b.set(fi.getStorageOffset());
+				}
+			}
+			v = FinalBitSet.create(b);
+			if (v == null)
+				throw new IllegalStateException("Null BitArray returned.");
+			instanceRefMasks.put(ci, v);
+		}
+		return v;
+	}
 
-  protected FinalBitSet getInstanceFilterMask(ClassInfo ci) {
-    FinalBitSet v = instanceFilterMasks.get(ci);
-    if (v == null) {
-      BitArray b = new BitArray(ci.getInstanceDataSize());
-      b.setAll();
-      for (FieldInfo fi : filter.getMatchedInstanceFields(ci)) {
-        int start = fi.getStorageOffset();
-        int end = start + fi.getStorageSize();
-        for (int i = start; i < end; i++) {
-          b.clear(i);
-        }
-      }
-      v = FinalBitSet.create(b);
-      if (v == null) throw new IllegalStateException("Null BitArray returned.");
-      instanceFilterMasks.put(ci, v);
-    }
-    return v;
-  }
+	protected FinalBitSet getStaticRefMask(ClassInfo ci) {
+		FinalBitSet v = staticRefMasks.get(ci);
+		if (v == null) {
+			BitArray b = new BitArray(ci.getStaticDataSize());
+			for (FieldInfo fi : filter.getMatchedStaticFields(ci)) {
+				if (fi.isReference()) {
+					b.set(fi.getStorageOffset());
+				}
+			}
+			v = FinalBitSet.create(b);
+			if (v == null)
+				throw new IllegalStateException("Null BitArray returned.");
+			staticRefMasks.put(ci, v);
+		}
+		return v;
+	}
 
-  protected FinalBitSet getStaticFilterMask(ClassInfo ci) {
-    FinalBitSet v = staticFilterMasks.get(ci);
-    if (v == null) {
-      BitArray b = new BitArray(ci.getStaticDataSize());
-      b.setAll();
-      for (FieldInfo fi : filter.getMatchedStaticFields(ci)) {
-        int start = fi.getStorageOffset();
-        int end = start + fi.getStorageSize();
-        for (int i = start; i < end; i++) {
-          b.clear(i);
-        }
-      }
-      v = FinalBitSet.create(b);
-      if (v == null) throw new IllegalStateException("Null BitArray returned.");
-      staticFilterMasks.put(ci, v);
-    }
-    return v;
-  }
+	protected FinalBitSet getInstanceFilterMask(ClassInfo ci) {
+		FinalBitSet v = instanceFilterMasks.get(ci);
+		if (v == null) {
+			BitArray b = new BitArray(ci.getInstanceDataSize());
+			b.setAll();
+			for (FieldInfo fi : filter.getMatchedInstanceFields(ci)) {
+				int start = fi.getStorageOffset();
+				int end = start + fi.getStorageSize();
+				for (int i = start; i < end; i++) {
+					b.clear(i);
+				}
+			}
+			v = FinalBitSet.create(b);
+			if (v == null)
+				throw new IllegalStateException("Null BitArray returned.");
+			instanceFilterMasks.put(ci, v);
+		}
+		return v;
+	}
 
-  protected void initReferenceQueue() {
-    // note - this assumes all heap objects are in an unmarked state, but this
-    // is true if we enter outside the gc
+	protected FinalBitSet getStaticFilterMask(ClassInfo ci) {
+		FinalBitSet v = staticFilterMasks.get(ci);
+		if (v == null) {
+			BitArray b = new BitArray(ci.getStaticDataSize());
+			b.setAll();
+			for (FieldInfo fi : filter.getMatchedStaticFields(ci)) {
+				int start = fi.getStorageOffset();
+				int end = start + fi.getStorageSize();
+				for (int i = start; i < end; i++) {
+					b.clear(i);
+				}
+			}
+			v = FinalBitSet.create(b);
+			if (v == null)
+				throw new IllegalStateException("Null BitArray returned.");
+			staticFilterMasks.put(ci, v);
+		}
+		return v;
+	}
 
-    if (refQueue == null){
-      refQueue = new ArrayObjectQueue<ElementInfo>();
-    } else {
-      refQueue.clear();
-    }
-  }
+	protected void initReferenceQueue() {
+		// note - this assumes all heap objects are in an unmarked state, but
+		// this
+		// is true if we enter outside the gc
 
+		if (refQueue == null) {
+			refQueue = new ArrayObjectQueue<ElementInfo>();
+		} else {
+			refQueue.clear();
+		}
+	}
 
-  //--- those are the methods that can be overridden by subclasses to implement abstractions
+	// --- those are the methods that can be overridden by subclasses to
+	// implement abstractions
 
-  // needs to be public because of ReferenceProcessor interface
-  public void processReference(int objref) {
-    if (objref != MJIEnv.NULL) {
-      ElementInfo ei = heap.get(objref);
-      if (!ei.isMarked()) { // only add objects once
-        ei.setMarked();
-        refQueue.add(ei);
-      }
-    }
+	// needs to be public because of ReferenceProcessor interface
+	@Override
+	public void processReference(int objref) {
+		if (objref != MJIEnv.NULL) {
+			ElementInfo ei = heap.get(objref);
+			if (!ei.isMarked()) { // only add objects once
+				ei.setMarked();
+				refQueue.add(ei);
+			}
+		}
 
-    buf.add(objref);
-  }
+		buf.add(objref);
+	}
 
-  
-  protected void processArrayFields (ArrayFields afields){
-    buf.add(afields.arrayLength());
+	protected void processArrayFields(ArrayFields afields) {
+		buf.add(afields.arrayLength());
 
-    if (afields.isReferenceArray()) {
-      int[] values = afields.asReferenceArray();
-      for (int i = 0; i < values.length; i++) {
-        processReference(values[i]);
-      }
-    } else {
-      afields.appendTo(buf);
-    }
-  }
-    
-  protected void processNamedFields (ClassInfo ci, Fields fields){
-    FinalBitSet filtered = getInstanceFilterMask(ci);
-    FinalBitSet refs = getInstanceRefMask(ci);
+		if (afields.isReferenceArray()) {
+			int[] values = afields.asReferenceArray();
+			for (int i = 0; i < values.length; i++) {
+				processReference(values[i]);
+			}
+		} else {
+			afields.appendTo(buf);
+		}
+	}
 
-    // using a block operation probably doesn't buy us much here since
-    // we would have to blank the filtered slots and then visit the
-    // non-filtered reference slots, i.e. do two iterations over
-    // the mask bit sets
-    int[] values = fields.asFieldSlots();
-    for (int i = 0; i < values.length; i++) {
-      if (!filtered.get(i)) {
-        int v = values[i];
-        if (refs.get(i)) {
-          processReference(v);
-        } else {
-          buf.add(v);
-        }
-      }
-    }
-  }
+	protected void processNamedFields(ClassInfo ci, Fields fields) {
+		FinalBitSet filtered = getInstanceFilterMask(ci);
+		FinalBitSet refs = getInstanceRefMask(ci);
 
-  // needs to be public because of ElementInfoProcessor interface
-  // NOTE: we don't serialize the monitor state here since this is
-  // redundant to the thread locking state (which we will do after the heap).
-  // <2do> we don't strictly need the lockCount since this has to show in the
-  // stack frames. However, we should probably add monitor serialization to
-  // better support specialized subclasses
-  public void process (ElementInfo ei) {
-    Fields fields = ei.getFields();
-    ClassInfo ci = ei.getClassInfo();
-    buf.add(ci.getUniqueId());
+		// using a block operation probably doesn't buy us much here since
+		// we would have to blank the filtered slots and then visit the
+		// non-filtered reference slots, i.e. do two iterations over
+		// the mask bit sets
+		int[] values = fields.asFieldSlots();
+		for (int i = 0; i < values.length; i++) {
+			if (!filtered.get(i)) {
+				int v = values[i];
+				if (refs.get(i)) {
+					processReference(v);
+				} else {
+					buf.add(v);
+				}
+			}
+		}
+	}
 
-    if (fields instanceof ArrayFields) { // not filtered
-      processArrayFields((ArrayFields)fields);
+	// needs to be public because of ElementInfoProcessor interface
+	// NOTE: we don't serialize the monitor state here since this is
+	// redundant to the thread locking state (which we will do after the heap).
+	// <2do> we don't strictly need the lockCount since this has to show in the
+	// stack frames. However, we should probably add monitor serialization to
+	// better support specialized subclasses
+	@Override
+	public void process(ElementInfo ei) {
+		Fields fields = ei.getFields();
+		ClassInfo ci = ei.getClassInfo();
+		buf.add(ci.getUniqueId());
 
-    } else { // named fields, filtered
-      processNamedFields(ci, fields);
-    }
-  }
-  
-  protected void processReferenceQueue () {
-    refQueue.process(this);
-    
-    // this sucks, but we can't do the 'isMarkedOrLive' trick used in gc here
-    // because gc depends on live bit integrity, and we only mark non-filtered live
-    // objects here, i.e. we can't just set the Heap liveBitValue subsequently.
-    heap.unmarkAll();
-  }
+		if (fields instanceof ArrayFields) { // not filtered
+			processArrayFields((ArrayFields) fields);
 
-  protected void serializeStackFrames() {
-    ThreadList tl = ks.getThreadList();
+		} else { // named fields, filtered
+			processNamedFields(ci, fields);
+		}
+	}
 
-    for (ThreadInfo ti : tl) {
-      if (ti.isAlive()) {
-        serializeStackFrames(ti);
-      }
-    }
-  }
+	protected void processReferenceQueue() {
+		refQueue.process(this);
 
-  protected void serializeStackFrames(ThreadInfo ti){
-    // we need to add the thread object itself as a root
-    processReference( ti.getThreadObjectRef());
-    
-    for (StackFrame frame = ti.getTopFrame(); frame != null; frame = frame.getPrevious()){
-      serializeFrame(frame);
-    }
-  }
+		// this sucks, but we can't do the 'isMarkedOrLive' trick used in gc
+		// here
+		// because gc depends on live bit integrity, and we only mark
+		// non-filtered live
+		// objects here, i.e. we can't just set the Heap liveBitValue
+		// subsequently.
+		heap.unmarkAll();
+	}
 
-  /** more generic, but less efficient because it can't use block operations
-  protected void _serializeFrame(StackFrame frame){
-    buf.add(frame.getMethodInfo().getGlobalId());
-    buf.add(frame.getPC().getInstructionIndex());
+	protected void serializeStackFrames() {
+		ThreadList tl = ks.getThreadList();
 
-    int len = frame.getTopPos()+1;
-    buf.add(len);
+		for (ThreadInfo ti : tl) {
+			if (ti.isAlive()) {
+				serializeStackFrames(ti);
+			}
+		}
+	}
 
-    // this looks like something we can push into the frame
-    int[] slots = frame.getSlots();
-    for (int i = 0; i < len; i++) {
-      if (frame.isReferenceSlot(i)) {
-        processReference(slots[i]);
-      } else {
-        buf.add(slots[i]);
-      }
-    }
-  }
-  **/
+	protected void serializeStackFrames(ThreadInfo ti) {
+		// we need to add the thread object itself as a root
+		processReference(ti.getThreadObjectRef());
 
-  protected void serializeFrame(StackFrame frame){
-    buf.add(frame.getMethodInfo().getGlobalId());
+		for (StackFrame frame = ti.getTopFrame(); frame != null; frame = frame
+				.getPrevious()) {
+			serializeFrame(frame);
+		}
+	}
 
-    // there can be (rare) cases where a listener sets a null nextPc in
-    // a frame that is still on the stack
-    Instruction pc = frame.getPC();
-    if (pc != null){
-      buf.add(pc.getInstructionIndex());
-    } else {
-      buf.add(-1);
-    }
+	/**
+	 * more generic, but less efficient because it can't use block operations
+	 * protected void _serializeFrame(StackFrame frame){
+	 * buf.add(frame.getMethodInfo().getGlobalId());
+	 * buf.add(frame.getPC().getInstructionIndex());
+	 * 
+	 * int len = frame.getTopPos()+1; buf.add(len);
+	 * 
+	 * // this looks like something we can push into the frame int[] slots =
+	 * frame.getSlots(); for (int i = 0; i < len; i++) { if
+	 * (frame.isReferenceSlot(i)) { processReference(slots[i]); } else {
+	 * buf.add(slots[i]); } } }
+	 **/
 
-    int len = frame.getTopPos()+1;
-    buf.add(len);
+	protected void serializeFrame(StackFrame frame) {
+		buf.add(frame.getMethodInfo().getGlobalId());
 
-    int[] slots = frame.getSlots();
-    buf.append(slots,0,len);
+		// there can be (rare) cases where a listener sets a null nextPc in
+		// a frame that is still on the stack
+		Instruction pc = frame.getPC();
+		if (pc != null) {
+			buf.add(pc.getInstructionIndex());
+		} else {
+			buf.add(-1);
+		}
 
-    frame.visitReferenceSlots(this);
-  }
+		int len = frame.getTopPos() + 1;
+		buf.add(len);
 
-  // this is called after the heap got serialized, i.e. we should not use
-  // processReference() anymore. 
-  protected void serializeThreadState (ThreadInfo ti){
-    
-    buf.add( ti.getId());
-    buf.add( ti.getState().ordinal());
-    buf.add( ti.getStackDepth());
-    
-    //--- the lock state
-    // NOTE: both lockRef and lockedObjects can only refer to live objects
-    // which are already heap-processed at this point (i.e. have a valid 'sid'
-    // in case we don't want to directly serialize the reference values)
-    
-    // the object we are waiting for 
-    ElementInfo eiLock = ti.getLockObject();
-    if (eiLock != null){
-      buf.add(getSerializedReferenceValue( eiLock));
-    }
-    
-    // the objects we hold locks for
-    // NOTE: this should be independent of lockedObjects order, hence we
-    // have to factor this out
-    serializeLockedObjects( ti.getLockedObjects());
-  }
+		int[] slots = frame.getSlots();
+		buf.append(slots, 0, len);
 
-  // NOTE: this should not be called before all live references have been processed
-  protected int getSerializedReferenceValue (ElementInfo ei){
-    return ei.getObjectRef();
-  }
-  
-  protected void serializeLockedObjects(List<ElementInfo> lockedObjects){
-    // lockedObjects are already a set since we don't have multiple entries
-    // (that would just increase the lock count), but our serialization should
-    // NOT produce different values depending on order of entry. We could achieve this by using
-    // a canonical order (based on reference or sid values), but this would require
-    // System.arraycopys and object allocation, which is too much overhead
-    // given that the number of lockedObjects is small for all but the most
-    // pathological systems under test. 
-    // We could spend all day to compute the perfect order-independent hash function,
-    // but since our StateSet isn't guaranteed to be collision free anyway, we
-    // rather shoot for something that can be nicely JITed
-    int n = lockedObjects.size();
-    buf.add(n);
-    
-    if (n > 0){
-      if (n == 1){ // no order involved
-        buf.add( getSerializedReferenceValue( lockedObjects.get(0)));
-        
-      } else {
-        // don't burn an iterator on this, 'n' is supposed to be small
-        int h = (n << 16) + (n % 3);
-        for (int i=0; i<n; i++){
-          int rot = (getSerializedReferenceValue( lockedObjects.get(i))) % 31;
-          h ^= (h << rot) | (h >>> (32 - rot)); // rotate left
-        }        
-        buf.add( h);
-      }
-    }
-  }
-  
-  protected void serializeThreadStates (){
-    ThreadList tl = ks.getThreadList();
+		frame.visitReferenceSlots(this);
+	}
 
-    for (ThreadInfo ti : tl) {
-      if (ti.isAlive()) {
-        serializeThreadState(ti);
-      }
-    }    
-  }
-  
-  protected void serializeClassLoaders(){
-    buf.add(ks.classLoaders.size());
+	// this is called after the heap got serialized, i.e. we should not use
+	// processReference() anymore.
+	protected void serializeThreadState(ThreadInfo ti) {
 
-    for (ClassLoaderInfo cl : ks.classLoaders) {
-      if(cl.isAlive()) {
-        serializeStatics(cl.getStatics());
-      }
-    }
-  }
+		buf.add(ti.getId());
+		buf.add(ti.getState().ordinal());
+		buf.add(ti.getStackDepth());
 
-  protected void serializeStatics(Statics statics){
-    buf.add(statics.size());
+		// --- the lock state
+		// NOTE: both lockRef and lockedObjects can only refer to live objects
+		// which are already heap-processed at this point (i.e. have a valid
+		// 'sid'
+		// in case we don't want to directly serialize the reference values)
 
-    for (StaticElementInfo sei : statics.liveStatics()) {
-      serializeClass(sei);
-    }
-  }
+		// the object we are waiting for
+		ElementInfo eiLock = ti.getLockObject();
+		if (eiLock != null) {
+			buf.add(getSerializedReferenceValue(eiLock));
+		}
 
-  protected void serializeClass (StaticElementInfo sei){
-    buf.add(sei.getStatus());
+		// the objects we hold locks for
+		// NOTE: this should be independent of lockedObjects order, hence we
+		// have to factor this out
+		serializeLockedObjects(ti.getLockedObjects());
+	}
 
-    Fields fields = sei.getFields();
-    ClassInfo ci = sei.getClassInfo();
-    FinalBitSet filtered = getStaticFilterMask(ci);
-    FinalBitSet refs = getStaticRefMask(ci);
-    int max = ci.getStaticDataSize();
-    for (int i = 0; i < max; i++) {
-      if (!filtered.get(i)) {
-        int v = fields.getIntValue(i);
-        if (refs.get(i)) {
-          processReference(v);
-        } else {
-          buf.add(v);
-        }
-      }
-    }
-  }
-  
-  //--- our main purpose in life
+	// NOTE: this should not be called before all live references have been
+	// processed
+	protected int getSerializedReferenceValue(ElementInfo ei) {
+		return ei.getObjectRef();
+	}
 
-  @Override
-  protected int[] computeStoringData() {
+	protected void serializeLockedObjects(List<ElementInfo> lockedObjects) {
+		// lockedObjects are already a set since we don't have multiple entries
+		// (that would just increase the lock count), but our serialization
+		// should
+		// NOT produce different values depending on order of entry. We could
+		// achieve this by using
+		// a canonical order (based on reference or sid values), but this would
+		// require
+		// System.arraycopys and object allocation, which is too much overhead
+		// given that the number of lockedObjects is small for all but the most
+		// pathological systems under test.
+		// We could spend all day to compute the perfect order-independent hash
+		// function,
+		// but since our StateSet isn't guaranteed to be collision free anyway,
+		// we
+		// rather shoot for something that can be nicely JITed
+		int n = lockedObjects.size();
+		buf.add(n);
 
-    buf.clear();
-    heap = ks.getHeap();
-    initReferenceQueue();
+		if (n > 0) {
+			if (n == 1) { // no order involved
+				buf.add(getSerializedReferenceValue(lockedObjects.get(0)));
 
-    //--- serialize all live objects and loaded classes
-    serializeStackFrames();
-    serializeClassLoaders();
-    processReferenceQueue();
-    
-    //--- now serialize the thread states (which might refer to live objects)
-    // we do this last because threads contain some internal references
-    // (locked objects etc) that should NOT set the canonical reference serialization
-    // values (if they are encountered before their first explicit heap reference)
-    serializeThreadStates();
+			} else {
+				// don't burn an iterator on this, 'n' is supposed to be small
+				int h = (n << 16) + (n % 3);
+				for (int i = 0; i < n; i++) {
+					int rot = (getSerializedReferenceValue(lockedObjects.get(i))) % 31;
+					h ^= (h << rot) | (h >>> (32 - rot)); // rotate left
+				}
+				buf.add(h);
+			}
+		}
+	}
 
-    return buf.toArray();
-  }
+	protected void serializeThreadStates() {
+		ThreadList tl = ks.getThreadList();
 
-  protected void dumpData() {
-    int n = buf.size();
-    System.out.print("serialized data: [");
-    for (int i=0; i<n; i++) {
-      if (i>0) {
-        System.out.print(',');
-      }
-      System.out.print(buf.get(i));
-    }
-    System.out.println(']');
-  }
+		for (ThreadInfo ti : tl) {
+			if (ti.isAlive()) {
+				serializeThreadState(ti);
+			}
+		}
+	}
+
+	protected void serializeClassLoaders() {
+		buf.add(ks.classLoaders.size());
+
+		for (ClassLoaderInfo cl : ks.classLoaders) {
+			if (cl.isAlive()) {
+				serializeStatics(cl.getStatics());
+			}
+		}
+	}
+
+	protected void serializeStatics(Statics statics) {
+		buf.add(statics.size());
+
+		for (StaticElementInfo sei : statics.liveStatics()) {
+			serializeClass(sei);
+		}
+	}
+
+	protected void serializeClass(StaticElementInfo sei) {
+		buf.add(sei.getStatus());
+
+		Fields fields = sei.getFields();
+		ClassInfo ci = sei.getClassInfo();
+		FinalBitSet filtered = getStaticFilterMask(ci);
+		FinalBitSet refs = getStaticRefMask(ci);
+		int max = ci.getStaticDataSize();
+		for (int i = 0; i < max; i++) {
+			if (!filtered.get(i)) {
+				int v = fields.getIntValue(i);
+				if (refs.get(i)) {
+					processReference(v);
+				} else {
+					buf.add(v);
+				}
+			}
+		}
+	}
+
+	// --- our main purpose in life
+
+	@Override
+	protected int[] computeStoringData() {
+
+		buf.clear();
+		heap = ks.getHeap();
+		initReferenceQueue();
+
+		// --- serialize all live objects and loaded classes
+		serializeStackFrames();
+		serializeClassLoaders();
+		processReferenceQueue();
+
+		// --- now serialize the thread states (which might refer to live
+		// objects)
+		// we do this last because threads contain some internal references
+		// (locked objects etc) that should NOT set the canonical reference
+		// serialization
+		// values (if they are encountered before their first explicit heap
+		// reference)
+		serializeThreadStates();
+
+		return buf.toArray();
+	}
+
+	protected void dumpData() {
+		int n = buf.size();
+		System.out.print("serialized data: [");
+		for (int i = 0; i < n; i++) {
+			if (i > 0) {
+				System.out.print(',');
+			}
+			System.out.print(buf.get(i));
+		}
+		System.out.println(']');
+	}
 }

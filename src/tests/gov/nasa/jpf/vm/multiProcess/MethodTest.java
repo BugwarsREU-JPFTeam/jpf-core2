@@ -31,39 +31,45 @@ import org.junit.Test;
  * @author Nastaran Shafiei <nastaran.shafiei@gmail.com>
  */
 public class MethodTest extends TestMultiProcessJPF {
-  public native void keepMethod(Method m, int prcId);
+	public native void keepMethod(Method m, int prcId);
 
-  // To check the type safe cloning of methods
-  @Test
-  public void methodCloneTest() throws SecurityException, NoSuchMethodException {
-    if(!isJPFRun()) {
-      JPF_gov_nasa_jpf_vm_multiProcess_MethodTest.resetPrcIds();
-    }
+	// To check the type safe cloning of methods
+	@Test
+	public void methodCloneTest() throws SecurityException,
+			NoSuchMethodException {
+		if (!isJPFRun()) {
+			JPF_gov_nasa_jpf_vm_multiProcess_MethodTest.resetPrcIds();
+		}
 
-    if (mpVerifyNoPropertyViolation(2)) {
-      Method m = MethodTest.class.getMethod("methodCloneTest", new Class[]{});
-      int prcId = getProcessId();
-      keepMethod(m, prcId);
-    }
+		if (mpVerifyNoPropertyViolation(2)) {
+			Method m = MethodTest.class.getMethod("methodCloneTest",
+					new Class[] {});
+			int prcId = getProcessId();
+			keepMethod(m, prcId);
+		}
 
-    if(!isJPFRun()) {
-      List<MethodInfo> methods = JPF_gov_nasa_jpf_vm_multiProcess_MethodTest.getMethods();
-      assertEquals(methods.size(), 2);
-      assertTrue(methods.get(0)!=methods.get(1));
-    }
-  }
+		if (!isJPFRun()) {
+			List<MethodInfo> methods = JPF_gov_nasa_jpf_vm_multiProcess_MethodTest
+					.getMethods();
+			assertEquals(methods.size(), 2);
+			assertTrue(methods.get(0) != methods.get(1));
+		}
+	}
 
-  @Test
-  public void methodDeclaringClassTest() throws SecurityException, NoSuchMethodException {
-    if (mpVerifyNoPropertyViolation(2)) {
-      Class<?> cls = MethodTest.class;
+	@Test
+	public void methodDeclaringClassTest() throws SecurityException,
+			NoSuchMethodException {
+		if (mpVerifyNoPropertyViolation(2)) {
+			Class<?> cls = MethodTest.class;
 
-      // The loader of this class should be the same as the loader that loads 
-      // the class java.lang.Thread within this process
-      assertEquals(cls.getClassLoader(), ClassLoader.getSystemClassLoader());
-      for(Method m: cls.getDeclaredMethods()) {
-        assertEquals(m.getDeclaringClass(), cls);
-      }
-    }
-  }
+			// The loader of this class should be the same as the loader that
+			// loads
+			// the class java.lang.Thread within this process
+			assertEquals(cls.getClassLoader(),
+					ClassLoader.getSystemClassLoader());
+			for (Method m : cls.getDeclaredMethods()) {
+				assertEquals(m.getDeclaringClass(), cls);
+			}
+		}
+	}
 }

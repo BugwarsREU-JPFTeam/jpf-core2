@@ -18,26 +18,26 @@
 //
 package gov.nasa.jpf.vm.serialize;
 
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
 /**
- * Indicates that a field in the model SHOULD BE considered during
- * state matching, even if other (prior) configuration would filter it.
+ * Indicates that a field in the model SHOULD BE considered during state
+ * matching, even if other (prior) configuration would filter it.
+ * 
  * @author peterd
  */
-@Target({ElementType.FIELD})
+@Target({ ElementType.FIELD })
 public @interface UnfilterField {
-  /**
-   * If not the empty string, specifies a property that must be "true" to
-   * activate unfiltering--unless <code>invert</code> is set.
-   */
-  String condition() default "";
-  
-  /**
-   * If set to <code>true</code>, property must be "false" to activate
-   * unfiltering. Does nothing if <code>condition</code> is empty string.
-   */
-  boolean invert() default false;
+	/**
+	 * If not the empty string, specifies a property that must be "true" to
+	 * activate unfiltering--unless <code>invert</code> is set.
+	 */
+	String condition() default "";
+
+	/**
+	 * If set to <code>true</code>, property must be "false" to activate
+	 * unfiltering. Does nothing if <code>condition</code> is empty string.
+	 */
+	boolean invert() default false;
 }

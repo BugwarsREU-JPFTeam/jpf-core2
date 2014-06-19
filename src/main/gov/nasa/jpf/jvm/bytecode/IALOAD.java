@@ -21,25 +21,27 @@ package gov.nasa.jpf.jvm.bytecode;
 import gov.nasa.jpf.vm.ArrayIndexOutOfBoundsExecutiveException;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.StackFrame;
-import gov.nasa.jpf.vm.ThreadInfo;
 
 /**
- * Load int from array
- * ..., arrayref, index => ..., value
+ * Load int from array ..., arrayref, index => ..., value
  */
 public class IALOAD extends ArrayLoadInstruction {
 
-  protected void push (StackFrame frame, ElementInfo ei, int index) throws ArrayIndexOutOfBoundsExecutiveException {
-    ei.checkArrayBounds(index);
-    int value = ei.getIntElement(index);
-    frame.push( value);
-  }
+	@Override
+	protected void push(StackFrame frame, ElementInfo ei, int index)
+			throws ArrayIndexOutOfBoundsExecutiveException {
+		ei.checkArrayBounds(index);
+		int value = ei.getIntElement(index);
+		frame.push(value);
+	}
 
-  public int getByteCode () {
-    return 0x2E;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public int getByteCode() {
+		return 0x2E;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

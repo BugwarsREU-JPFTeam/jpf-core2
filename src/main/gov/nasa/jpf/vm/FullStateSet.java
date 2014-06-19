@@ -25,13 +25,15 @@ import gov.nasa.jpf.util.IntTable;
  * Implements a lossless StateSet
  */
 public class FullStateSet extends SerializingStateSet {
-  IntTable<IntArray> states = new IntTable<IntArray>(16);
+	IntTable<IntArray> states = new IntTable<IntArray>(16);
 
-  public int size () {
-    return states.size();
-  }
+	@Override
+	public int size() {
+		return states.size();
+	}
 
-  public int add (int[] state) {
-    return states.poolIndex(new IntArray(state));
-  }
+	@Override
+	public int add(int[] state) {
+		return states.poolIndex(new IntArray(state));
+	}
 }

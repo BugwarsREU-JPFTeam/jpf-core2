@@ -27,65 +27,66 @@ import gov.nasa.jpf.vm.VM;
 import gov.nasa.jpf.vm.ThreadInfo;
 
 public class CGMonitor extends ListenerAdapter {
-  int depth;
-  boolean isFirstInsn = true;
-  boolean showInsn = false;
-  
-  public CGMonitor (Config conf) {
-    showInsn = conf.getBoolean("cg.show_insn");
-  }
-  
-  @Override
-  public void stateAdvanced (Search search) {
-    depth++;
-  }
-  
-  @Override
-  public void stateBacktracked (Search search) {
-    depth--;
-  }
-  
-  @Override
-  public void stateRestored (Search search) {
-    depth = search.getDepth();    
-  }
-  
-  void printPrefix(char c) {
-    for (int i=0; i<depth; i++) {
-      System.out.print(c);
-    }
-  }
-  
-  @Override
-  public void choiceGeneratorAdvanced (VM vm, ChoiceGenerator<?> currentCG) {
-    ChoiceGenerator<?> cg = vm.getChoiceGenerator();
-    
-    printPrefix('.');
-    System.out.print(cg.getNextChoice());
-    
-    if (!showInsn) {
-      System.out.println();
-    }
-    isFirstInsn = true;
-  }
+	int depth;
+	boolean isFirstInsn = true;
+	boolean showInsn = false;
 
-  @Override
-  public void instructionExecuted (VM vm, ThreadInfo ti, Instruction nextInsn, Instruction executedInsn) {
-    if (showInsn && isFirstInsn) {
-      
-      //printPrefix(' ');
-      
-      System.out.print(" : [");
-      System.out.print(ti.getId());
-      System.out.print("] ");
-      System.out.print(executedInsn);
-      System.out.print(" (in ");
-      System.out.print(executedInsn.getMethodInfo().getFullName());
-      System.out.print(":");
-      System.out.print(executedInsn.getInstructionIndex());
-      System.out.println(')');
-      
-      isFirstInsn = false;
-    }
-  }
+	public CGMonitor(Config conf) {
+		showInsn = conf.getBoolean("cg.show_insn");
+	}
+
+	@Override
+	public void stateAdvanced(Search search) {
+		depth++;
+	}
+
+	@Override
+	public void stateBacktracked(Search search) {
+		depth--;
+	}
+
+	@Override
+	public void stateRestored(Search search) {
+		depth = search.getDepth();
+	}
+
+	void printPrefix(char c) {
+		for (int i = 0; i < depth; i++) {
+			System.out.print(c);
+		}
+	}
+
+	@Override
+	public void choiceGeneratorAdvanced(VM vm, ChoiceGenerator<?> currentCG) {
+		ChoiceGenerator<?> cg = vm.getChoiceGenerator();
+
+		printPrefix('.');
+		System.out.print(cg.getNextChoice());
+
+		if (!showInsn) {
+			System.out.println();
+		}
+		isFirstInsn = true;
+	}
+
+	@Override
+	public void instructionExecuted(VM vm, ThreadInfo ti, Instruction nextInsn,
+			Instruction executedInsn) {
+		if (showInsn && isFirstInsn) {
+
+			// printPrefix(' ');
+
+			System.out.print(" : [");
+			System.out.print(ti.getId());
+			System.out.print("] ");
+			System.out.print(executedInsn);
+			System.out.print(" (in ");
+			System.out.print(executedInsn.getMethodInfo().getFullName());
+			System.out.print(":");
+			System.out.print(executedInsn.getInstructionIndex());
+			System.out.println(')');
+
+			isFirstInsn = false;
+		}
+	}
 }

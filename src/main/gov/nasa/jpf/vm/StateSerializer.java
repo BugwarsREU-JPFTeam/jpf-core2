@@ -18,13 +18,11 @@
 //
 package gov.nasa.jpf.vm;
 
-
-
 public interface StateSerializer {
-  void attach(VM vm);
-  
-  /**
-   * serialize the current state and return as int[] 
-   */
-  int[] getStoringData();
+	void attach(VM vm);
+
+	/**
+	 * serialize the current state and return as int[]
+	 */
+	int[] getStoringData();
 }

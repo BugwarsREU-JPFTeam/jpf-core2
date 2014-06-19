@@ -21,32 +21,33 @@ package gov.nasa.jpf.jvm.bytecode;
 import gov.nasa.jpf.vm.ArrayIndexOutOfBoundsExecutiveException;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.StackFrame;
-import gov.nasa.jpf.vm.ThreadInfo;
-
 
 /**
- * Store into long array
- * ..., arrayref, index, value => ...
+ * Store into long array ..., arrayref, index, value => ...
  */
 public class LASTORE extends LongArrayStoreInstruction {
 
-  long value;
+	long value;
 
-  protected void popValue(StackFrame frame){
-    value = frame.popLong();
-  }
+	@Override
+	protected void popValue(StackFrame frame) {
+		value = frame.popLong();
+	}
 
-  protected void setField (ElementInfo ei, int index) throws ArrayIndexOutOfBoundsExecutiveException {
-    ei.checkArrayBounds(index);
-    ei.setLongElement(index, value);
-  }
+	@Override
+	protected void setField(ElementInfo ei, int index)
+			throws ArrayIndexOutOfBoundsExecutiveException {
+		ei.checkArrayBounds(index);
+		ei.setLongElement(index, value);
+	}
 
+	@Override
+	public int getByteCode() {
+		return 0x50;
+	}
 
-  public int getByteCode () {
-    return 0x50;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

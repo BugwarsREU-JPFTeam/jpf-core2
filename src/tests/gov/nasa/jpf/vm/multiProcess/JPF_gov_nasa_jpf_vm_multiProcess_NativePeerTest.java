@@ -27,21 +27,21 @@ import gov.nasa.jpf.vm.NativePeer;
  * @author Nastaran Shafiei <nastaran.shafiei@gmail.com>
  */
 public class JPF_gov_nasa_jpf_vm_multiProcess_NativePeerTest extends NativePeer {
-  protected static int staticCounter = 0;
-  private int counter = 0;
+	protected static int staticCounter = 0;
+	private int counter = 0;
 
-  @MJI
-  public void incNativeCounters____V(MJIEnv env, int objRef) {
-    staticCounter++;
-    counter++;
-  }
+	@MJI
+	public void incNativeCounters____V(MJIEnv env, int objRef) {
+		staticCounter++;
+		counter++;
+	}
 
-  @MJI
-  public int getNativeCounter____I(MJIEnv env, int objRef) {
-    return counter;
-  }
+	@MJI
+	public int getNativeCounter____I(MJIEnv env, int objRef) {
+		return counter;
+	}
 
-  public static int getStaticNativeCounter() {
-    return staticCounter;
-  }
+	public static int getStaticNativeCounter() {
+		return staticCounter;
+	}
 }

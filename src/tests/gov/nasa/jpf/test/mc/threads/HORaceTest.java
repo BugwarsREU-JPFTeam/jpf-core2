@@ -28,75 +28,88 @@ import org.junit.Test;
  */
 public class HORaceTest extends TestJPF {
 
-  static class D {
-    int a;
-    int b;
+	static class D {
+		int a;
+		int b;
 
-    D (int x, int y){
-      a = x;
-      b = y;
-    }
+		D(int x, int y) {
+			a = x;
+			b = y;
+		}
 
-    D (D other){
-      setA( other.getA());
-      Thread.yield(); // give the 2nd thread a chance to interfere
-      setB( other.getB());
-    }
+		D(D other) {
+			setA(other.getA());
+			Thread.yield(); // give the 2nd thread a chance to interfere
+			setB(other.getB());
+		}
 
-    synchronized int getA() { return a; }
-    synchronized int getB() { return b; }
-    synchronized void setA(int x){ a = x; }
-    synchronized void setB(int x){ b = x; }
+		synchronized int getA() {
+			return a;
+		}
 
-    synchronized void change(int delta) {
-      a += delta;
-      b += delta;
-    }
+		synchronized int getB() {
+			return b;
+		}
 
-    synchronized boolean isConsistent() {
-      return a == b;
-    }
-  }
+		synchronized void setA(int x) {
+			a = x;
+		}
 
-  static D d1;
-  static D d2;
+		synchronized void setB(int x) {
+			b = x;
+		}
 
-  @Test
-  public void testHighOrderRace() {
+		synchronized void change(int delta) {
+			a += delta;
+			b += delta;
+		}
 
-    if (verifyAssertionErrorDetails("inconsistent d2")) {
-      d1 = new D(42, 42);
+		synchronized boolean isConsistent() {
+			return a == b;
+		}
+	}
 
-      Thread t1 = new Thread() {
+	static D d1;
+	static D d2;
 
-        public void run() {
-          d2 = new D(d1);
-        }
-      };
-      Thread t2 = new Thread() {
+	@Test
+	public void testHighOrderRace() {
 
-        public void run() {
-          d1.change(-1);
-        }
-      };
+		if (verifyAssertionErrorDetails("inconsistent d2")) {
+			d1 = new D(42, 42);
 
-      t1.start();
-      t2.start();
+			Thread t1 = new Thread() {
 
-      try {
-        t1.join();
-        t2.join();
-      } catch (InterruptedException ix) {
-        fail("unexpected interrupt during {t1,t2}.join()");
-      }
+				@Override
+				public void run() {
+					d2 = new D(d1);
+				}
+			};
+			Thread t2 = new Thread() {
 
-      System.out.print("d2 = ");
-      System.out.print(d2.a);
-      System.out.print(',');
-      System.out.println(d2.b);
+				@Override
+				public void run() {
+					d1.change(-1);
+				}
+			};
 
-      assert d2.isConsistent() : "inconsistent d2";
-    }
-  }
+			t1.start();
+			t2.start();
+
+			try {
+				t1.join();
+				t2.join();
+			} catch (InterruptedException ix) {
+				fail("unexpected interrupt during {t1,t2}.join()");
+			}
+
+			System.out.print("d2 = ");
+			System.out.print(d2.a);
+			System.out.print(',');
+			System.out.println(d2.b);
+
+			assert d2.isConsistent() : "inconsistent d2";
+		}
+	}
 
 }

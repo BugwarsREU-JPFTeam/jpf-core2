@@ -21,30 +21,32 @@ package gov.nasa.jpf.jvm.bytecode;
 import gov.nasa.jpf.vm.ArrayIndexOutOfBoundsExecutiveException;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.StackFrame;
-import gov.nasa.jpf.vm.ThreadInfo;
 
 /**
- * Load reference from array
- * ..., arrayref, index  => ..., value
+ * Load reference from array ..., arrayref, index => ..., value
  */
 public class AALOAD extends ArrayLoadInstruction {
 
-  protected void push (StackFrame frame, ElementInfo ei, int index) throws ArrayIndexOutOfBoundsExecutiveException {
-    ei.checkArrayBounds(index);
-    int value = ei.getReferenceElement(index);
-    frame.pushRef( value);
-  }
+	@Override
+	protected void push(StackFrame frame, ElementInfo ei, int index)
+			throws ArrayIndexOutOfBoundsExecutiveException {
+		ei.checkArrayBounds(index);
+		int value = ei.getReferenceElement(index);
+		frame.pushRef(value);
+	}
 
+	@Override
+	protected boolean isReference() {
+		return true;
+	}
 
-  protected boolean isReference () {
-    return true;
-  }
-  
-  public int getByteCode () {
-    return 0x32;
-  }
+	@Override
+	public int getByteCode() {
+		return 0x32;
+	}
 
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

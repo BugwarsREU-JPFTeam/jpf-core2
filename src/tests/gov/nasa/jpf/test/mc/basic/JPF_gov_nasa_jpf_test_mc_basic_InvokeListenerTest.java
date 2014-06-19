@@ -26,10 +26,12 @@ import gov.nasa.jpf.vm.NativePeer;
 /**
  * native peer for TestInvokeListener tests
  */
-public class JPF_gov_nasa_jpf_test_mc_basic_InvokeListenerTest extends NativePeer {
+public class JPF_gov_nasa_jpf_test_mc_basic_InvokeListenerTest extends
+		NativePeer {
 
-  @MJI
-  public double testNativeInstanceMethod__DI__D (MJIEnv env, int objref, double d, int c){
-    return d+c;
-  }
+	@MJI
+	public double testNativeInstanceMethod__DI__D(MJIEnv env, int objref,
+			double d, int c) {
+		return d + c;
+	}
 }

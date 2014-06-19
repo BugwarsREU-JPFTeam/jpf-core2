@@ -23,38 +23,37 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Divide long
- * ..., value1, value2 => ..., result
+ * Divide long ..., value1, value2 => ..., result
  */
 public class LDIV extends JVMInstruction {
 
-  @Override
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
-    
-    long v1 = frame.popLong();
-    long v2 = frame.popLong();
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    if (v1 == 0) {
-      return ti.createAndThrowException("java.lang.ArithmeticException", "long division by zero");
-    }
-    
-    long r = v2 / v1;
-    
-    frame.pushLong(r);
+		long v1 = frame.popLong();
+		long v2 = frame.popLong();
 
-    return getNext(ti);
-  }
+		if (v1 == 0) {
+			return ti.createAndThrowException("java.lang.ArithmeticException",
+					"long division by zero");
+		}
 
-  @Override
-  public int getByteCode () {
-    return 0x6D;
-  }
-  
-  @Override
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		long r = v2 / v1;
+
+		frame.pushLong(r);
+
+		return getNext(ti);
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0x6D;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

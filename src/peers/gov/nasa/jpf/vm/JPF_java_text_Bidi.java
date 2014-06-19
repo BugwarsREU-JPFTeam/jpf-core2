@@ -24,23 +24,22 @@ import gov.nasa.jpf.vm.NativePeer;
 
 public class JPF_java_text_Bidi extends NativePeer {
 
-  @MJI
-  public void $clinit____V (MJIEnv env, int clsObjRef) {
-    // do nothing
-  }
-  
-  @MJI
-  public void nativeBidiChars (MJIEnv env, int clsObjRef,
-                                      int bidiRef, int textRef, int textStart,
-                                      int embeddingsRef, int embeddingsStart,
-                                      int length, int flags) {
-    // <2do> need to forward
-  }
+	@MJI
+	public void $clinit____V(MJIEnv env, int clsObjRef) {
+		// do nothing
+	}
 
-  @MJI
-  public boolean requiresBidi (MJIEnv env, int clsObjRef,
-                                      int textRef, int start, int limit) {
-    // not supported for now
-    return false;
-  }
+	@MJI
+	public void nativeBidiChars(MJIEnv env, int clsObjRef, int bidiRef,
+			int textRef, int textStart, int embeddingsRef, int embeddingsStart,
+			int length, int flags) {
+		// <2do> need to forward
+	}
+
+	@MJI
+	public boolean requiresBidi(MJIEnv env, int clsObjRef, int textRef,
+			int start, int limit) {
+		// not supported for now
+		return false;
+	}
 }

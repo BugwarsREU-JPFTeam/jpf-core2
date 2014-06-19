@@ -20,29 +20,29 @@ package gov.nasa.jpf.vm;
 
 import gov.nasa.jpf.JPFException;
 
-
 /**
  * @author flerda
- *
- * <2do> Check usage! If this is used to intercept AIOBX in the target app,
- * this is a BAD example of using exceptions for general control flow.
- * If this is used for internal AIOBX then it should be just a JPFException
+ * 
+ *         <2do> Check usage! If this is used to intercept AIOBX in the target
+ *         app, this is a BAD example of using exceptions for general control
+ *         flow. If this is used for internal AIOBX then it should be just a
+ *         JPFException
  */
 @SuppressWarnings("serial")
 public class ArrayIndexOutOfBoundsExecutiveException extends JPFException {
-  private Instruction i;
+	private Instruction i;
 
-  public ArrayIndexOutOfBoundsExecutiveException (Instruction i) {
-    super("array index out of bounds");
-    this.i = i;
-  }
+	public ArrayIndexOutOfBoundsExecutiveException(Instruction i) {
+		super("array index out of bounds");
+		this.i = i;
+	}
 
-  public ArrayIndexOutOfBoundsExecutiveException (Instruction i, String msg) {
-    super(msg);
-    this.i = i;
-  }
+	public ArrayIndexOutOfBoundsExecutiveException(Instruction i, String msg) {
+		super(msg);
+		this.i = i;
+	}
 
-  public Instruction getInstruction () {
-    return i;
-  }
+	public Instruction getInstruction() {
+		return i;
+	}
 }

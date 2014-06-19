@@ -19,12 +19,13 @@
 package gov.nasa.jpf;
 
 /**
- * JPFException that wraps whatever can go wrong in a listener during notification
+ * JPFException that wraps whatever can go wrong in a listener during
+ * notification
  */
 public class JPFListenerException extends JPFException {
 
-  public JPFListenerException(String details, Throwable cause) {
-    super(details, cause);
-  }
+	public JPFListenerException(String details, Throwable cause) {
+		super(details, cause);
+	}
 
 }

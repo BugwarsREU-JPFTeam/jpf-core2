@@ -20,20 +20,21 @@ package gov.nasa.jpf.util.json;
 
 /**
  * String value from JSON document
+ * 
  * @author Ivan Mushketik
  */
-public class StringValue extends  AbstractValue {
+public class StringValue extends AbstractValue {
 
-  String value;
+	String value;
 
-  public StringValue(String str) {
-    super(str);
-    value = str;
-  }
+	public StringValue(String str) {
+		super(str);
+		value = str;
+	}
 
-  @Override
-  public String getString() {
-    return value;
-  }
+	@Override
+	public String getString() {
+		return value;
+	}
 
 }

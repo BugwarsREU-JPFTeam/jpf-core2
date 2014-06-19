@@ -27,205 +27,218 @@ import java.io.File;
 /**
  * @author Nastaran Shafiei <nastaran.shafiei@gmail.com>
  * 
- * Represents the JPF system classloader which models the following hierarchy.
+ *         Represents the JPF system classloader which models the following
+ *         hierarchy.
  * 
- *            ----------------
- *            | Bootstrap CL |
- *            ----------------
- *                   |
- *            ----------------
- *            | Extension CL |
- *            ----------------
- *                   |
- *           ------------------
- *           | Application CL |
- *           ------------------
- *           
- * Since in the standard VM user does not have any control over the built-in 
- * classloaders hierarchy, in JPF, we model all three by an instance of 
- * SystemClassLoader which is responsible to load classes from Java API, 
- * standard extensions packages, and the local file system.     
+ *         ---------------- | Bootstrap CL | ---------------- | ----------------
+ *         | Extension CL | ---------------- | ------------------ | Application
+ *         CL | ------------------
+ * 
+ *         Since in the standard VM user does not have any control over the
+ *         built-in classloaders hierarchy, in JPF, we model all three by an
+ *         instance of SystemClassLoader which is responsible to load classes
+ *         from Java API, standard extensions packages, and the local file
+ *         system.
  */
 public abstract class SystemClassLoaderInfo extends ClassLoaderInfo {
 
-  static JPFLogger log = JPF.getLogger("class");
-  
-  // we need to keep track of this in case something needs the current SystemClassLoaderInfo before we have a main thread
-  static SystemClassLoaderInfo lastInstance;  
-  
-  // note that initialization requires these to be startup classes
-  protected ClassInfo classLoaderClassInfo;
-  protected ClassInfo objectClassInfo;
-  protected ClassInfo classClassInfo;
-  protected ClassInfo stringClassInfo;
-  protected ClassInfo weakRefClassInfo;
-  protected ClassInfo refClassInfo;
-  protected ClassInfo enumClassInfo;
-  protected ClassInfo threadClassInfo;
-  protected ClassInfo threadGroupClassInfo;
-  protected ClassInfo charArrayClassInfo;
+	static JPFLogger log = JPF.getLogger("class");
 
-  protected int unCachedClasses = 10;
-  
-  public SystemClassLoaderInfo (VM vm, int appId){
-     super(vm);
-     
-     lastInstance = this;
+	// we need to keep track of this in case something needs the current
+	// SystemClassLoaderInfo before we have a main thread
+	static SystemClassLoaderInfo lastInstance;
 
-    // this is a hack - for user ClassLoaderInfos, we compute the id from the corresponding
-    // objRef of the JPF ClassLoader object. For SystemClassLoaderInfos we can't do that because
-    // they are created before we can create JPF objects. However, this is safe if we know
-    // the provided id is never going to be the objRef of a future ClassLoader object, which is
-    // a safe bet since the first objects created are all system Class objects that are never going to
-    // be recycled.
-    this.id = computeId(appId);
-    
-    initializeSystemClassPath( vm, appId);
-  }
-  
-  protected abstract void initializeSystemClassPath (VM vm, int appId);
-  
-  //--- these can be used to build the app specific system CP
-  protected File[] getPathElements (Config conf, String keyBase, int appId) {
-    File[] pathElements = null;
+	// note that initialization requires these to be startup classes
+	protected ClassInfo classLoaderClassInfo;
+	protected ClassInfo objectClassInfo;
+	protected ClassInfo classClassInfo;
+	protected ClassInfo stringClassInfo;
+	protected ClassInfo weakRefClassInfo;
+	protected ClassInfo refClassInfo;
+	protected ClassInfo enumClassInfo;
+	protected ClassInfo threadClassInfo;
+	protected ClassInfo threadGroupClassInfo;
+	protected ClassInfo charArrayClassInfo;
 
-    // try appId indexed key first
-    String key = keyBase + '.' + appId;
-    if (conf.containsKey(key)) {
-      pathElements = conf.getPathArray(key);
+	protected int unCachedClasses = 10;
 
-    } else { // fall back to keyBase
-      pathElements = conf.getPathArray(keyBase);
-    }
+	public SystemClassLoaderInfo(VM vm, int appId) {
+		super(vm);
 
-    return pathElements;
-  }
-  
-  public SystemClassLoaderInfo getSystemClassLoader() {
-    return this;
-  }
+		lastInstance = this;
 
-  
-  @Override
-  public ClassInfo getResolvedClassInfo (String clsName){
-    ClassInfo ci = super.getResolvedClassInfo(clsName);
-    
-    if (unCachedClasses > 0){
-      updateCachedClassInfos(ci);
-    }
-    
-    return ci;
-  }
+		// this is a hack - for user ClassLoaderInfos, we compute the id from
+		// the corresponding
+		// objRef of the JPF ClassLoader object. For SystemClassLoaderInfos we
+		// can't do that because
+		// they are created before we can create JPF objects. However, this is
+		// safe if we know
+		// the provided id is never going to be the objRef of a future
+		// ClassLoader object, which is
+		// a safe bet since the first objects created are all system Class
+		// objects that are never going to
+		// be recycled.
+		this.id = computeId(appId);
 
-  public boolean isSystemClassLoader() {
-    return true;
-  }
+		initializeSystemClassPath(vm, appId);
+	}
 
-  static boolean checkClassName (String clsName) {
-    if ( !clsName.matches("[a-zA-Z_$][a-zA-Z_$0-9.]*")) {
-      return false;
-    }
+	protected abstract void initializeSystemClassPath(VM vm, int appId);
 
-    // well, those two could be part of valid class names, but
-    // in all likeliness somebody specified a filename instead of
-    // a classname
-    if (clsName.endsWith(".java")) {
-      return false;
-    }
-    if (clsName.endsWith(".class")) {
-      return false;
-    }
+	// --- these can be used to build the app specific system CP
+	protected File[] getPathElements(Config conf, String keyBase, int appId) {
+		File[] pathElements = null;
 
-    return true;
-  }
-  
+		// try appId indexed key first
+		String key = keyBase + '.' + appId;
+		if (conf.containsKey(key)) {
+			pathElements = conf.getPathArray(key);
 
-  @Override
-  public ClassInfo loadClass(String cname) {
-    return getResolvedClassInfo(cname);
-  }
+		} else { // fall back to keyBase
+			pathElements = conf.getPathArray(keyBase);
+		}
 
-  @Override
-  protected ClassInfo loadSystemClass (String typeName){
-    return new ClassInfo( typeName, this);
-  }
+		return pathElements;
+	}
 
-  protected void setClassLoaderObject (ElementInfo ei){
-    objRef = ei.getObjectRef();
-    //id = computeId(objRef);
-    
-    // cross link
-    ei.setIntField(ID_FIELD, id);
-  }
-  
+	@Override
+	public SystemClassLoaderInfo getSystemClassLoader() {
+		return this;
+	}
 
-  //-- ClassInfos cache management --
+	@Override
+	public ClassInfo getResolvedClassInfo(String clsName) {
+		ClassInfo ci = super.getResolvedClassInfo(clsName);
 
-  protected void updateCachedClassInfos (ClassInfo ci) {
-    String name = ci.name;
+		if (unCachedClasses > 0) {
+			updateCachedClassInfos(ci);
+		}
 
-    if ((objectClassInfo == null) && name.equals("java.lang.Object")) {
-      objectClassInfo = ci; unCachedClasses--;
-    } else if ((classClassInfo == null) && name.equals("java.lang.Class")) {
-      classClassInfo = ci; unCachedClasses--;
-    } else if ((classLoaderClassInfo == null) && name.equals("java.lang.ClassLoader")) {
-      classInfo = ci;
-      classLoaderClassInfo = ci;  unCachedClasses--;
-    } else if ((stringClassInfo == null) && name.equals("java.lang.String")) {
-      stringClassInfo = ci; unCachedClasses--;
-    } else if ((charArrayClassInfo == null) && name.equals("[C")) {
-      charArrayClassInfo = ci; unCachedClasses--;
-    } else if ((weakRefClassInfo == null) && name.equals("java.lang.ref.WeakReference")) {
-      weakRefClassInfo = ci; unCachedClasses--;
-    } else if ((refClassInfo == null) && name.equals("java.lang.ref.Reference")) {
-      refClassInfo = ci; unCachedClasses--;
-    } else if ((enumClassInfo == null) && name.equals("java.lang.Enum")) {
-      enumClassInfo = ci; unCachedClasses--;
-    } else if ((threadClassInfo == null) && name.equals("java.lang.Thread")) {
-      threadClassInfo = ci; unCachedClasses--;
-    } else if ((threadGroupClassInfo == null) && name.equals("java.lang.ThreadGroup")) {
-      threadGroupClassInfo = ci; unCachedClasses--;
-    }
-  }
-  
-  protected ClassInfo getObjectClassInfo() {
-    return objectClassInfo;
-  }
+		return ci;
+	}
 
-  protected ClassInfo getClassClassInfo() {
-    return classClassInfo;
-  }
+	@Override
+	public boolean isSystemClassLoader() {
+		return true;
+	}
 
-  protected ClassInfo getClassLoaderClassInfo() {
-    return classLoaderClassInfo;
-  }
+	static boolean checkClassName(String clsName) {
+		if (!clsName.matches("[a-zA-Z_$][a-zA-Z_$0-9.]*")) {
+			return false;
+		}
 
-  protected ClassInfo getStringClassInfo() {
-    return stringClassInfo;
-  }
-  
-  protected ClassInfo getCharArrayClassInfo() {
-    return charArrayClassInfo;
-  }
+		// well, those two could be part of valid class names, but
+		// in all likeliness somebody specified a filename instead of
+		// a classname
+		if (clsName.endsWith(".java")) {
+			return false;
+		}
+		if (clsName.endsWith(".class")) {
+			return false;
+		}
 
-  protected ClassInfo getEnumClassInfo() {
-    return enumClassInfo;
-  }
+		return true;
+	}
 
-  protected ClassInfo getThreadClassInfo() {
-    return threadClassInfo;
-  }
+	@Override
+	public ClassInfo loadClass(String cname) {
+		return getResolvedClassInfo(cname);
+	}
 
-  protected ClassInfo getThreadGroupClassInfo() {
-    return threadGroupClassInfo;
-  }
+	@Override
+	protected ClassInfo loadSystemClass(String typeName) {
+		return new ClassInfo(typeName, this);
+	}
 
-  protected ClassInfo getReferenceClassInfo() {
-    return refClassInfo;
-  }
+	protected void setClassLoaderObject(ElementInfo ei) {
+		objRef = ei.getObjectRef();
+		// id = computeId(objRef);
 
-  protected ClassInfo getWeakReferenceClassInfo() {
-    return weakRefClassInfo;
-  }
+		// cross link
+		ei.setIntField(ID_FIELD, id);
+	}
+
+	// -- ClassInfos cache management --
+
+	protected void updateCachedClassInfos(ClassInfo ci) {
+		String name = ci.name;
+
+		if ((objectClassInfo == null) && name.equals("java.lang.Object")) {
+			objectClassInfo = ci;
+			unCachedClasses--;
+		} else if ((classClassInfo == null) && name.equals("java.lang.Class")) {
+			classClassInfo = ci;
+			unCachedClasses--;
+		} else if ((classLoaderClassInfo == null)
+				&& name.equals("java.lang.ClassLoader")) {
+			classInfo = ci;
+			classLoaderClassInfo = ci;
+			unCachedClasses--;
+		} else if ((stringClassInfo == null) && name.equals("java.lang.String")) {
+			stringClassInfo = ci;
+			unCachedClasses--;
+		} else if ((charArrayClassInfo == null) && name.equals("[C")) {
+			charArrayClassInfo = ci;
+			unCachedClasses--;
+		} else if ((weakRefClassInfo == null)
+				&& name.equals("java.lang.ref.WeakReference")) {
+			weakRefClassInfo = ci;
+			unCachedClasses--;
+		} else if ((refClassInfo == null)
+				&& name.equals("java.lang.ref.Reference")) {
+			refClassInfo = ci;
+			unCachedClasses--;
+		} else if ((enumClassInfo == null) && name.equals("java.lang.Enum")) {
+			enumClassInfo = ci;
+			unCachedClasses--;
+		} else if ((threadClassInfo == null) && name.equals("java.lang.Thread")) {
+			threadClassInfo = ci;
+			unCachedClasses--;
+		} else if ((threadGroupClassInfo == null)
+				&& name.equals("java.lang.ThreadGroup")) {
+			threadGroupClassInfo = ci;
+			unCachedClasses--;
+		}
+	}
+
+	protected ClassInfo getObjectClassInfo() {
+		return objectClassInfo;
+	}
+
+	protected ClassInfo getClassClassInfo() {
+		return classClassInfo;
+	}
+
+	protected ClassInfo getClassLoaderClassInfo() {
+		return classLoaderClassInfo;
+	}
+
+	protected ClassInfo getStringClassInfo() {
+		return stringClassInfo;
+	}
+
+	protected ClassInfo getCharArrayClassInfo() {
+		return charArrayClassInfo;
+	}
+
+	protected ClassInfo getEnumClassInfo() {
+		return enumClassInfo;
+	}
+
+	protected ClassInfo getThreadClassInfo() {
+		return threadClassInfo;
+	}
+
+	protected ClassInfo getThreadGroupClassInfo() {
+		return threadGroupClassInfo;
+	}
+
+	protected ClassInfo getReferenceClassInfo() {
+		return refClassInfo;
+	}
+
+	protected ClassInfo getWeakReferenceClassInfo() {
+		return weakRefClassInfo;
+	}
 
 }

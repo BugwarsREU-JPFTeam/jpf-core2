@@ -20,46 +20,49 @@
 package java.util.regex;
 
 /**
- * simplified model of java.util.refex.Pattern, which otherwise
- * is very expensive in terms of state memory and execution costs
+ * simplified model of java.util.refex.Pattern, which otherwise is very
+ * expensive in terms of state memory and execution costs
  */
 public class Pattern {
 
-  String regex;
-  int flags;
-  
-  public static Pattern compile (String regex) {
-    return new Pattern(regex, 0);
-  }
-  
-  public static Pattern compile (String regex, int flags){
-    return new Pattern(regex, flags);
-  }
-  
-  private Pattern (String regex, int flags){
-    this.regex = regex;
-    this.flags = flags;
-  }
-  
-  public Matcher matcher (CharSequence input){
-    return new Matcher(this, input);
-  }
-  
-  public String pattern() {
-    return regex;
-  }
-  
-  public String[] split (CharSequence input){
-    return split(input,0);
-  }
+	String regex;
+	int flags;
 
-  public String[] split (CharSequence input, int limit){
-    return split0(input.toString(), limit); // just to avoid the CharSequence charAt() hassle on the native side
-  }
+	public static Pattern compile(String regex) {
+		return new Pattern(regex, 0);
+	}
 
-  private native String[] split0(String input, int limit);
-  
-  public String toString() {
-    return regex;
-  }
+	public static Pattern compile(String regex, int flags) {
+		return new Pattern(regex, flags);
+	}
+
+	private Pattern(String regex, int flags) {
+		this.regex = regex;
+		this.flags = flags;
+	}
+
+	public Matcher matcher(CharSequence input) {
+		return new Matcher(this, input);
+	}
+
+	public String pattern() {
+		return regex;
+	}
+
+	public String[] split(CharSequence input) {
+		return split(input, 0);
+	}
+
+	public String[] split(CharSequence input, int limit) {
+		return split0(input.toString(), limit); // just to avoid the
+												// CharSequence charAt() hassle
+												// on the native side
+	}
+
+	private native String[] split0(String input, int limit);
+
+	@Override
+	public String toString() {
+		return regex;
+	}
 }

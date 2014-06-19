@@ -33,106 +33,113 @@ import org.junit.Test;
  */
 public class ConstructorTest extends TestJPF {
 
-  @Retention(RetentionPolicy.RUNTIME)
-  @interface A {
-    String value();
-  }
-  
-  static class Y {
-    @A("this is a superclass ctor annotation")
-    protected Y(){}
-  }
-  
-  static class X extends Y {
-    private String a;
+	@Retention(RetentionPolicy.RUNTIME)
+	@interface A {
+		String value();
+	}
 
-    @A("this is a ctor annotation")
-    public X (@A("this is a parameter annotation") String x) {
-      this.a = x;
-      System.out.println(x);
-    }
-  }
+	static class Y {
+		@A("this is a superclass ctor annotation")
+		protected Y() {
+		}
+	}
 
-  @Test
-  public void testConstructorCall() {
-    if (verifyNoPropertyViolation()){
-      try {
-        Class<X> cls = X.class;
-        Constructor<X> ctor = cls.getDeclaredConstructor(new Class<?>[] { String.class });
+	static class X extends Y {
+		private String a;
 
-        X x = ctor.newInstance("I'm an X");
-        
-        assertNotNull(x); 
-      } catch (Throwable t){
-        fail("ctor invocation failed: " + t);
-      }
-    }
-  }
+		@A("this is a ctor annotation")
+		public X(@A("this is a parameter annotation") String x) {
+			this.a = x;
+			System.out.println(x);
+		}
+	}
 
-  static class I {
-    private Integer i;
+	@Test
+	public void testConstructorCall() {
+		if (verifyNoPropertyViolation()) {
+			try {
+				Class<X> cls = X.class;
+				Constructor<X> ctor = cls
+						.getDeclaredConstructor(new Class<?>[] { String.class });
 
-    public I(Integer i) {
-      this.i = i;
-    }
-  }
+				X x = ctor.newInstance("I'm an X");
 
-  @Test
-  public void testConstructorCallInteger() {
-    if (verifyNoPropertyViolation()) {
-      try {
-        Class<I> cls = I.class;
-        Constructor<I> ctor = cls.getDeclaredConstructor(new Class<?>[] {Integer.class });
+				assertNotNull(x);
+			} catch (Throwable t) {
+				fail("ctor invocation failed: " + t);
+			}
+		}
+	}
 
-        I obj = ctor.newInstance(42);
-        assertNotNull(obj);
-        assertEquals(new Integer(42), obj.i);
-      } catch (Throwable t) {
-        fail("ctor invocation with Integer failed: " + t);
-      }
-    }
-  }
+	static class I {
+		private Integer i;
 
-  
-  
-  @Test
-  public void testAnnotations(){
-    if (verifyNoPropertyViolation()) {
-      try {
-        Class<X> cls = X.class;
-        Constructor<X> ctor = cls.getDeclaredConstructor(new Class<?>[] { String.class });
+		public I(Integer i) {
+			this.i = i;
+		}
+	}
 
-        Annotation[] ai = ctor.getDeclaredAnnotations();
-        assertTrue("no declared ctor annotations found", ai.length == 1);
-        
-        assertTrue("wrong ctor annotation type", ai[0] instanceof A);
-        System.out.printf("ctor annotation: " + ai[0]);
-        
-      } catch (Throwable t) {
-        fail("ctor.getDeclaredAnnotations() failed: " + t);
-      }
-    }    
-  }
-  
-  @Test
-  public void testParameterAnnotations(){
-    if (verifyNoPropertyViolation()) {
-      try {
-        Class<X> cls = X.class;
-        Constructor<X> ctor = cls.getDeclaredConstructor(new Class<?>[] { String.class });
+	@Test
+	public void testConstructorCallInteger() {
+		if (verifyNoPropertyViolation()) {
+			try {
+				Class<I> cls = I.class;
+				Constructor<I> ctor = cls
+						.getDeclaredConstructor(new Class<?>[] { Integer.class });
 
-        Annotation[][] pai = ctor.getParameterAnnotations();
-        assertTrue("no ctor parameter annotations found", pai.length == 1);
-        
-        Annotation[] ai = pai[0];
-        assertTrue("wrong number of annotations for first ctor argument", ai.length == 1);
-        
-        assertTrue("wrong parameter annotation type", ai[0] instanceof A);
-        System.out.printf("ctor parameter annotation: " + ai[0]);
-        
-      } catch (Throwable t) {
-        fail("ctor.getParameterAnnotations() failed: " + t);
-      }
-    }        
-  }
+				I obj = ctor.newInstance(42);
+				assertNotNull(obj);
+				assertEquals(new Integer(42), obj.i);
+			} catch (Throwable t) {
+				fail("ctor invocation with Integer failed: " + t);
+			}
+		}
+	}
+
+	@Test
+	public void testAnnotations() {
+		if (verifyNoPropertyViolation()) {
+			try {
+				Class<X> cls = X.class;
+				Constructor<X> ctor = cls
+						.getDeclaredConstructor(new Class<?>[] { String.class });
+
+				Annotation[] ai = ctor.getDeclaredAnnotations();
+				assertTrue("no declared ctor annotations found", ai.length == 1);
+
+				assertTrue("wrong ctor annotation type", ai[0] instanceof A);
+				System.out.printf("ctor annotation: " + ai[0]);
+
+			} catch (Throwable t) {
+				fail("ctor.getDeclaredAnnotations() failed: " + t);
+			}
+		}
+	}
+
+	@Test
+	public void testParameterAnnotations() {
+		if (verifyNoPropertyViolation()) {
+			try {
+				Class<X> cls = X.class;
+				Constructor<X> ctor = cls
+						.getDeclaredConstructor(new Class<?>[] { String.class });
+
+				Annotation[][] pai = ctor.getParameterAnnotations();
+				assertTrue("no ctor parameter annotations found",
+						pai.length == 1);
+
+				Annotation[] ai = pai[0];
+				assertTrue(
+						"wrong number of annotations for first ctor argument",
+						ai.length == 1);
+
+				assertTrue("wrong parameter annotation type",
+						ai[0] instanceof A);
+				System.out.printf("ctor parameter annotation: " + ai[0]);
+
+			} catch (Throwable t) {
+				fail("ctor.getParameterAnnotations() failed: " + t);
+			}
+		}
+	}
 }

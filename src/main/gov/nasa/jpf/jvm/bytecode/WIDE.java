@@ -24,30 +24,31 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.ThreadInfo;
 
 /**
- * modifies following insn, no stack manipulation
- * NOTE: transparently handled by BCEL, we should never receive this
- *
- * (1): <iload,fload,aload,lload,dload,istore,fstore,astore,lstore,dstore,ret> indexbyte1 indexbyte2
- * (2): <iinc> indexbyte1 indexbyte2 constbyte1 constbyte2
- *
+ * modifies following insn, no stack manipulation NOTE: transparently handled by
+ * BCEL, we should never receive this
+ * 
+ * (1): <iload,fload,aload,lload,dload,istore,fstore,astore,lstore,dstore,ret>
+ * indexbyte1 indexbyte2 (2): <iinc> indexbyte1 indexbyte2 constbyte1 constbyte2
+ * 
  */
 public class WIDE extends JVMInstruction {
 
-  // would have to be checked and reset by following insn
-  public static boolean isWide = false;
+	// would have to be checked and reset by following insn
+	public static boolean isWide = false;
 
-  @Override
-  public int getByteCode() {
-    return 0xc4;
-  }
+	@Override
+	public int getByteCode() {
+		return 0xc4;
+	}
 
-  @Override
-  public Instruction execute(ThreadInfo ti) {
-    // nothing, BCEL doesn't even pass this on;
-    return getNext(ti);
-  }
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		// nothing, BCEL doesn't even pass this on;
+		return getNext(ti);
+	}
 
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

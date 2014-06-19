@@ -19,50 +19,49 @@
 package java.lang.ref;
 
 /**
- * MJI model class for java.lang.ref.Reference library abstraction
- * we model this so that we can rely on our WeakRefence implementation
+ * MJI model class for java.lang.ref.Reference library abstraction we model this
+ * so that we can rely on our WeakRefence implementation
  */
 public abstract class Reference<T> {
-  
-  /**
-   * the object we reference
-   * NOTE: this has to be the *first* field, or we break WeakReference handling in
-   * the garbage collection!!
-   */
-  T ref;
 
-  /** the optional queue for us */
-  ReferenceQueue<? super T> queue;
+	/**
+	 * the object we reference NOTE: this has to be the *first* field, or we
+	 * break WeakReference handling in the garbage collection!!
+	 */
+	T ref;
 
-  /** link to enqueue w/o additional memory requirements */
-  Reference<T> next;
+	/** the optional queue for us */
+	ReferenceQueue<? super T> queue;
 
-  Reference (T r) {
-    ref = r;
-  }
-  
-  Reference (T r, ReferenceQueue<? super T> q) {
-    ref = r;
-    queue = q;
-  }
-  
-  /** is the referenced object enqueued */
-  public boolean isEnqueued () {
-    // <2do>
-    return false;
-  }
+	/** link to enqueue w/o additional memory requirements */
+	Reference<T> next;
 
-  /** clear, but do not enqueue the referenced object */
-  public void clear () {
-    ref = null;
-  }
+	Reference(T r) {
+		ref = r;
+	}
 
-  /** add the referenced object to its queue */
-  public void enqueue () {
-  }
+	Reference(T r, ReferenceQueue<? super T> q) {
+		ref = r;
+		queue = q;
+	}
 
-  /** return the referenced object */
-  public T get () {
-    return ref;
-  }
+	/** is the referenced object enqueued */
+	public boolean isEnqueued() {
+		// <2do>
+		return false;
+	}
+
+	/** clear, but do not enqueue the referenced object */
+	public void clear() {
+		ref = null;
+	}
+
+	/** add the referenced object to its queue */
+	public void enqueue() {
+	}
+
+	/** return the referenced object */
+	public T get() {
+		return ref;
+	}
 }

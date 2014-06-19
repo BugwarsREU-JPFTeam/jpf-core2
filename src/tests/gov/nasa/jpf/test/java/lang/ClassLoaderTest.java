@@ -31,155 +31,163 @@ import org.junit.Test;
  * test of java.lang.ClassLoader API
  */
 public class ClassLoaderTest extends TestJPF {
-  
-  @Test
-  public void testGetResource() {
-    if(verifyNoPropertyViolation()) {
-      testGetResourceImpl(new TestClassLoader());
-    }
-  }
 
-  @Test
-  public void testGetResources() throws IOException{
-    if(verifyNoPropertyViolation()) {
-      testGetResourcesImpl(new TestClassLoader());
-    }
-  }
+	@Test
+	public void testGetResource() {
+		if (verifyNoPropertyViolation()) {
+			testGetResourceImpl(new TestClassLoader());
+		}
+	}
 
-  @Test
-  public void testGetResourceAsStream() throws IOException{
-    if(verifyNoPropertyViolation()) {
-      testGetResourceAsStreamImpl(new TestClassLoader());
-    }
-  }
+	@Test
+	public void testGetResources() throws IOException {
+		if (verifyNoPropertyViolation()) {
+			testGetResourcesImpl(new TestClassLoader());
+		}
+	}
 
-  @Test
-  public void testLoadClass() {
-    if(verifyNoPropertyViolation()) {
-      ClassLoader classLoader = new TestClassLoader();
-      try {
-        classLoader.loadClass("non_existing_class");
-        fail();
-      }catch(ClassNotFoundException e) {}
-    }
-  }
+	@Test
+	public void testGetResourceAsStream() throws IOException {
+		if (verifyNoPropertyViolation()) {
+			testGetResourceAsStreamImpl(new TestClassLoader());
+		}
+	}
 
-  @Test
-  public void testLoadClass2() {
-    if(verifyNoPropertyViolation()) {
-      ClassLoader classLoader = new TestClassLoader();
-      try {
-        classLoader.loadClass(ClassLoader.class.getName());
-      }catch(ClassNotFoundException e) {
-        fail(e.getMessage());
-      }
-    }
-  }
+	@Test
+	public void testLoadClass() {
+		if (verifyNoPropertyViolation()) {
+			ClassLoader classLoader = new TestClassLoader();
+			try {
+				classLoader.loadClass("non_existing_class");
+				fail();
+			} catch (ClassNotFoundException e) {
+			}
+		}
+	}
 
-  @Test
-  public void testGetSystemResource() {
-    if(verifyNoPropertyViolation()) {
-      testGetResourceImpl( TestClassLoader.getSystemClassLoader());
-    }
-  }
+	@Test
+	public void testLoadClass2() {
+		if (verifyNoPropertyViolation()) {
+			ClassLoader classLoader = new TestClassLoader();
+			try {
+				classLoader.loadClass(ClassLoader.class.getName());
+			} catch (ClassNotFoundException e) {
+				fail(e.getMessage());
+			}
+		}
+	}
 
-  @Test
-  public void testGetSystemResources() throws IOException{
-    if(verifyNoPropertyViolation()) {
-      testGetResourcesImpl( TestClassLoader.getSystemClassLoader());
-    }
-  }
+	@Test
+	public void testGetSystemResource() {
+		if (verifyNoPropertyViolation()) {
+			testGetResourceImpl(ClassLoader.getSystemClassLoader());
+		}
+	}
 
-  @Test
-  public void testGetSystemResourceAsStream() throws IOException{
-    if(verifyNoPropertyViolation()) {
-      testGetResourceAsStreamImpl( TestClassLoader.getSystemClassLoader());
-    }
-  }
+	@Test
+	public void testGetSystemResources() throws IOException {
+		if (verifyNoPropertyViolation()) {
+			testGetResourcesImpl(ClassLoader.getSystemClassLoader());
+		}
+	}
 
-  @Test
-  public void testGetSystemClassLoader() {
-    if(verifyNoPropertyViolation()) {
-      ClassLoader classLoader = new TestClassLoader();
-      assertNotNull(ClassLoader.getSystemClassLoader());
-      assertNull(ClassLoader.getSystemClassLoader().getParent());
-      assertFalse(classLoader.equals(ClassLoader.getSystemClassLoader()));
-    }
-  }
+	@Test
+	public void testGetSystemResourceAsStream() throws IOException {
+		if (verifyNoPropertyViolation()) {
+			testGetResourceAsStreamImpl(ClassLoader.getSystemClassLoader());
+		}
+	}
 
-  @Test
-  public void testGetParent() {
-    if(verifyNoPropertyViolation()) {
-      ClassLoader classLoader = new TestClassLoader();
-      assertNotNull(classLoader.getParent());
-      assertEquals(classLoader.getParent(),ClassLoader.getSystemClassLoader());
-    }
-  }
+	@Test
+	public void testGetSystemClassLoader() {
+		if (verifyNoPropertyViolation()) {
+			ClassLoader classLoader = new TestClassLoader();
+			assertNotNull(ClassLoader.getSystemClassLoader());
+			assertNull(ClassLoader.getSystemClassLoader().getParent());
+			assertFalse(classLoader.equals(ClassLoader.getSystemClassLoader()));
+		}
+	}
 
-  @Test
-  public void testGetParent2() {
-    if(verifyNoPropertyViolation()) {
-      ClassLoader parentClassLoader = new TestClassLoader();
-      ClassLoader classLoader = new TestClassLoader(parentClassLoader);
-      assertEquals(parentClassLoader, classLoader.getParent());
-    }
-  }
+	@Test
+	public void testGetParent() {
+		if (verifyNoPropertyViolation()) {
+			ClassLoader classLoader = new TestClassLoader();
+			assertNotNull(classLoader.getParent());
+			assertEquals(classLoader.getParent(),
+					ClassLoader.getSystemClassLoader());
+		}
+	}
 
-  @Test
-  public void testFoundResources() throws IOException {
-    if(verifyNoPropertyViolation()) {
-      TestClassLoader classLoader = new TestClassLoader();
-      Enumeration<URL> enm = classLoader.findResources("not_existing_resource"); 
-      assertNotNull(enm);
-      assertFalse(enm.hasMoreElements());
-    }
-  }
+	@Test
+	public void testGetParent2() {
+		if (verifyNoPropertyViolation()) {
+			ClassLoader parentClassLoader = new TestClassLoader();
+			ClassLoader classLoader = new TestClassLoader(parentClassLoader);
+			assertEquals(parentClassLoader, classLoader.getParent());
+		}
+	}
 
-  private void testGetResourceImpl(ClassLoader classLoader) {
-    assertNull(classLoader.getResource("not_existing_resource"));
-    assertNotNull(classLoader.getResource("DiningPhil.class"));
-    assertNull(classLoader.getResource("ClassLoader.class"));
-    assertNotNull(classLoader.getResource("java/lang/ClassLoader.class"));
-  }
+	@Test
+	public void testFoundResources() throws IOException {
+		if (verifyNoPropertyViolation()) {
+			TestClassLoader classLoader = new TestClassLoader();
+			Enumeration<URL> enm = classLoader
+					.findResources("not_existing_resource");
+			assertNotNull(enm);
+			assertFalse(enm.hasMoreElements());
+		}
+	}
 
-  private void testGetResourcesImpl(ClassLoader classLoader) throws IOException{
-    assertFalse(classLoader.getResources("not_existing_resources").hasMoreElements());
+	private void testGetResourceImpl(ClassLoader classLoader) {
+		assertNull(classLoader.getResource("not_existing_resource"));
+		assertNotNull(classLoader.getResource("DiningPhil.class"));
+		assertNull(classLoader.getResource("ClassLoader.class"));
+		assertNotNull(classLoader.getResource("java/lang/ClassLoader.class"));
+	}
 
-    Enumeration<?> e = classLoader.getResources("DiningPhil.class");
-    assertTrue(e.hasMoreElements());
-    assertNotNull(e.nextElement());
-    assertFalse(e.hasMoreElements());
+	private void testGetResourcesImpl(ClassLoader classLoader)
+			throws IOException {
+		assertFalse(classLoader.getResources("not_existing_resources")
+				.hasMoreElements());
 
-    e = classLoader.getResources("ClassLoader.class");
-    assertFalse(e.hasMoreElements());
+		Enumeration<?> e = classLoader.getResources("DiningPhil.class");
+		assertTrue(e.hasMoreElements());
+		assertNotNull(e.nextElement());
+		assertFalse(e.hasMoreElements());
 
-    // It should find at least two resources: 1. model class, 2. JDK class
-    e = classLoader.getResources("java/lang/ClassLoader.class");
-    assertTrue(e.hasMoreElements());
-    assertNotNull(e.nextElement());
-    assertTrue(e.hasMoreElements());
-    assertNotNull(e.nextElement());
-  }
+		e = classLoader.getResources("ClassLoader.class");
+		assertFalse(e.hasMoreElements());
 
-  private void testGetResourceAsStreamImpl(ClassLoader classLoader) throws IOException{
-    assertNull(classLoader.getResourceAsStream("not_existing_resources"));
-    InputStream is = classLoader.getResourceAsStream("DiningPhil.class");
-    assertNotNull(is);
-    assertTrue(is.read() > 0);
-  }
+		// It should find at least two resources: 1. model class, 2. JDK class
+		e = classLoader.getResources("java/lang/ClassLoader.class");
+		assertTrue(e.hasMoreElements());
+		assertNotNull(e.nextElement());
+		assertTrue(e.hasMoreElements());
+		assertNotNull(e.nextElement());
+	}
 
-  class TestClassLoader extends ClassLoader {
-      
-    public TestClassLoader() {
-      super();
-    }
+	private void testGetResourceAsStreamImpl(ClassLoader classLoader)
+			throws IOException {
+		assertNull(classLoader.getResourceAsStream("not_existing_resources"));
+		InputStream is = classLoader.getResourceAsStream("DiningPhil.class");
+		assertNotNull(is);
+		assertTrue(is.read() > 0);
+	}
 
-    public TestClassLoader(ClassLoader parent) {
-      super(parent);
-    }
+	class TestClassLoader extends ClassLoader {
 
-    protected Enumeration<URL> findResources(String name) throws IOException {
-      return super.findResources(name);
-    }
-  }
+		public TestClassLoader() {
+			super();
+		}
+
+		public TestClassLoader(ClassLoader parent) {
+			super(parent);
+		}
+
+		@Override
+		protected Enumeration<URL> findResources(String name)
+				throws IOException {
+			return super.findResources(name);
+		}
+	}
 }

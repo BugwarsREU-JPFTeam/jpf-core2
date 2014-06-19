@@ -28,39 +28,45 @@ import javax.swing.JTextArea;
  * a utility that can be used to write logs which are displayed in a JTextArea
  */
 public class ConsoleStream extends PrintStream {
-  OutputStream os;
-  JTextArea textArea;
-  
-  public ConsoleStream (JTextArea textArea) {
-    super(System.out, true);
-    this.textArea = textArea;
-  }
-  
-  public void write (byte[] buf, int off, int len) {
-    String s = new String(buf, off, len);
-    textArea.append(s);
-  }
-  
-  public void print( String s) {
-    //super.print(s);
-    textArea.append(s);
-  }
-  
-  public void println (String s) {
-    //super.println(s);
-    textArea.append(s);
-    textArea.append("\n");
-  }
-  
-  public void print (Object o) {
-    textArea.append(o.toString());
-  }
-  
-  public void println (Object o) {
-    println(o.toString());
-  }
-  
-  public void println() {
-    textArea.append("\n");
-  }
+	OutputStream os;
+	JTextArea textArea;
+
+	public ConsoleStream(JTextArea textArea) {
+		super(System.out, true);
+		this.textArea = textArea;
+	}
+
+	@Override
+	public void write(byte[] buf, int off, int len) {
+		String s = new String(buf, off, len);
+		textArea.append(s);
+	}
+
+	@Override
+	public void print(String s) {
+		// super.print(s);
+		textArea.append(s);
+	}
+
+	@Override
+	public void println(String s) {
+		// super.println(s);
+		textArea.append(s);
+		textArea.append("\n");
+	}
+
+	@Override
+	public void print(Object o) {
+		textArea.append(o.toString());
+	}
+
+	@Override
+	public void println(Object o) {
+		println(o.toString());
+	}
+
+	@Override
+	public void println() {
+		textArea.append("\n");
+	}
 }

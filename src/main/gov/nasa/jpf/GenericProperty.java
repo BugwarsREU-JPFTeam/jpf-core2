@@ -24,37 +24,43 @@ import gov.nasa.jpf.vm.VM;
 import java.io.PrintWriter;
 
 /**
- * generic abstract base class implementing program properties. This is mostly
- * a convenience construct that implements error printout, so that only
- * the check itself has to be provided
+ * generic abstract base class implementing program properties. This is mostly a
+ * convenience construct that implements error printout, so that only the check
+ * itself has to be provided
  * 
  * <2do> why is this still not an interface ??
  */
 public abstract class GenericProperty implements Property, Cloneable {
-  public abstract boolean check (Search search, VM vm);
+	@Override
+	public abstract boolean check(Search search, VM vm);
 
-  protected GenericProperty () {
-    // nothing yet
-  }
-  
-  public Property clone() throws CloneNotSupportedException {
-    return (Property) super.clone();
-  }
-  
-  public String getErrorMessage () {
-    return null;
-  }
+	protected GenericProperty() {
+		// nothing yet
+	}
 
-  public String getExplanation () {
-    return null;
-  }
-  
-  public void reset () {
-    // nothing to do here, but Property implementors that store
-    // stuff have to override (it's called if search.multiple_errors is on)
-  }
-  
-  public void printOn (PrintWriter pw) {
-    pw.println(getErrorMessage());
-  }
+	@Override
+	public Property clone() throws CloneNotSupportedException {
+		return (Property) super.clone();
+	}
+
+	@Override
+	public String getErrorMessage() {
+		return null;
+	}
+
+	@Override
+	public String getExplanation() {
+		return null;
+	}
+
+	@Override
+	public void reset() {
+		// nothing to do here, but Property implementors that store
+		// stuff have to override (it's called if search.multiple_errors is on)
+	}
+
+	@Override
+	public void printOn(PrintWriter pw) {
+		pw.println(getErrorMessage());
+	}
 }

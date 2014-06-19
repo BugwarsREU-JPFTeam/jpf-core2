@@ -22,43 +22,43 @@ import gov.nasa.jpf.jvm.JVMInstruction;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
-import gov.nasa.jpf.vm.Types;
-
 
 /**
- * Compare float
- * ..., value1, value2 => ..., result
+ * Compare float ..., value1, value2 => ..., result
  */
 public class FCMPG extends JVMInstruction {
 
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
-    
-    float v1 = frame.popFloat();
-    float v2 = frame.popFloat();
-    
-    frame.push(conditionValue(v1, v2), false);
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    return getNext(ti);
-  }
-  
-  protected int conditionValue(float v1, float v2) {
-      if (Float.isNaN(v1) || Float.isNaN(v2)) {
-          return 1;
-      } else if (v1 == v2) {
-          return 0;
-      } else if (v2 > v1) {
-          return 1;
-      } else {
-          return -1;
-      }
-  }
+		float v1 = frame.popFloat();
+		float v2 = frame.popFloat();
 
-  public int getByteCode () {
-    return 0x96;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		frame.push(conditionValue(v1, v2), false);
+
+		return getNext(ti);
+	}
+
+	protected int conditionValue(float v1, float v2) {
+		if (Float.isNaN(v1) || Float.isNaN(v2)) {
+			return 1;
+		} else if (v1 == v2) {
+			return 0;
+		} else if (v2 > v1) {
+			return 1;
+		} else {
+			return -1;
+		}
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0x96;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

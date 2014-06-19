@@ -21,39 +21,39 @@ package gov.nasa.jpf.jvm.bytecode;
 
 import gov.nasa.jpf.jvm.JVMInstruction;
 import gov.nasa.jpf.vm.AllocInstruction;
-import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.Types;
 
-public abstract class NewArrayInstruction extends JVMInstruction implements AllocInstruction {
+public abstract class NewArrayInstruction extends JVMInstruction implements
+		AllocInstruction {
 
-  protected String type;
-  protected String typeName; // deferred initialization
-  
-  protected int arrayLength = -1;
+	protected String type;
+	protected String typeName; // deferred initialization
 
-  /**
-   * this only makes sense post-execution since the array dimension
-   * is obtained from the operand stack
-   * 
-   * @return length of allocated array
-   */
-  public int getArrayLength(){
-    return arrayLength;
-  }
-  
-  public String getType(){
-    return type;
-  }
-  
-  public String getTypeName() {
-    if (typeName == null){
-      typeName = Types.getTypeName(type);
-    }
-    return typeName;
-  }
-  
-  @Override
-  public void cleanupTransients(){
-    arrayLength = -1;
-  }
+	protected int arrayLength = -1;
+
+	/**
+	 * this only makes sense post-execution since the array dimension is
+	 * obtained from the operand stack
+	 * 
+	 * @return length of allocated array
+	 */
+	public int getArrayLength() {
+		return arrayLength;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public String getTypeName() {
+		if (typeName == null) {
+			typeName = Types.getTypeName(type);
+		}
+		return typeName;
+	}
+
+	@Override
+	public void cleanupTransients() {
+		arrayLength = -1;
+	}
 }

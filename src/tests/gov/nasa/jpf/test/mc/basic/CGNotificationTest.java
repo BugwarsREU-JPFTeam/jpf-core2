@@ -39,125 +39,118 @@ import org.junit.Test;
  */
 public class CGNotificationTest extends TestJPF {
 
-  public static class Sequencer extends ListenerAdapter {
+	public static class Sequencer extends ListenerAdapter {
 
-    static ArrayList<String> sequence;
+		static ArrayList<String> sequence;
 
-    @Override
-    public void choiceGeneratorRegistered(VM vm, ChoiceGenerator<?> nextCG, ThreadInfo ti, Instruction executedInsn) {
-      System.out.println("# CG registered: " + nextCG);
-      sequence.add("registered " + nextCG.getId());
+		@Override
+		public void choiceGeneratorRegistered(VM vm, ChoiceGenerator<?> nextCG,
+				ThreadInfo ti, Instruction executedInsn) {
+			System.out.println("# CG registered: " + nextCG);
+			sequence.add("registered " + nextCG.getId());
 
-      assert nextCG.hasMoreChoices();
-    }
+			assert nextCG.hasMoreChoices();
+		}
 
-    @Override
-    public void choiceGeneratorSet(VM vm, ChoiceGenerator<?> newCG) {
-      System.out.println("# CG set:        " + newCG);
-      sequence.add("set " + newCG.getId());
+		@Override
+		public void choiceGeneratorSet(VM vm, ChoiceGenerator<?> newCG) {
+			System.out.println("# CG set:        " + newCG);
+			sequence.add("set " + newCG.getId());
 
-      assert newCG.hasMoreChoices();
-    }
+			assert newCG.hasMoreChoices();
+		}
 
-    @Override
-    public void choiceGeneratorAdvanced(VM vm, ChoiceGenerator<?> currentCG) {
-      System.out.println("#   CG advanced: " + currentCG);
-      sequence.add("advance " + currentCG.getId() + ' ' + currentCG.getNextChoice());
-    }
+		@Override
+		public void choiceGeneratorAdvanced(VM vm, ChoiceGenerator<?> currentCG) {
+			System.out.println("#   CG advanced: " + currentCG);
+			sequence.add("advance " + currentCG.getId() + ' '
+					+ currentCG.getNextChoice());
+		}
 
-    @Override
-    public void choiceGeneratorProcessed(VM vm, ChoiceGenerator<?> processedCG) {
-      System.out.println("# CG processed:  " + processedCG);
-      sequence.add("processed " + processedCG.getId());
+		@Override
+		public void choiceGeneratorProcessed(VM vm,
+				ChoiceGenerator<?> processedCG) {
+			System.out.println("# CG processed:  " + processedCG);
+			sequence.add("processed " + processedCG.getId());
 
-      assert !processedCG.hasMoreChoices();
-    }
+			assert !processedCG.hasMoreChoices();
+		}
 
-    @Override
-    public void instructionExecuted(VM vm, ThreadInfo ti, Instruction nextInsn, Instruction lastInsn){
-      SystemState ss = vm.getSystemState();
+		@Override
+		public void instructionExecuted(VM vm, ThreadInfo ti,
+				Instruction nextInsn, Instruction lastInsn) {
+			SystemState ss = vm.getSystemState();
 
-      if (lastInsn instanceof EXECUTENATIVE) { // break on native method exec
-        EXECUTENATIVE exec = (EXECUTENATIVE) lastInsn;
+			if (lastInsn instanceof EXECUTENATIVE) { // break on native method
+														// exec
+				EXECUTENATIVE exec = (EXECUTENATIVE) lastInsn;
 
-        if (exec.getExecutedMethodName().equals("getInt")){// this insn did create a CG
-          if (!ti.isFirstStepInsn()){
+				if (exec.getExecutedMethodName().equals("getInt")) {// this insn
+																	// did
+																	// create a
+																	// CG
+					if (!ti.isFirstStepInsn()) {
 
-            ChoiceGenerator<Integer> cg = new IntChoiceFromList("listenerCG", 3,4);
-            ss.setNextChoiceGenerator(cg);
-          }
-        }
-      }
+						ChoiceGenerator<Integer> cg = new IntChoiceFromList(
+								"listenerCG", 3, 4);
+						ss.setNextChoiceGenerator(cg);
+					}
+				}
+			}
 
-    }
-  }
+		}
+	}
 
-  @Test
-  public void testCGNotificationSequence () {
-    if (!isJPFRun()){
-      Sequencer.sequence = new ArrayList<String>();
-    }
+	@Test
+	public void testCGNotificationSequence() {
+		if (!isJPFRun()) {
+			Sequencer.sequence = new ArrayList<String>();
+		}
 
-    // make sure max insn preemption does not interfere 
-    if (verifyNoPropertyViolation("+listener=.test.mc.basic.CGNotificationTest$Sequencer",
-                                  "+vm.max_transition_length=MAX")){
-      boolean b = Verify.getBoolean(); // first CG
-      int i = Verify.getInt(1,2); // this one gets a CG on top registered by the listener
-/*
-      System.out.print("b=");
-      System.out.print(b);
-      System.out.print(",i=");
-      System.out.println(i);
-*/
-    }
+		// make sure max insn preemption does not interfere
+		if (verifyNoPropertyViolation(
+				"+listener=.test.mc.basic.CGNotificationTest$Sequencer",
+				"+vm.max_transition_length=MAX")) {
+			boolean b = Verify.getBoolean(); // first CG
+			int i = Verify.getInt(1, 2); // this one gets a CG on top registered
+											// by the listener
+			/*
+			 * System.out.print("b="); System.out.print(b);
+			 * System.out.print(",i="); System.out.println(i);
+			 */
+		}
 
-    if (!isJPFRun()){
-      String[] expected = {
-        "registered <root>",
-        "set <root>",
-        "advance <root> ThreadInfo [name=main,id=0,state=RUNNING]",
-        "registered verifyGetBoolean",
-        "set verifyGetBoolean",
-        "advance verifyGetBoolean false",
-        "registered verifyGetInt(II)",
-        "registered listenerCG",
-        "set verifyGetInt(II)",
-        "set listenerCG",
-        "advance verifyGetInt(II) 1",
-        "advance listenerCG 3",
-        "advance listenerCG 4",
-        "processed listenerCG",
-        "advance verifyGetInt(II) 2",
-        "advance listenerCG 3",
-        "advance listenerCG 4",
-        "processed listenerCG",
-        "processed verifyGetInt(II)",
-        "advance verifyGetBoolean true",
-        "registered verifyGetInt(II)",
-        "registered listenerCG",
-        "set verifyGetInt(II)",
-        "set listenerCG",
-        "advance verifyGetInt(II) 1",
-        "advance listenerCG 3",
-        "advance listenerCG 4",
-        "processed listenerCG",
-        "advance verifyGetInt(II) 2",
-        "advance listenerCG 3",
-        "advance listenerCG 4",
-        "processed listenerCG",
-        "processed verifyGetInt(II)",
-        "processed verifyGetBoolean",
-        "processed <root>"
-      };
+		if (!isJPFRun()) {
+			String[] expected = { "registered <root>", "set <root>",
+					"advance <root> ThreadInfo [name=main,id=0,state=RUNNING]",
+					"registered verifyGetBoolean", "set verifyGetBoolean",
+					"advance verifyGetBoolean false",
+					"registered verifyGetInt(II)", "registered listenerCG",
+					"set verifyGetInt(II)", "set listenerCG",
+					"advance verifyGetInt(II) 1", "advance listenerCG 3",
+					"advance listenerCG 4", "processed listenerCG",
+					"advance verifyGetInt(II) 2", "advance listenerCG 3",
+					"advance listenerCG 4", "processed listenerCG",
+					"processed verifyGetInt(II)",
+					"advance verifyGetBoolean true",
+					"registered verifyGetInt(II)", "registered listenerCG",
+					"set verifyGetInt(II)", "set listenerCG",
+					"advance verifyGetInt(II) 1", "advance listenerCG 3",
+					"advance listenerCG 4", "processed listenerCG",
+					"advance verifyGetInt(II) 2", "advance listenerCG 3",
+					"advance listenerCG 4", "processed listenerCG",
+					"processed verifyGetInt(II)", "processed verifyGetBoolean",
+					"processed <root>" };
 
-      assert Sequencer.sequence.size() == expected.length;
+			assert Sequencer.sequence.size() == expected.length;
 
-      int i=0;
-      for (String s : Sequencer.sequence){
-        assert expected[i].equals(s) : "\"" + expected[i] + "\" != \"" + s + "\"";
-        //System.out.println("\"" + s + "\",");
-        i++;
-      }
-    }
-  }
+			int i = 0;
+			for (String s : Sequencer.sequence) {
+				assert expected[i].equals(s) : "\"" + expected[i] + "\" != \""
+						+ s + "\"";
+				// System.out.println("\"" + s + "\",");
+				i++;
+			}
+		}
+	}
 }

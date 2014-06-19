@@ -23,7 +23,7 @@ package gov.nasa.jpf;
  */
 @SuppressWarnings("serial")
 public class JPFErrorException extends JPFException {
-  public JPFErrorException (String s) {
-    super(s);
-  }
+	public JPFErrorException(String s) {
+		super(s);
+	}
 }

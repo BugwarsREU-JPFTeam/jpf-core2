@@ -28,14 +28,14 @@ import org.junit.Test;
  */
 public class CloneTest extends TestJPF {
 
-  @Test
-  public void testCloneArray() {
-    if (verifyNoPropertyViolation()){
-      int[] a = new int[3];
-      int[] b = a.clone();
-      for (int i = 0; i < b.length; i++) {
-        b[i]++;
-      }
-    }
-  }
+	@Test
+	public void testCloneArray() {
+		if (verifyNoPropertyViolation()) {
+			int[] a = new int[3];
+			int[] b = a.clone();
+			for (int i = 0; i < b.length; i++) {
+				b[i]++;
+			}
+		}
+	}
 }

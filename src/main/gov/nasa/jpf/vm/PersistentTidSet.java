@@ -19,46 +19,45 @@
 
 package gov.nasa.jpf.vm;
 
-
 /**
- * set that stores threads via (search global) thread ids. Used to detect shared objects/classes,
- * created by configured SharedObjectPolicy factory.
- * This set is persistent, i.e. does not modify contents of existing set instances to avoid
- * introducing search global state
+ * set that stores threads via (search global) thread ids. Used to detect shared
+ * objects/classes, created by configured SharedObjectPolicy factory. This set
+ * is persistent, i.e. does not modify contents of existing set instances to
+ * avoid introducing search global state
  */
 public class PersistentTidSet extends TidSet {
-  
-  public PersistentTidSet (ThreadInfo ti){
-    super(ti);
-  }  
-  
-  //--- non-destructive set update
-  
-  @Override
-  public ThreadInfoSet add (ThreadInfo ti) {
-    int id = ti.getId();
-    
-    if (!contains(id)){
-      PersistentTidSet newSet = (PersistentTidSet)clone();
-      newSet.add(id);
-      return newSet;
-      
-    } else {
-      return this;
-    }
-  }
-  
-  @Override
-  public ThreadInfoSet remove (ThreadInfo ti) {
-    int id = ti.getId();
 
-    if (contains(id)){
-      PersistentTidSet newSet = (PersistentTidSet)clone();
-      newSet.remove(id);
-      return newSet;
-      
-    } else {
-      return this;
-    }
-  }
+	public PersistentTidSet(ThreadInfo ti) {
+		super(ti);
+	}
+
+	// --- non-destructive set update
+
+	@Override
+	public ThreadInfoSet add(ThreadInfo ti) {
+		int id = ti.getId();
+
+		if (!contains(id)) {
+			PersistentTidSet newSet = (PersistentTidSet) clone();
+			newSet.add(id);
+			return newSet;
+
+		} else {
+			return this;
+		}
+	}
+
+	@Override
+	public ThreadInfoSet remove(ThreadInfo ti) {
+		int id = ti.getId();
+
+		if (contains(id)) {
+			PersistentTidSet newSet = (PersistentTidSet) clone();
+			newSet.remove(id);
+			return newSet;
+
+		} else {
+			return this;
+		}
+	}
 }

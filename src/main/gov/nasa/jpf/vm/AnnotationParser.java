@@ -24,5 +24,5 @@ package gov.nasa.jpf.vm;
  */
 public interface AnnotationParser {
 
-  void parse (AnnotationInfo ai) throws ClassParseException;
+	void parse(AnnotationInfo ai) throws ClassParseException;
 }

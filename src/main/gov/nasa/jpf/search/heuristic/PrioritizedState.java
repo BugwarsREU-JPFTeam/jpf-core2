@@ -21,46 +21,51 @@ package gov.nasa.jpf.search.heuristic;
 import gov.nasa.jpf.vm.VM;
 
 /**
- * HeuristicState with a scalar, static priority.
- * Due to legacy reasons, lower values represent higher priorities
+ * HeuristicState with a scalar, static priority. Due to legacy reasons, lower
+ * values represent higher priorities
  */
-public class PrioritizedState extends HeuristicState implements Comparable<PrioritizedState>{
+public class PrioritizedState extends HeuristicState implements
+		Comparable<PrioritizedState> {
 
-  int heuristicValue; // watch out, this is inverted: 0 is max priority
+	int heuristicValue; // watch out, this is inverted: 0 is max priority
 
-  public PrioritizedState(VM vm, int heuristicValue) {
-    super(vm);
-    
-    this.heuristicValue = heuristicValue;
-  }
+	public PrioritizedState(VM vm, int heuristicValue) {
+		super(vm);
 
-  public int getPriority () {
-    return heuristicValue;
-  }
+		this.heuristicValue = heuristicValue;
+	}
 
-  /*
-   * NOTE - since we can't use the Java 1.6 pollFirst()/pollLast() yet,
-   * we have to use remove(o), which in turn requires "compareTo(a) == 0" to
-   * be identical to "equals(o) == true", so we should implement both
-   */
-  public int compareTo (PrioritizedState o) {
-     int diff = heuristicValue - o.heuristicValue;
-     if (diff == 0) {
-       return (stateId - o.stateId);
-     } else {
-       return diff;
-     }
-  }
-  public boolean equals (Object o) {
-    if (o instanceof PrioritizedState) {
-      PrioritizedState other = (PrioritizedState) o;
-      return ((stateId == other.stateId) && (heuristicValue == other.heuristicValue));
-    } else {
-      return false;
-    }
-  }
-  
-  public String toString() {
-    return "{"+stateId+','+heuristicValue+'}';
-  }
+	public int getPriority() {
+		return heuristicValue;
+	}
+
+	/*
+	 * NOTE - since we can't use the Java 1.6 pollFirst()/pollLast() yet, we
+	 * have to use remove(o), which in turn requires "compareTo(a) == 0" to be
+	 * identical to "equals(o) == true", so we should implement both
+	 */
+	@Override
+	public int compareTo(PrioritizedState o) {
+		int diff = heuristicValue - o.heuristicValue;
+		if (diff == 0) {
+			return (stateId - o.stateId);
+		} else {
+			return diff;
+		}
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof PrioritizedState) {
+			PrioritizedState other = (PrioritizedState) o;
+			return ((stateId == other.stateId) && (heuristicValue == other.heuristicValue));
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public String toString() {
+		return "{" + stateId + ',' + heuristicValue + '}';
+	}
 }

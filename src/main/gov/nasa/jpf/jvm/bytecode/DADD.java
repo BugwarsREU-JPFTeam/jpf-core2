@@ -22,33 +22,33 @@ import gov.nasa.jpf.jvm.JVMInstruction;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
-import gov.nasa.jpf.vm.Types;
-
 
 /**
- * Add double
- * ..., value1, value2 => ..., result
+ * Add double ..., value1, value2 => ..., result
  */
 public class DADD extends JVMInstruction {
 
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
-    
-    double v1 = frame.popDouble();
-    double v2 = frame.popDouble();
-    
-    double r = v1 + v2;
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    frame.pushDouble(r);
+		double v1 = frame.popDouble();
+		double v2 = frame.popDouble();
 
-    return getNext(ti);
-  }
+		double r = v1 + v2;
 
-  public int getByteCode () {
-    return 0x63;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		frame.pushDouble(r);
+
+		return getNext(ti);
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0x63;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

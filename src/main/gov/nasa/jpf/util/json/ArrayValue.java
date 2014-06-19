@@ -24,38 +24,42 @@ import java.util.ArrayList;
 
 /**
  * Array parsed from JSON document
+ * 
  * @author Ivan Mushketik
  */
 public class ArrayValue implements Value {
 
-  ArrayList<Value> values = new ArrayList<Value>();
+	ArrayList<Value> values = new ArrayList<Value>();
 
+	@Override
+	public String getString() {
+		throw new JPFException("Can't convert array to string");
+	}
 
+	@Override
+	public Double getDouble() {
+		throw new JPFException("Can't convert array to double");
+	}
 
-  public String getString() {
-    throw new JPFException("Can't convert array to string");
-  }
+	@Override
+	public JSONObject getObject() {
+		throw new JPFException("Can't convert array to object");
+	}
 
-  public Double getDouble() {
-    throw new JPFException("Can't convert array to double");
-  }
+	@Override
+	public Value[] getArray() {
+		Value[] result = new Value[values.size()];
 
-  public JSONObject getObject() {
-    throw new JPFException("Can't convert array to object");
-  }
+		return values.toArray(result);
+	}
 
-  public Value[] getArray() {
-    Value[] result = new Value[values.size()];
+	@Override
+	public Boolean getBoolean() {
+		throw new JPFException("Can't convert array to boolean");
+	}
 
-    return values.toArray(result);
-  }
-
-  public Boolean getBoolean() {
-    throw new JPFException("Can't convert array to boolean");
-  }
-
-  void addValue(Value value) {
-    values.add(value);
-  }
+	void addValue(Value value) {
+		values.add(value);
+	}
 
 }

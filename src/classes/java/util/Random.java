@@ -21,54 +21,56 @@ package java.util;
 
 public class Random {
 
-  // the state of this object
-  private long seed;
-  
-  public Random(){
-    // intercepted by native peer to control seed initialization based on JPF configuration
-  }
-  
-  public Random(long seed) {
-    // intercepted by native peer to control seed initialization based on JPF configuration
-  }
-  
-  public synchronized void setSeed(long seed){
-    // intercepted by native peer
-  }
-  
-  protected int next(int bits){
-    return 42; // intercepted by peer
-  }
-  
-  public void nextBytes(byte[] data){
-    // intercepted by peer
-  }
-  
-  public int nextInt(){
-    return 42; // intercepted by peer    
-  }
-  
-  public int nextInt(int n) {
-    return 42; // intercepted by peer
-  }
-  
-  public long nextLong() {
-    return 42; // intercepted by peer
-  }
-  
-  public boolean nextBoolean() {
-    return true; // intercepted by peer
-  }
-  
-  public float nextFloat() {
-    return 42f; // intercepted by peer
-  }
-  
-  public double nextDouble() {
-    return 42.0; // intercepted by peer
-  }
-  
-  public synchronized double nextGaussian() {
-    return 42.0; // intercepted by peer    
-  }
+	// the state of this object
+	private long seed;
+
+	public Random() {
+		// intercepted by native peer to control seed initialization based on
+		// JPF configuration
+	}
+
+	public Random(long seed) {
+		// intercepted by native peer to control seed initialization based on
+		// JPF configuration
+	}
+
+	public synchronized void setSeed(long seed) {
+		// intercepted by native peer
+	}
+
+	protected int next(int bits) {
+		return 42; // intercepted by peer
+	}
+
+	public void nextBytes(byte[] data) {
+		// intercepted by peer
+	}
+
+	public int nextInt() {
+		return 42; // intercepted by peer
+	}
+
+	public int nextInt(int n) {
+		return 42; // intercepted by peer
+	}
+
+	public long nextLong() {
+		return 42; // intercepted by peer
+	}
+
+	public boolean nextBoolean() {
+		return true; // intercepted by peer
+	}
+
+	public float nextFloat() {
+		return 42f; // intercepted by peer
+	}
+
+	public double nextDouble() {
+		return 42.0; // intercepted by peer
+	}
+
+	public synchronized double nextGaussian() {
+		return 42.0; // intercepted by peer
+	}
 }

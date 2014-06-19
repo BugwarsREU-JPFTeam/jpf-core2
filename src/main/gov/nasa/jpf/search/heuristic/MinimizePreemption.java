@@ -31,46 +31,53 @@ import gov.nasa.jpf.vm.ThreadInfo;
  * IterativContextBounding search
  */
 public class MinimizePreemption extends SimplePriorityHeuristic {
-  
-  // an optional threshold value of preemptions that cause states to be
-  // added at the end of the queue (or discarded if queue is full)
-  int threshold;
-  
-  public MinimizePreemption (Config config, VM vm) {
-    super(config,vm);
-    
-    threshold = config.getInt("search.mp.threshold", Integer.MAX_VALUE);
-  }
-  
-  protected int computeHeuristicValue () {
-    int preemptions = 0;
 
-    // this is redundant, but since it is easy enough to compute we don't store it
-    // <2do> this relies on that there are no cascaded SchedulingPoints (which would not work anyways)
-    for (ThreadChoiceGenerator tcg = vm.getLastChoiceGeneratorOfType(ThreadChoiceGenerator.class); tcg != null;){
-      ThreadInfo ti= tcg.getNextChoice();
-      ThreadChoiceGenerator tcgPrev = tcg.getPreviousChoiceGeneratorOfType(ThreadChoiceGenerator.class);
+	// an optional threshold value of preemptions that cause states to be
+	// added at the end of the queue (or discarded if queue is full)
+	int threshold;
 
-      if (tcg.isSchedulingPoint()){
-        if (tcgPrev != null){
-          ThreadInfo tiPrev = tcgPrev.getNextChoice();
-          if (ti != tiPrev){
-            if (tcg.contains(tiPrev)){
-              // the previous thread is still in the runnable list, so it can't be blocked or terminated
-              preemptions++;
-              
-              if (preemptions >= threshold){
-                // we don't care, it gets the lowest priority (highest heuristic value)
-                return Integer.MAX_VALUE;
-              }
-            }            
-          }
-        }
-      }
-      
-      tcg = tcgPrev;
-    }
-    
-    return preemptions;
-  }
+	public MinimizePreemption(Config config, VM vm) {
+		super(config, vm);
+
+		threshold = config.getInt("search.mp.threshold", Integer.MAX_VALUE);
+	}
+
+	@Override
+	protected int computeHeuristicValue() {
+		int preemptions = 0;
+
+		// this is redundant, but since it is easy enough to compute we don't
+		// store it
+		// <2do> this relies on that there are no cascaded SchedulingPoints
+		// (which would not work anyways)
+		for (ThreadChoiceGenerator tcg = vm
+				.getLastChoiceGeneratorOfType(ThreadChoiceGenerator.class); tcg != null;) {
+			ThreadInfo ti = tcg.getNextChoice();
+			ThreadChoiceGenerator tcgPrev = tcg
+					.getPreviousChoiceGeneratorOfType(ThreadChoiceGenerator.class);
+
+			if (tcg.isSchedulingPoint()) {
+				if (tcgPrev != null) {
+					ThreadInfo tiPrev = tcgPrev.getNextChoice();
+					if (ti != tiPrev) {
+						if (tcg.contains(tiPrev)) {
+							// the previous thread is still in the runnable
+							// list, so it can't be blocked or terminated
+							preemptions++;
+
+							if (preemptions >= threshold) {
+								// we don't care, it gets the lowest priority
+								// (highest heuristic value)
+								return Integer.MAX_VALUE;
+							}
+						}
+					}
+				}
+			}
+
+			tcg = tcgPrev;
+		}
+
+		return preemptions;
+	}
 }

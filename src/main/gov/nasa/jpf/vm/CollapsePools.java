@@ -5,111 +5,122 @@ import gov.nasa.jpf.util.IntTable.Entry;
 import gov.nasa.jpf.util.WeakPool;
 
 abstract class CollapsePools {
-  static class AllWeak {
-    /** Pool used to store the stack frames.*/
-    private WeakPool<StackFrame> stackFramePool = new WeakPool<StackFrame>(11);
+	static class AllWeak {
+		/** Pool used to store the stack frames. */
+		private WeakPool<StackFrame> stackFramePool = new WeakPool<StackFrame>(
+				11);
 
-    /** Pool used to store collections of field values.*/
-    private WeakPool<Fields>     fieldsPool     = new WeakPool<Fields>    (11);
+		/** Pool used to store collections of field values. */
+		private WeakPool<Fields> fieldsPool = new WeakPool<Fields>(11);
 
-    /** Pool used to store the thread data.*/
-    private WeakPool<ThreadData> threadDataPool = new WeakPool<ThreadData>(8);
-    
-    /** Pool used to store monitor states.*/
-    private WeakPool<Monitor>    monitorPool    = new WeakPool<Monitor>   (8);
+		/** Pool used to store the thread data. */
+		private WeakPool<ThreadData> threadDataPool = new WeakPool<ThreadData>(
+				8);
 
-    public StackFrame poolStackFrame(StackFrame o) {
-      StackFrame p = stackFramePool.pool(o);
-      if (VM.CHECK_CONSISTENCY) assert p.equals(o);
-      return p;
-    }
+		/** Pool used to store monitor states. */
+		private WeakPool<Monitor> monitorPool = new WeakPool<Monitor>(8);
 
-    public Fields poolFields(Fields o) {
-      Fields p = fieldsPool.pool(o);
-      if (VM.CHECK_CONSISTENCY) assert p.equals(o);
-      return p;
-    }
+		public StackFrame poolStackFrame(StackFrame o) {
+			StackFrame p = stackFramePool.pool(o);
+			if (VM.CHECK_CONSISTENCY)
+				assert p.equals(o);
+			return p;
+		}
 
-    public ThreadData poolThreadData(ThreadData o) {
-      ThreadData p = threadDataPool.pool(o);
-      if (VM.CHECK_CONSISTENCY) assert p.equals(o);
-      return p;
-    }
+		public Fields poolFields(Fields o) {
+			Fields p = fieldsPool.pool(o);
+			if (VM.CHECK_CONSISTENCY)
+				assert p.equals(o);
+			return p;
+		}
 
-    public Monitor poolMonitor(Monitor o) {
-      Monitor p = monitorPool.pool(o);
-      if (VM.CHECK_CONSISTENCY) assert p.equals(o);
-      return p;
-    }
-  }
-  
-  static class AllIndexed {
-    /** Pool used to store the thread data.*/
-    private HashPool<ThreadData> threadDataPool = new HashPool<ThreadData>(8).addNull();
+		public ThreadData poolThreadData(ThreadData o) {
+			ThreadData p = threadDataPool.pool(o);
+			if (VM.CHECK_CONSISTENCY)
+				assert p.equals(o);
+			return p;
+		}
 
-    /** Pool used to store monitor states.*/
-    private HashPool<Monitor>    monitorPool    = new HashPool<Monitor>   (8).addNull();
+		public Monitor poolMonitor(Monitor o) {
+			Monitor p = monitorPool.pool(o);
+			if (VM.CHECK_CONSISTENCY)
+				assert p.equals(o);
+			return p;
+		}
+	}
 
-    /** Pool used to store the stack frames.*/
-    private HashPool<StackFrame> stackFramePool = new HashPool<StackFrame>(11).addNull();
+	static class AllIndexed {
+		/** Pool used to store the thread data. */
+		private HashPool<ThreadData> threadDataPool = new HashPool<ThreadData>(
+				8).addNull();
 
-    /** Pool used to store collections of field values.*/
-    private HashPool<Fields>     fieldsPool     = new HashPool<Fields>    (11).addNull();
-    
-    public StackFrame poolStackFrame(StackFrame o) {
-      StackFrame p = stackFramePool.get(o);
-      if (VM.CHECK_CONSISTENCY) assert p.equals(o);
-      return p;
-    }
+		/** Pool used to store monitor states. */
+		private HashPool<Monitor> monitorPool = new HashPool<Monitor>(8)
+				.addNull();
 
-    public Fields poolFields(Fields o) {
-      return fieldsPool.get(o);
-    }
+		/** Pool used to store the stack frames. */
+		private HashPool<StackFrame> stackFramePool = new HashPool<StackFrame>(
+				11).addNull();
 
-    public ThreadData poolThreadData(ThreadData o) {
-      return threadDataPool.get(o);
-    }
+		/** Pool used to store collections of field values. */
+		private HashPool<Fields> fieldsPool = new HashPool<Fields>(11)
+				.addNull();
 
-    public Monitor poolMonitor(Monitor o) {
-      return monitorPool.get(o);
-    }
+		public StackFrame poolStackFrame(StackFrame o) {
+			StackFrame p = stackFramePool.get(o);
+			if (VM.CHECK_CONSISTENCY)
+				assert p.equals(o);
+			return p;
+		}
 
-    public int getFieldsIndex(ElementInfo ei) {
-      Entry<Fields> entry = fieldsPool.getEntry(ei.getFields());
-      ei.restoreFields(entry.key);
-      return entry.val;
-    }
+		public Fields poolFields(Fields o) {
+			return fieldsPool.get(o);
+		}
 
-    public int getStackFrameIndex(StackFrame sf) {
-      return stackFramePool.getIndex(sf);
-    }
+		public ThreadData poolThreadData(ThreadData o) {
+			return threadDataPool.get(o);
+		}
 
-    public int getThreadDataIndex(ThreadInfo ti) {
-      Entry<ThreadData> e = threadDataPool.getEntry(ti.threadData);
-      ti.threadData = e.key;
-      return e.val;
-    }
-    
-    public int getMonitorIndex(ElementInfo ei) {
-      Entry<Monitor> entry = monitorPool.getEntry(ei.getMonitor());
-      ei.restoreMonitor(entry.key);
-      return entry.val;
-    }
-    
-    public Fields getFieldsAt(int idx) {
-      return fieldsPool.getObject(idx);
-    }
+		public Monitor poolMonitor(Monitor o) {
+			return monitorPool.get(o);
+		}
 
-    public StackFrame getStackFrameAt(int idx) {
-      return stackFramePool.getObject(idx);
-    }
+		public int getFieldsIndex(ElementInfo ei) {
+			Entry<Fields> entry = fieldsPool.getEntry(ei.getFields());
+			ei.restoreFields(entry.key);
+			return entry.val;
+		}
 
-    public ThreadData getThreadDataAt(int idx) {
-      return threadDataPool.getObject(idx);
-    }
+		public int getStackFrameIndex(StackFrame sf) {
+			return stackFramePool.getIndex(sf);
+		}
 
-    public Monitor getMonitorAt(int idx) {
-      return monitorPool.getObject(idx);
-    }
-  }
+		public int getThreadDataIndex(ThreadInfo ti) {
+			Entry<ThreadData> e = threadDataPool.getEntry(ti.threadData);
+			ti.threadData = e.key;
+			return e.val;
+		}
+
+		public int getMonitorIndex(ElementInfo ei) {
+			Entry<Monitor> entry = monitorPool.getEntry(ei.getMonitor());
+			ei.restoreMonitor(entry.key);
+			return entry.val;
+		}
+
+		public Fields getFieldsAt(int idx) {
+			return fieldsPool.getObject(idx);
+		}
+
+		public StackFrame getStackFrameAt(int idx) {
+			return stackFramePool.getObject(idx);
+		}
+
+		public ThreadData getThreadDataAt(int idx) {
+			return threadDataPool.getObject(idx);
+		}
+
+		public Monitor getMonitorAt(int idx) {
+			return monitorPool.getObject(idx);
+		}
+	}
 }

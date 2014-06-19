@@ -20,17 +20,17 @@
 package java.lang.reflect;
 
 /**
- * not really required to model, but the real thing does some funky
- * things to override the cause, just making things a bit more complicated
- * on our VM side (we still init Throwables explicitly from ThreadInfo)
+ * not really required to model, but the real thing does some funky things to
+ * override the cause, just making things a bit more complicated on our VM side
+ * (we still init Throwables explicitly from ThreadInfo)
  */
 public class InvocationTargetException extends Exception {
 
-  public InvocationTargetException (Throwable cause){
-    super(cause);
-  }
-  
-  public Throwable getTargetException() {
-    return cause;
-  }
+	public InvocationTargetException(Throwable cause) {
+		super(cause);
+	}
+
+	public Throwable getTargetException() {
+		return cause;
+	}
 }

@@ -24,11 +24,12 @@ package gov.nasa.jpf.vm;
  */
 public abstract class SingleSlotFieldInfo extends FieldInfo {
 
-    protected SingleSlotFieldInfo (String name, String signature, int modifiers) {
-      super(name, signature, modifiers);
-    }
-    
-    public boolean is1SlotField(){
-      return true;
-    }
+	protected SingleSlotFieldInfo(String name, String signature, int modifiers) {
+		super(name, signature, modifiers);
+	}
+
+	@Override
+	public boolean is1SlotField() {
+		return true;
+	}
 }

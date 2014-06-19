@@ -33,45 +33,46 @@ import gov.nasa.jpf.vm.ThreadInfo;
  */
 public class JPF_gov_nasa_jpf_test_mc_basic_RestorerTest$X extends NativePeer {
 
-  static class InsnExecCount {
-    int count;    
-  }
-  
-  static class InsnCountRestorer implements ClosedMemento {
-    InsnExecCount insnAttr;
-    int count; // the value to restore
-    
-    InsnCountRestorer (InsnExecCount insnAttr){
-      this.insnAttr = insnAttr;
-      this.count = insnAttr.count;
-      
-      System.out.println("## storing: " + count);
-    }
-    
-    public void restore(){
-      System.out.println("## restoring: " + count);
-      insnAttr.count = count;
-    }
-  }
+	static class InsnExecCount {
+		int count;
+	}
 
-  @MJI
-  public void $init (MJIEnv env, int objref){
-    ThreadInfo ti = env.getThreadInfo();
-    StackFrame caller = ti.getCallerStackFrame();
-    Instruction insn = caller.getPC();
-        
-    InsnExecCount a = insn.getAttr(InsnExecCount.class);
-    if (a == null){
-      a = new InsnExecCount();
-      insn.addAttr( a);
-    }
+	static class InsnCountRestorer implements ClosedMemento {
+		InsnExecCount insnAttr;
+		int count; // the value to restore
 
-    SystemState ss = env.getSystemState();
-    if (!ss.hasRestorer(a)){
-      env.getSystemState().putRestorer( a, new InsnCountRestorer(a));      
-    }
-    
-    a.count++;
-    env.setIntField(objref, "id", a.count);
-  }
+		InsnCountRestorer(InsnExecCount insnAttr) {
+			this.insnAttr = insnAttr;
+			this.count = insnAttr.count;
+
+			System.out.println("## storing: " + count);
+		}
+
+		@Override
+		public void restore() {
+			System.out.println("## restoring: " + count);
+			insnAttr.count = count;
+		}
+	}
+
+	@MJI
+	public void $init(MJIEnv env, int objref) {
+		ThreadInfo ti = env.getThreadInfo();
+		StackFrame caller = ti.getCallerStackFrame();
+		Instruction insn = caller.getPC();
+
+		InsnExecCount a = insn.getAttr(InsnExecCount.class);
+		if (a == null) {
+			a = new InsnExecCount();
+			insn.addAttr(a);
+		}
+
+		SystemState ss = env.getSystemState();
+		if (!ss.hasRestorer(a)) {
+			env.getSystemState().putRestorer(a, new InsnCountRestorer(a));
+		}
+
+		a.count++;
+		env.setIntField(objref, "id", a.count);
+	}
 }

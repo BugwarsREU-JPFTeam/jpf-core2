@@ -23,59 +23,65 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Push int constant
- * ... => ..., <i>
+ * Push int constant ... => ..., <i>
  */
 public class ICONST extends JVMInstruction {
-  protected int value;
+	protected int value;
 
-  public ICONST(int value){
-    this.value = value;
-  }
+	public ICONST(int value) {
+		this.value = value;
+	}
 
-  @Override
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
-    
-    frame.push(value);
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    return getNext(ti);
-  }
+		frame.push(value);
 
-  public int getValue() {
-    return value;
-  }
-  
-  @Override
-  public int getByteCode () {
-    assert ((value >= -1) && (value < 6)) : ("illegal iconst value: " + value);
+		return getNext(ti);
+	}
 
-    switch (value) {
-    case -1: return 0x2;
-    case 0: return 0x3;
-    case 1: return 0x4;
-    case 2: return 0x5;
-    case 3: return 0x6;
-    case 4: return 0x7;
-    case 5: return 0x8;
-    }
-    return 0;
-  }
-  
-  public String getMnemonic () {
-    String s = "iconst_";
-    
-    if (value == -1) {
-      return s + "m1";
-    } else {
-      return s + value;
-    }
-  }
-  
-  @Override
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	public int getValue() {
+		return value;
+	}
+
+	@Override
+	public int getByteCode() {
+		assert ((value >= -1) && (value < 6)) : ("illegal iconst value: " + value);
+
+		switch (value) {
+		case -1:
+			return 0x2;
+		case 0:
+			return 0x3;
+		case 1:
+			return 0x4;
+		case 2:
+			return 0x5;
+		case 3:
+			return 0x6;
+		case 4:
+			return 0x7;
+		case 5:
+			return 0x8;
+		}
+		return 0;
+	}
+
+	@Override
+	public String getMnemonic() {
+		String s = "iconst_";
+
+		if (value == -1) {
+			return s + "m1";
+		} else {
+			return s + value;
+		}
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

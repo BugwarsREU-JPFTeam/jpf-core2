@@ -21,25 +21,27 @@ package gov.nasa.jpf.jvm.bytecode;
 import gov.nasa.jpf.vm.ArrayIndexOutOfBoundsExecutiveException;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.StackFrame;
-import gov.nasa.jpf.vm.ThreadInfo;
 
 /**
- * Load double from array
- * ..., arrayref, index => ..., value
+ * Load double from array ..., arrayref, index => ..., value
  */
 public class DALOAD extends LongArrayLoadInstruction {
 
-  protected void push (StackFrame frame, ElementInfo ei, int index) throws ArrayIndexOutOfBoundsExecutiveException {
-    ei.checkArrayBounds(index);
-    double value = ei.getDoubleElement(index);
-    frame.pushLong( Double.doubleToLongBits(value));
-  }
+	@Override
+	protected void push(StackFrame frame, ElementInfo ei, int index)
+			throws ArrayIndexOutOfBoundsExecutiveException {
+		ei.checkArrayBounds(index);
+		double value = ei.getDoubleElement(index);
+		frame.pushLong(Double.doubleToLongBits(value));
+	}
 
-  public int getByteCode () {
-    return 0x31;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public int getByteCode() {
+		return 0x31;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

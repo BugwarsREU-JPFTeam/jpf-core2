@@ -21,67 +21,71 @@ package java.text;
 
 public abstract class NumberFormat extends Format {
 
-  static final int INTEGER_STYLE=0;
-  static final int NUMBER_STYLE=1;
-    
-  public static NumberFormat getIntegerInstance() {
-    return new DecimalFormat(INTEGER_STYLE);
-  }
-  
-  public static NumberFormat getNumberInstance() {
-    return new DecimalFormat(NUMBER_STYLE);
-  }
+	static final int INTEGER_STYLE = 0;
+	static final int NUMBER_STYLE = 1;
 
-  public static NumberFormat getInstance() {
-    return new DecimalFormat(NUMBER_STYLE);
-  }
-  
-  public void setMaximumFractionDigits (int newValue){
-    // intercepted by native peer
-  }
-  public void setMaximumIntegerDigits (int newValue){
-    // intercepted by native peer
-  }
-  public void setMinimumFractionDigits(int newValue){
-    // intercepted by native peer
-  }
-  public void setMinimumIntegerDigits(int newValue){
-    // intercepted by native peer
-  }
-  
-  public String format (long number) {
-    // intercepted by native peer
-    return null;
-  }
-  
-  public String format (double d) {
-    // intercepted by native peer
-    return null;
-  }
+	public static NumberFormat getIntegerInstance() {
+		return new DecimalFormat(INTEGER_STYLE);
+	}
 
-  public final Object parseObject (String source, ParsePosition pos) {
-    return parse(source,pos);
-  }
+	public static NumberFormat getNumberInstance() {
+		return new DecimalFormat(NUMBER_STYLE);
+	}
 
-  public void setParseIntegerOnly(boolean value) {
-      // intercepted by native peer
-  }
+	public static NumberFormat getInstance() {
+		return new DecimalFormat(NUMBER_STYLE);
+	}
 
-  public boolean isParseIntegerOnly() {
-      // intercepted by native peer
-      return false;
-  }
+	public void setMaximumFractionDigits(int newValue) {
+		// intercepted by native peer
+	}
 
-  public boolean isGroupingUsed() {
-      return false;
-  }
+	public void setMaximumIntegerDigits(int newValue) {
+		// intercepted by native peer
+	}
 
-  public void setGroupingUsed(boolean newValue) {
-    // intercepted by native peer
-  }
+	public void setMinimumFractionDigits(int newValue) {
+		// intercepted by native peer
+	}
 
-  public abstract Number parse(String source,ParsePosition pos);
+	public void setMinimumIntegerDigits(int newValue) {
+		// intercepted by native peer
+	}
 
-  // ..and probably a lot missing
-  
+	public String format(long number) {
+		// intercepted by native peer
+		return null;
+	}
+
+	public String format(double d) {
+		// intercepted by native peer
+		return null;
+	}
+
+	@Override
+	public final Object parseObject(String source, ParsePosition pos) {
+		return parse(source, pos);
+	}
+
+	public void setParseIntegerOnly(boolean value) {
+		// intercepted by native peer
+	}
+
+	public boolean isParseIntegerOnly() {
+		// intercepted by native peer
+		return false;
+	}
+
+	public boolean isGroupingUsed() {
+		return false;
+	}
+
+	public void setGroupingUsed(boolean newValue) {
+		// intercepted by native peer
+	}
+
+	public abstract Number parse(String source, ParsePosition pos);
+
+	// ..and probably a lot missing
+
 }

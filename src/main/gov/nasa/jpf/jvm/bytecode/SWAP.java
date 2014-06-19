@@ -23,29 +23,28 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Swap the top two operand stack values
- * ..., value2, value1 => ..., value1, value2
+ * Swap the top two operand stack values ..., value2, value1 => ..., value1,
+ * value2
  */
 public class SWAP extends JVMInstruction {
 
-  @Override
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
-    
-    frame.swap();
-    
-    return getNext(ti);
-  }
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-  @Override
-  public int getByteCode () {
-    return 0x5F;
-  }
-  
-  @Override
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		frame.swap();
+
+		return getNext(ti);
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0x5F;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

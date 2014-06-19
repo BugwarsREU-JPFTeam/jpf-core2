@@ -20,55 +20,60 @@ package gov.nasa.jpf.jvm.bytecode;
 
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
-import gov.nasa.jpf.vm.Types;
-
 
 /**
- * Return float from method
- * ..., value => [empty]
+ * Return float from method ..., value => [empty]
  */
 public class FRETURN extends ReturnInstruction {
 
-  float ret;
-  
-  public int getReturnTypeSize() {
-    return 1;
-  }
+	float ret;
 
-  protected Object getReturnedOperandAttr (StackFrame frame) {
-    return frame.getOperandAttr();
-  }
-  
-  protected void getAndSaveReturnValue (StackFrame frame) {
-    ret = frame.popFloat();
-  }
-  
-  protected void pushReturnValue (StackFrame frame) {
-    frame.pushFloat(ret);
-  }
-  
-  public float getReturnValue () {
-    return ret;
-  }
-  
-  public Float getReturnValue (ThreadInfo ti) {
-    if (!isCompleted(ti)) { // we have to pull it from the operand stack
-      StackFrame frame = ti.getTopFrame();
-      ret = frame.peekFloat();
-    }
-    
-    return new Float(ret);
-  }
-  
-  public int getByteCode () {
-    return 0xAE;
-  }
-  
-  public String toString() {
-    return "freturn " + mi.getFullName();
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public int getReturnTypeSize() {
+		return 1;
+	}
+
+	@Override
+	protected Object getReturnedOperandAttr(StackFrame frame) {
+		return frame.getOperandAttr();
+	}
+
+	@Override
+	protected void getAndSaveReturnValue(StackFrame frame) {
+		ret = frame.popFloat();
+	}
+
+	@Override
+	protected void pushReturnValue(StackFrame frame) {
+		frame.pushFloat(ret);
+	}
+
+	public float getReturnValue() {
+		return ret;
+	}
+
+	@Override
+	public Float getReturnValue(ThreadInfo ti) {
+		if (!isCompleted(ti)) { // we have to pull it from the operand stack
+			StackFrame frame = ti.getTopFrame();
+			ret = frame.peekFloat();
+		}
+
+		return new Float(ret);
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0xAE;
+	}
+
+	@Override
+	public String toString() {
+		return "freturn " + mi.getFullName();
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

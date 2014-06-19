@@ -24,182 +24,214 @@ import gov.nasa.jpf.vm.Verify;
 import org.junit.Test;
 
 /**
- * test for POR 'final' field config settings, adapted patch from Nathan Reynolds
+ * test for POR 'final' field config settings, adapted patch from Nathan
+ * Reynolds
  */
 public class PorSkipFinalsTest extends TestJPF {
 
-  private static Leaker leaker;
+	private static Leaker leaker;
 
-  private static class Leaker {
+	private static class Leaker {
 
-    private final static Object finalStatic = new Object();
-    private static Object nonFinalStatic = new Object();
-    private final Object finalMember;
-    private Object nonFinalMember;
+		private final static Object finalStatic = new Object();
+		private static Object nonFinalStatic = new Object();
+		private final Object finalMember;
+		private Object nonFinalMember;
 
-    private Leaker() {
-      leaker = this;              // Leak the this pointer before member is initialized so that other threads have the opportunity to see member == null.
-      Verify.incrementCounter(2);
-      
-      finalMember = new Object();
-      nonFinalMember = new Object();
-    }
-  }
+		private Leaker() {
+			leaker = this; // Leak the this pointer before member is initialized
+							// so that other threads have the opportunity to see
+							// member == null.
+			Verify.incrementCounter(2);
 
-  private static void run() {
+			finalMember = new Object();
+			nonFinalMember = new Object();
+		}
+	}
 
-    Verify.resetCounter(1);  // Constructed = 0
-    Verify.resetCounter(2);  // will increment when leaker is set
+	private static void run() {
 
-    Thread thread = new Thread(new Runnable() {
-      public void run() {
-        new Leaker();
-        Verify.incrementCounter(1); // Finished = 1
-      }
-    });
-    thread.start();
+		Verify.resetCounter(1); // Constructed = 0
+		Verify.resetCounter(2); // will increment when leaker is set
 
-    Verify.ignoreIf(Verify.getCounter(2) == 0);   // This ensures that the other thread has at least finished assigning leaker a value.  This means that any POR breaks between assigning leaker and this point will be made inert.
-    Verify.ignoreIf(Verify.getCounter(1) != 0);   // This ensures that the other thread hasn't quit yet.  Thus, ensuring that POR breaks can happen.
-  }
+		Thread thread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				new Leaker();
+				Verify.incrementCounter(1); // Finished = 1
+			}
+		});
+		thread.start();
 
-  private static void test_SkipFinals() {
-    Object test;
+		Verify.ignoreIf(Verify.getCounter(2) == 0); // This ensures that the
+													// other thread has at least
+													// finished assigning leaker
+													// a value. This means that
+													// any POR breaks between
+													// assigning leaker and this
+													// point will be made inert.
+		Verify.ignoreIf(Verify.getCounter(1) != 0); // This ensures that the
+													// other thread hasn't quit
+													// yet. Thus, ensuring that
+													// POR breaks can happen.
+	}
 
-    run();
+	private static void test_SkipFinals() {
+		Object test;
 
-    assert leaker.finalMember != null;     // This ensures that there are no POR breaks due to accessing a        final field.  Yet, the field can never be seen as null.
-    test = leaker.nonFinalMember;          // This ensures that there *are*  POR breaks due to accessing a              field.
-    test = Leaker.finalStatic;             // This ensures that there are no POR breaks due to accessing a static final field.
-    assert Leaker.nonFinalStatic != null;  // This ensures that there *are*  POR breaks due to accessing a static       field.  Yet, the field can never be seen as null.
+		run();
 
-    Verify.incrementCounter(0);            // Counts the number of states which can execute this line.  Each POR break multiplies the counter by 2 because there are 2 threads.
-    assert Verify.getCounter(0) == 4;
-  }
+		assert leaker.finalMember != null; // This ensures that there are no POR
+											// breaks due to accessing a final
+											// field. Yet, the field can never
+											// be seen as null.
+		test = leaker.nonFinalMember; // This ensures that there *are* POR
+										// breaks due to accessing a field.
+		test = Leaker.finalStatic; // This ensures that there are no POR breaks
+									// due to accessing a static final field.
+		assert Leaker.nonFinalStatic != null; // This ensures that there *are*
+												// POR breaks due to accessing a
+												// static field. Yet, the field
+												// can never be seen as null.
 
-  @Test
-  public void test_SkipFinals_SkipStaticFinals_SkipConstructedFinals() {
-    if (verifyNoPropertyViolation()){
-      Verify.resetCounter(0);
+		Verify.incrementCounter(0); // Counts the number of states which can
+									// execute this line. Each POR break
+									// multiplies the counter by 2 because there
+									// are 2 threads.
+		assert Verify.getCounter(0) == 4;
+	}
 
-      Verify.setProperties("vm.por.skip_finals=true");
-      Verify.setProperties("vm.por.skip_static_finals=true");
-      Verify.setProperties("vm.por.skip_constructed_finals=true");
+	@Test
+	public void test_SkipFinals_SkipStaticFinals_SkipConstructedFinals() {
+		if (verifyNoPropertyViolation()) {
+			Verify.resetCounter(0);
 
-      test_SkipFinals();
-    }
-  }
+			Verify.setProperties("vm.por.skip_finals=true");
+			Verify.setProperties("vm.por.skip_static_finals=true");
+			Verify.setProperties("vm.por.skip_constructed_finals=true");
 
-  @Test
-  public void test_SkipFinals_SkipStaticFinals_NoSkipConstructedFinals() {
-    if (verifyNoPropertyViolation()){
-      Verify.resetCounter(0);
-      
-      Verify.setProperties("vm.por.skip_finals=true");
-      Verify.setProperties("vm.por.skip_static_finals=true");
-      Verify.setProperties("vm.por.skip_constructed_finals=false");
+			test_SkipFinals();
+		}
+	}
 
-      test_SkipFinals();
-    }
-  }
+	@Test
+	public void test_SkipFinals_SkipStaticFinals_NoSkipConstructedFinals() {
+		if (verifyNoPropertyViolation()) {
+			Verify.resetCounter(0);
 
-  @Test
-  public void test_SkipFinals_NoSkipStaticFinals_SkipConstructedFinals() {
-    if (verifyNoPropertyViolation()){
-      Verify.resetCounter(0);
+			Verify.setProperties("vm.por.skip_finals=true");
+			Verify.setProperties("vm.por.skip_static_finals=true");
+			Verify.setProperties("vm.por.skip_constructed_finals=false");
 
-      Verify.setProperties("vm.por.skip_finals=true");
-      Verify.setProperties("vm.por.skip_static_finals=false");
-      Verify.setProperties("vm.por.skip_constructed_finals=true");
+			test_SkipFinals();
+		}
+	}
 
-      test_SkipFinals();
-    }
-  }
+	@Test
+	public void test_SkipFinals_NoSkipStaticFinals_SkipConstructedFinals() {
+		if (verifyNoPropertyViolation()) {
+			Verify.resetCounter(0);
 
-  @Test
-  public void test_SkipFinals_NoSkipStaticFinals_NoSkipConstructedFinals() {
-    if (verifyNoPropertyViolation()){
-      Verify.resetCounter(0);
+			Verify.setProperties("vm.por.skip_finals=true");
+			Verify.setProperties("vm.por.skip_static_finals=false");
+			Verify.setProperties("vm.por.skip_constructed_finals=true");
 
-      Verify.setProperties("vm.por.skip_finals=true");
-      Verify.setProperties("vm.por.skip_static_finals=false");
-      Verify.setProperties("vm.por.skip_constructed_finals=false");
+			test_SkipFinals();
+		}
+	}
 
-      test_SkipFinals();
-    }
-  }
+	@Test
+	public void test_SkipFinals_NoSkipStaticFinals_NoSkipConstructedFinals() {
+		if (verifyNoPropertyViolation()) {
+			Verify.resetCounter(0);
 
-  private static void test_NoSkipFinals() {
-    Object test;
+			Verify.setProperties("vm.por.skip_finals=true");
+			Verify.setProperties("vm.por.skip_static_finals=false");
+			Verify.setProperties("vm.por.skip_constructed_finals=false");
 
-    run();
+			test_SkipFinals();
+		}
+	}
 
-    Verify.ignoreIf(leaker.finalMember != null);
+	private static void test_NoSkipFinals() {
+		Object test;
 
-    test = leaker.finalMember;        // If there is a POR break from accessing a        final field, then the counter will be multiplied by 2.
-    test = leaker.nonFinalMember;     // If there is a POR break from accessing a              field, then the counter will be multiplied by 2.
-    test = Leaker.finalStatic;        // If there is a POR break from accessing a static final field, then the counter will be multiplied by 2.
-    test = Leaker.nonFinalStatic;     // If there is a POR break from accessing a static       field, then the counter will be multiplied by 2.
-    Verify.incrementCounter(0);
-  }
+		run();
 
-  @Test
-  public void test_NoSkipFinals_SkipStaticFinals_SkipConstructedFinals() {
-    if (verifyNoPropertyViolation()){
-      Verify.resetCounter(0);
+		Verify.ignoreIf(leaker.finalMember != null);
 
-      Verify.setProperties("vm.por.skip_finals=false");
-      Verify.setProperties("vm.por.skip_static_finals=true");
-      Verify.setProperties("vm.por.skip_constructed_finals=true");
+		test = leaker.finalMember; // If there is a POR break from accessing a
+									// final field, then the counter will be
+									// multiplied by 2.
+		test = leaker.nonFinalMember; // If there is a POR break from accessing
+										// a field, then the counter will be
+										// multiplied by 2.
+		test = Leaker.finalStatic; // If there is a POR break from accessing a
+									// static final field, then the counter will
+									// be multiplied by 2.
+		test = Leaker.nonFinalStatic; // If there is a POR break from accessing
+										// a static field, then the counter will
+										// be multiplied by 2.
+		Verify.incrementCounter(0);
+	}
 
-      test_NoSkipFinals();
+	@Test
+	public void test_NoSkipFinals_SkipStaticFinals_SkipConstructedFinals() {
+		if (verifyNoPropertyViolation()) {
+			Verify.resetCounter(0);
 
-      assert Verify.getCounter(0) == 4;
-    }
-  }
+			Verify.setProperties("vm.por.skip_finals=false");
+			Verify.setProperties("vm.por.skip_static_finals=true");
+			Verify.setProperties("vm.por.skip_constructed_finals=true");
 
-  @Test
-  public void test_NoSkipFinals_SkipStaticFinals_NoSkipConstructedFinals() {
-    if (verifyNoPropertyViolation()){
-      Verify.resetCounter(0);
+			test_NoSkipFinals();
 
-      Verify.setProperties("vm.por.skip_finals=false");
-      Verify.setProperties("vm.por.skip_static_finals=true");
-      Verify.setProperties("vm.por.skip_constructed_finals=false");
+			assert Verify.getCounter(0) == 4;
+		}
+	}
 
-      test_NoSkipFinals();
+	@Test
+	public void test_NoSkipFinals_SkipStaticFinals_NoSkipConstructedFinals() {
+		if (verifyNoPropertyViolation()) {
+			Verify.resetCounter(0);
 
-      assert Verify.getCounter(0) == 8;
-    }
-  }
+			Verify.setProperties("vm.por.skip_finals=false");
+			Verify.setProperties("vm.por.skip_static_finals=true");
+			Verify.setProperties("vm.por.skip_constructed_finals=false");
 
-  @Test
-  public void test_NoSkipFinals_NoSkipStaticFinals_SkipConstructedFinals() {
-    if (verifyNoPropertyViolation()){
-      Verify.resetCounter(0);
+			test_NoSkipFinals();
 
-      Verify.setProperties("vm.por.skip_finals=false");
-      Verify.setProperties("vm.por.skip_static_finals=false");
-      Verify.setProperties("vm.por.skip_constructed_finals=true");
+			assert Verify.getCounter(0) == 8;
+		}
+	}
 
-      test_NoSkipFinals();
+	@Test
+	public void test_NoSkipFinals_NoSkipStaticFinals_SkipConstructedFinals() {
+		if (verifyNoPropertyViolation()) {
+			Verify.resetCounter(0);
 
-      assert Verify.getCounter(0) == 8;
-    }
-  }
+			Verify.setProperties("vm.por.skip_finals=false");
+			Verify.setProperties("vm.por.skip_static_finals=false");
+			Verify.setProperties("vm.por.skip_constructed_finals=true");
 
-  @Test
-  public void test_NoSkipFinals_NoSkipStaticFinals_NoSkipConstructedFinals() {
-    if (verifyNoPropertyViolation()){
-      Verify.resetCounter(0);
+			test_NoSkipFinals();
 
-      Verify.setProperties("vm.por.skip_finals=false");
-      Verify.setProperties("vm.por.skip_static_finals=false");
-      Verify.setProperties("vm.por.skip_constructed_finals=false");
+			assert Verify.getCounter(0) == 8;
+		}
+	}
 
-      test_NoSkipFinals();
+	@Test
+	public void test_NoSkipFinals_NoSkipStaticFinals_NoSkipConstructedFinals() {
+		if (verifyNoPropertyViolation()) {
+			Verify.resetCounter(0);
 
-      assert Verify.getCounter(0) == 16;
-    }
-  }
+			Verify.setProperties("vm.por.skip_finals=false");
+			Verify.setProperties("vm.por.skip_static_finals=false");
+			Verify.setProperties("vm.por.skip_constructed_finals=false");
+
+			test_NoSkipFinals();
+
+			assert Verify.getCounter(0) == 16;
+		}
+	}
 }

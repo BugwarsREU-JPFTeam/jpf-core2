@@ -23,28 +23,29 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Convert int to long
- * ..., value => ..., result
+ * Convert int to long ..., value => ..., result
  */
 public class I2L extends JVMInstruction {
 
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    int v = frame.pop();
-    
-    frame.pushLong((long)v);
+		int v = frame.pop();
 
-    return getNext(ti);
-  }
+		frame.pushLong(v);
 
-  public int getByteCode () {
-    return 0x85;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		return getNext(ti);
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0x85;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

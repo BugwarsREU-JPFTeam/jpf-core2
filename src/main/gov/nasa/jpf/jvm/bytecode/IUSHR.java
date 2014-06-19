@@ -23,29 +23,30 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Logical shift right int
- * ..., value1, value2 => ..., result
+ * Logical shift right int ..., value1, value2 => ..., result
  */
 public class IUSHR extends JVMInstruction {
 
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    int v1 = frame.pop();
-    int v2 = frame.pop();
+		int v1 = frame.pop();
+		int v2 = frame.pop();
 
-    frame.push(v2 >>> v1);
+		frame.push(v2 >>> v1);
 
-    return getNext(ti);
-  }
+		return getNext(ti);
+	}
 
-  public int getByteCode () {
-    return 0x7C;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public int getByteCode() {
+		return 0x7C;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

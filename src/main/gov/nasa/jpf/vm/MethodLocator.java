@@ -23,5 +23,5 @@ package gov.nasa.jpf.vm;
  * an interface to lookup methods
  */
 public interface MethodLocator {
-  boolean match (MethodInfo mi);
+	boolean match(MethodInfo mi);
 }

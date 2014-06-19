@@ -23,53 +23,50 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Push long constant
- * ... => ..., <l>
+ * Push long constant ... => ..., <l>
  */
 public class LCONST extends JVMInstruction {
-  protected long value;
+	protected long value;
 
+	public LCONST(long value) {
+		this.value = value;
+	}
 
-  public LCONST(long value){
-    this.value = value;
-  }
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-  @Override
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
-    
-    frame.pushLong(value);
-    
-    return getNext(ti);
-  }
+		frame.pushLong(value);
 
-  @Override
-  public int getByteCode () {
-    if (value == 0) {
-      return 0x09;
-    } else {
-      return 0x0a;
-    }
-  }
-  
-  @Override
-  public String getMnemonic () {
-    if (value == 0) {
-      return "lconst_0";
-    } else {
-      return "lconst_1";
-    }    
-  }
-  
-  @Override
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		return getNext(ti);
+	}
 
-  public long getValue() {
-	  return value;
-  }
-  
+	@Override
+	public int getByteCode() {
+		if (value == 0) {
+			return 0x09;
+		} else {
+			return 0x0a;
+		}
+	}
+
+	@Override
+	public String getMnemonic() {
+		if (value == 0) {
+			return "lconst_0";
+		} else {
+			return "lconst_1";
+		}
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
+
+	public long getValue() {
+		return value;
+	}
+
 }

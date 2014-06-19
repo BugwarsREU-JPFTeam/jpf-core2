@@ -18,42 +18,46 @@
 //
 package gov.nasa.jpf.vm;
 
+public abstract class AbstractRestorer<Saved> implements StateRestorer<Saved>,
+		KernelState.ChangeListener {
 
-public abstract class AbstractRestorer<Saved> implements StateRestorer<Saved>, KernelState.ChangeListener {
+	protected Saved cached = null;
 
-  protected Saved cached = null;
+	VM vm;
+	protected KernelState ks = null;
 
-  VM vm;
-  protected KernelState ks = null;
+	@Override
+	public void attach(VM vm) {
+		this.vm = vm;
+		this.ks = vm.getKernelState();
+	}
 
-  
-  public void attach(VM vm) {
-    this.vm = vm;
-    this.ks = vm.getKernelState();
-  }
-  
-  public Saved getRestorableData() {
-    if (cached == null) {
-      cached = computeRestorableData();
-      ks.pushChangeListener(this);
-    }
-    return cached;
-  }
-  
-  public void restore (Saved data) {
-    doRestore(data);
-    if (cached == null) {
-      ks.pushChangeListener(this);
-    } else {
-      // invariant says we're already waiting for changes
-    }
-    cached = data;
-  }
+	@Override
+	public Saved getRestorableData() {
+		if (cached == null) {
+			cached = computeRestorableData();
+			ks.pushChangeListener(this);
+		}
+		return cached;
+	}
 
-  public void kernelStateChanged (KernelState same) {
-    cached = null;
-  }
-  
-  protected abstract Saved computeRestorableData();
-  protected abstract void doRestore(Saved data);
+	@Override
+	public void restore(Saved data) {
+		doRestore(data);
+		if (cached == null) {
+			ks.pushChangeListener(this);
+		} else {
+			// invariant says we're already waiting for changes
+		}
+		cached = data;
+	}
+
+	@Override
+	public void kernelStateChanged(KernelState same) {
+		cached = null;
+	}
+
+	protected abstract Saved computeRestorableData();
+
+	protected abstract void doRestore(Saved data);
 }

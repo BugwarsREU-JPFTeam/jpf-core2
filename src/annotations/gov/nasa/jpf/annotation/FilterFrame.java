@@ -18,37 +18,36 @@
 //
 package gov.nasa.jpf.annotation;
 
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * USE CAREFULLY - Indicates that the stack frame of a method should not,
- * in specified ways, be considered during state matching.
- *
+ * USE CAREFULLY - Indicates that the stack frame of a method should not, in
+ * specified ways, be considered during state matching.
+ * 
  * This can easily cause the search to be cut off even though the VM has made
  * progress, so USE WISELY!
- *
+ * 
  * @author peterd
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD})
+@Target({ ElementType.METHOD })
 public @interface FilterFrame {
-  /**
-   * True means locals (incl. parameters) and operand stack will be filtered.
-   */
-  boolean filterData() default true;
+	/**
+	 * True means locals (incl. parameters) and operand stack will be filtered.
+	 */
+	boolean filterData() default true;
 
-  /**
-   * True means the location of the next instruction will be filtered.
-   */
-  boolean filterPC() default true;
+	/**
+	 * True means the location of the next instruction will be filtered.
+	 */
+	boolean filterPC() default true;
 
-  /**
-   * True means frames below this one will not appear at all in the abstracted
-   * state.
-   */
-  boolean filterSubframes() default true;
+	/**
+	 * True means frames below this one will not appear at all in the abstracted
+	 * state.
+	 */
+	boolean filterSubframes() default true;
 }

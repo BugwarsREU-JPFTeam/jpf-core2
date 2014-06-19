@@ -27,75 +27,83 @@ import java.io.PrintWriter;
 
 /**
  * a pseudo CG that is used to break transitions. It can be used to break and
- * just reschedule the current thread, or to indicate an end state
- * (e.g. for System.exit())
+ * just reschedule the current thread, or to indicate an end state (e.g. for
+ * System.exit())
  */
-public class BreakGenerator extends ChoiceGeneratorBase<ThreadInfo> implements ThreadChoiceGenerator {
+public class BreakGenerator extends ChoiceGeneratorBase<ThreadInfo> implements
+		ThreadChoiceGenerator {
 
-  protected ThreadInfo ti;
-  protected int state = -1;
-  protected boolean isTerminator;
+	protected ThreadInfo ti;
+	protected int state = -1;
+	protected boolean isTerminator;
 
-  public BreakGenerator (String id, ThreadInfo ti, boolean isTerminator) {
-    super(id);
-    
-    this.ti = ti;
-    this.isTerminator = isTerminator;
-  }
-  
-  public ThreadInfo getNextChoice () {
-    assert !isTerminator : "illegal operation on terminal BreakGenerator";
-    return (state == 0) ? ti : null;
-  }
+	public BreakGenerator(String id, ThreadInfo ti, boolean isTerminator) {
+		super(id);
 
-  public void printOn (PrintWriter pw) {
-    pw.println("BreakGenerator {" + ti.getName() + "}");
-  }
+		this.ti = ti;
+		this.isTerminator = isTerminator;
+	}
 
-  public void advance () {
-    assert !isTerminator : "illegal operation on terminal BreakGenerator";
-    state++;
-  }
+	@Override
+	public ThreadInfo getNextChoice() {
+		assert !isTerminator : "illegal operation on terminal BreakGenerator";
+		return (state == 0) ? ti : null;
+	}
 
-  public int getProcessedNumberOfChoices () {
-    return (state >= 0) ? 1 : 0;
-  }
+	@Override
+	public void printOn(PrintWriter pw) {
+		pw.println("BreakGenerator {" + ti.getName() + "}");
+	}
 
-  public int getTotalNumberOfChoices () {
-    return 1;
-  }
+	@Override
+	public void advance() {
+		assert !isTerminator : "illegal operation on terminal BreakGenerator";
+		state++;
+	}
 
-  public boolean hasMoreChoices () {
-    if (isTerminator){
-      return false;
-    }
-    
-    return (state < 0);
-  }
+	@Override
+	public int getProcessedNumberOfChoices() {
+		return (state >= 0) ? 1 : 0;
+	}
 
-  public void reset () {
-    state = -1;
-    isDone = false;
-  }
+	@Override
+	public int getTotalNumberOfChoices() {
+		return 1;
+	}
 
-  @Override
-  public boolean contains (ThreadInfo ti){
-    return this.ti == ti;
-  }
+	@Override
+	public boolean hasMoreChoices() {
+		if (isTerminator) {
+			return false;
+		}
 
-  @Override
-  public Class<ThreadInfo> getChoiceType() {
-    return ThreadInfo.class;
-  }
+		return (state < 0);
+	}
 
-  @Override
-  public ChoiceGenerator<ThreadInfo> randomize() {
-    return this;
-  }
-  
-  @Override
-  public boolean isSchedulingPoint(){
-    return true; // that's the whole point of having a BreakGenerator
-  }
+	@Override
+	public void reset() {
+		state = -1;
+		isDone = false;
+	}
+
+	@Override
+	public boolean contains(ThreadInfo ti) {
+		return this.ti == ti;
+	}
+
+	@Override
+	public Class<ThreadInfo> getChoiceType() {
+		return ThreadInfo.class;
+	}
+
+	@Override
+	public ChoiceGenerator<ThreadInfo> randomize() {
+		return this;
+	}
+
+	@Override
+	public boolean isSchedulingPoint() {
+		return true; // that's the whole point of having a BreakGenerator
+	}
 
 }

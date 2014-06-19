@@ -20,9 +20,10 @@
 package gov.nasa.jpf.vm;
 
 /**
- * generic interface of objects that can provide state storage/restore capabilities
+ * generic interface of objects that can provide state storage/restore
+ * capabilities
  */
 public interface Restorable<T> {
 
-  Memento<T> getMemento(MementoFactory factory);
+	Memento<T> getMemento(MementoFactory factory);
 }

@@ -32,24 +32,25 @@ import java.util.List;
  * @author Nastaran Shafiei <nastaran.shafiei@gmail.com>
  */
 public class JPF_gov_nasa_jpf_vm_multiProcess_MethodTest extends NativePeer {
-  private static List<Integer> prcIds = new ArrayList<Integer>();
+	private static List<Integer> prcIds = new ArrayList<Integer>();
 
-  protected static void resetPrcIds() {
-    prcIds.clear();
-  }
+	protected static void resetPrcIds() {
+		prcIds.clear();
+	}
 
-  private static List<MethodInfo> methods =  new ArrayList<MethodInfo>();
+	private static List<MethodInfo> methods = new ArrayList<MethodInfo>();
 
-  @MJI
-  public void keepMethod__Ljava_lang_reflect_Method_2I__V(MJIEnv env, int objRef, int mthRef, int prcId) {
-    MethodInfo mi = JPF_java_lang_reflect_Method.getMethodInfo(env, mthRef);
-    if(!prcIds.contains(prcId)) {
-      prcIds.add(prcId);
-      methods.add(mi);
-    }
-  }
+	@MJI
+	public void keepMethod__Ljava_lang_reflect_Method_2I__V(MJIEnv env,
+			int objRef, int mthRef, int prcId) {
+		MethodInfo mi = JPF_java_lang_reflect_Method.getMethodInfo(env, mthRef);
+		if (!prcIds.contains(prcId)) {
+			prcIds.add(prcId);
+			methods.add(mi);
+		}
+	}
 
-  protected static List<MethodInfo> getMethods() {
-    return methods;
-  }
+	protected static List<MethodInfo> getMethods() {
+		return methods;
+	}
 }

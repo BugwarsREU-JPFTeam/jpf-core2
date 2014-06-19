@@ -19,7 +19,7 @@
 package gov.nasa.jpf.util;
 
 public interface Growth {
-  int grow(int oldSize, int minNewSize);
-  
-  public static final Growth defaultGrowth = new ExpGrowth(1.7f);
+	int grow(int oldSize, int minNewSize);
+
+	public static final Growth defaultGrowth = new ExpGrowth(1.7f);
 }

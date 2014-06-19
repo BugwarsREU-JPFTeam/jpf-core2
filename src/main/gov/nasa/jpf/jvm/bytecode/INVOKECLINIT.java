@@ -27,67 +27,76 @@ import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
 
 /**
- * this is an artificial bytecode that we use to deal with the particularities of 
- * <clinit> calls, which are never in the loaded bytecode but always directly called by
- * the VM. The most obvious difference is that <clinit> execution does not trigger
- * class initialization.
- * A more subtle difference is that we save a wait() - if a class
- * is concurrently initialized, both enter INVOKECLINIT (i.e. compete and sync for/on
- * the class object lock), but once the second thread gets resumed and detects that the
- * class is now initialized (by the first thread), it skips the method execution and
- * returns right away (after deregistering as a lock contender). That's kind of hackish,
- * but we have no method to do the wait in, unless we significantly complicate the
- * direct call stubs, which would obfuscate observability (debugging dynamically
- * generated code isn't very appealing). 
+ * this is an artificial bytecode that we use to deal with the particularities
+ * of <clinit> calls, which are never in the loaded bytecode but always directly
+ * called by the VM. The most obvious difference is that <clinit> execution does
+ * not trigger class initialization. A more subtle difference is that we save a
+ * wait() - if a class is concurrently initialized, both enter INVOKECLINIT
+ * (i.e. compete and sync for/on the class object lock), but once the second
+ * thread gets resumed and detects that the class is now initialized (by the
+ * first thread), it skips the method execution and returns right away (after
+ * deregistering as a lock contender). That's kind of hackish, but we have no
+ * method to do the wait in, unless we significantly complicate the direct call
+ * stubs, which would obfuscate observability (debugging dynamically generated
+ * code isn't very appealing).
  */
 public class INVOKECLINIT extends INVOKESTATIC {
 
-  public INVOKECLINIT (ClassInfo ci){
-    super(ci.getSignature(), "<clinit>", "()V");
-  }
+	public INVOKECLINIT(ClassInfo ci) {
+		super(ci.getSignature(), "<clinit>", "()V");
+	}
 
-  public Instruction execute (ThreadInfo ti) {    
-    MethodInfo callee = getInvokedMethod(ti);
-    ClassInfo ci = callee.getClassInfo();
-    ElementInfo ei = ci.getModifiableClassObject();
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		MethodInfo callee = getInvokedMethod(ti);
+		ClassInfo ci = callee.getClassInfo();
+		ElementInfo ei = ci.getModifiableClassObject();
 
-    if (!ti.isFirstStepInsn()) {
-      // if we can't acquire the lock, it means somebody else is initializing concurrently
-      if (!ei.canLock(ti)) {
-        //ei = ei.getInstanceWithUpdatedSharedness(ti);
-        ei.block(ti);
-        
-        VM vm = ti.getVM();
-        ChoiceGenerator<?> cg = vm.getSchedulerFactory().createSyncMethodEnterCG(ei, ti);
-        if (vm.setNextChoiceGenerator(cg)){ 
-          return this;   // repeat exec, keep insn on stack
-        }        
-      }
-      
-    } else { // re-execution after being blocked
-      // if we got here, we can enter, and have the lock but there still might have been
-      // another thread that passed us with the clinit
-      if (!ci.needsInitialization()) {
-        return getNext();
-      }
-    }
-    
-    setupCallee( ti, callee); // this creates, initializes and pushes the callee StackFrame
+		if (!ti.isFirstStepInsn()) {
+			// if we can't acquire the lock, it means somebody else is
+			// initializing concurrently
+			if (!ei.canLock(ti)) {
+				// ei = ei.getInstanceWithUpdatedSharedness(ti);
+				ei.block(ti);
 
-    return ti.getPC(); // we can't just return the first callee insn if a listener throws an exception
-  }
+				VM vm = ti.getVM();
+				ChoiceGenerator<?> cg = vm.getSchedulerFactory()
+						.createSyncMethodEnterCG(ei, ti);
+				if (vm.setNextChoiceGenerator(cg)) {
+					return this; // repeat exec, keep insn on stack
+				}
+			}
 
-  public boolean isExtendedInstruction() {
-    return true;
-  }
+		} else { // re-execution after being blocked
+			// if we got here, we can enter, and have the lock but there still
+			// might have been
+			// another thread that passed us with the clinit
+			if (!ci.needsInitialization()) {
+				return getNext();
+			}
+		}
 
-  public static final int OPCODE = 256;
+		setupCallee(ti, callee); // this creates, initializes and pushes the
+									// callee StackFrame
 
-  public int getByteCode () {
-    return OPCODE;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		return ti.getPC(); // we can't just return the first callee insn if a
+							// listener throws an exception
+	}
+
+	@Override
+	public boolean isExtendedInstruction() {
+		return true;
+	}
+
+	public static final int OPCODE = 256;
+
+	@Override
+	public int getByteCode() {
+		return OPCODE;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

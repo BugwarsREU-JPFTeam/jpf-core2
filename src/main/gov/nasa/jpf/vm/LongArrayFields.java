@@ -22,87 +22,95 @@ import gov.nasa.jpf.util.HashData;
 import gov.nasa.jpf.util.IntVector;
 
 import java.io.PrintStream;
-import java.io.PrintWriter;
 
 /**
  * element values for long[] objects
  */
 public class LongArrayFields extends ArrayFields {
 
-  long[] values;
+	long[] values;
 
-  public LongArrayFields (int length) {
-    values = new long[length];
-  }
+	public LongArrayFields(int length) {
+		values = new long[length];
+	}
 
-  public long[] asLongArray() {
-    return values;
-  }
+	@Override
+	public long[] asLongArray() {
+		return values;
+	}
 
-  protected void printValue(PrintStream ps, int idx){
-    ps.print(values[idx]);
-  }
-  
-  public Object getValues(){
-    return values;
-  }
+	@Override
+	protected void printValue(PrintStream ps, int idx) {
+		ps.print(values[idx]);
+	}
 
-  public int arrayLength() {
-    return values.length;
-  }
+	@Override
+	public Object getValues() {
+		return values;
+	}
 
-  public int getHeapSize() {  // in bytes
-    return values.length * 8;
-  }
+	@Override
+	public int arrayLength() {
+		return values.length;
+	}
 
-  public void appendTo (IntVector v) {
-    v.appendBits(values);
-  }
+	@Override
+	public int getHeapSize() { // in bytes
+		return values.length * 8;
+	}
 
-  public LongArrayFields clone(){
-    LongArrayFields f = (LongArrayFields)cloneFields();
-    f.values = values.clone();
-    return f;
-  }
+	@Override
+	public void appendTo(IntVector v) {
+		v.appendBits(values);
+	}
 
+	@Override
+	public LongArrayFields clone() {
+		LongArrayFields f = (LongArrayFields) cloneFields();
+		f.values = values.clone();
+		return f;
+	}
 
-  public boolean equals (Object o) {
-    if (o instanceof LongArrayFields) {
-      LongArrayFields other = (LongArrayFields)o;
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof LongArrayFields) {
+			LongArrayFields other = (LongArrayFields) o;
 
-      long[] v = values;
-      long[] vOther = other.values;
-      if (v.length != vOther.length) {
-        return false;
-      }
+			long[] v = values;
+			long[] vOther = other.values;
+			if (v.length != vOther.length) {
+				return false;
+			}
 
-      for (int i=0; i<v.length; i++) {
-        if (v[i] != vOther[i]) {
-          return false;
-        }
-      }
+			for (int i = 0; i < v.length; i++) {
+				if (v[i] != vOther[i]) {
+					return false;
+				}
+			}
 
-      return compareAttrs(other);
+			return compareAttrs(other);
 
-    } else {
-      return false;
-    }
-  }
+		} else {
+			return false;
+		}
+	}
 
-  public void setLongValue (int pos, long newValue) {
-    values[pos] = newValue;
-  }
+	@Override
+	public void setLongValue(int pos, long newValue) {
+		values[pos] = newValue;
+	}
 
-  public long getLongValue (int pos) {
-    return values[pos];
-  }
+	@Override
+	public long getLongValue(int pos) {
+		return values[pos];
+	}
 
-
-  public void hash(HashData hd) {
-    long[] v = values;
-    for (int i=0; i < v.length; i++) {
-      hd.add(v[i]);
-    }
-  }
+	@Override
+	public void hash(HashData hd) {
+		long[] v = values;
+		for (int i = 0; i < v.length; i++) {
+			hd.add(v[i]);
+		}
+	}
 
 }

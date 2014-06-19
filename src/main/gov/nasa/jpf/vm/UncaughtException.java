@@ -22,60 +22,61 @@ import gov.nasa.jpf.util.Printable;
 
 import java.io.PrintWriter;
 
-
 /**
  * represents the case of an unhandled exception detected by JPF
- *
+ * 
  * This is a "controlflow exception", but I finally made my peace with it since
- * UncaughtExceptions can be thrown from various places, including the VM (<clinit>, finalizer)
- * and we can't rely on that all these locations can check for pc == null. Even if they would,
- * at this point there is nothing to do anymore, get to the NoUncaughtProperty reporting
- * as quickly as possible, since chances are we would be even obfuscating the problem
+ * UncaughtExceptions can be thrown from various places, including the VM
+ * (<clinit>, finalizer) and we can't rely on that all these locations can check
+ * for pc == null. Even if they would, at this point there is nothing to do
+ * anymore, get to the NoUncaughtProperty reporting as quickly as possible,
+ * since chances are we would be even obfuscating the problem
  */
 @SuppressWarnings("serial")
 public class UncaughtException extends RuntimeException implements Printable {
 
-  ThreadInfo thread;
-  int xObjRef;          // the exception object reference (that went uncaught)
+	ThreadInfo thread;
+	int xObjRef; // the exception object reference (that went uncaught)
 
-  String     xClsName;
-  String     details;
+	String xClsName;
+	String details;
 
-  //ArrayList  stackTrace; // unused -pcd
+	// ArrayList stackTrace; // unused -pcd
 
-  public UncaughtException (ThreadInfo ti, int objRef) {
-    thread = ti;
-    xObjRef = objRef;
-    
-    ElementInfo ei = ti.getElementInfo(xObjRef);
-    xClsName = ei.getClassInfo().getName();
-    details = ei.getStringField("detailMessage");
-  }
-  
-  public String getRawMessage () {
-    return xClsName;
-  }
-  
-  public String getMessage () {
-    String s = "uncaught exception in thread " + thread.getName() +
-              " #" + thread.getId() + " : "
-              + xClsName;
-    
-    if (details != null) {
-      s += " : \"" + details + "\"";
-    }
-    
-    return s;
-  }
+	public UncaughtException(ThreadInfo ti, int objRef) {
+		thread = ti;
+		xObjRef = objRef;
 
-  public void printOn (PrintWriter pw) {
-    pw.print("uncaught exception in thread ");
-    pw.print( thread.getName());
-    pw.print(" #");
-    pw.print(thread.getId());
-    pw.print(" : ");
+		ElementInfo ei = ti.getElementInfo(xObjRef);
+		xClsName = ei.getClassInfo().getName();
+		details = ei.getStringField("detailMessage");
+	}
 
-    thread.printStackTrace(pw, xObjRef);
-    pw.flush();
-  }
+	public String getRawMessage() {
+		return xClsName;
+	}
+
+	@Override
+	public String getMessage() {
+		String s = "uncaught exception in thread " + thread.getName() + " #"
+				+ thread.getId() + " : " + xClsName;
+
+		if (details != null) {
+			s += " : \"" + details + "\"";
+		}
+
+		return s;
+	}
+
+	@Override
+	public void printOn(PrintWriter pw) {
+		pw.print("uncaught exception in thread ");
+		pw.print(thread.getName());
+		pw.print(" #");
+		pw.print(thread.getId());
+		pw.print(" : ");
+
+		thread.printStackTrace(pw, xObjRef);
+		pw.flush();
+	}
 }

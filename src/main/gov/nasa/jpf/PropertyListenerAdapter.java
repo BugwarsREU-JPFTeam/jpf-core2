@@ -33,137 +33,247 @@ import gov.nasa.jpf.vm.VM;
 import gov.nasa.jpf.vm.VMListener;
 
 /**
- * abstract base class that dummy implements Property, Search- and VMListener methods
- * convenient for creating listeners that act as properties, just having to override
- * the methods they need
- *
- * the only local functionality is that instances register themselves automatically
- * as property when the search is started
- *
+ * abstract base class that dummy implements Property, Search- and VMListener
+ * methods convenient for creating listeners that act as properties, just having
+ * to override the methods they need
+ * 
+ * the only local functionality is that instances register themselves
+ * automatically as property when the search is started
+ * 
  * <2do> rewrite once GenericProperty is an interface
  */
 public abstract class PropertyListenerAdapter extends GenericProperty implements
-    SearchListener, VMListener, PublisherExtension {
+		SearchListener, VMListener, PublisherExtension {
 
-  //--- Property interface
-  public boolean check(Search search, VM vm) {
-    // return false if property is violated
-    return true;
-  }
+	// --- Property interface
+	@Override
+	public boolean check(Search search, VM vm) {
+		// return false if property is violated
+		return true;
+	}
 
-  public void reset () {
-    // override if the property has any local state
-  }
+	@Override
+	public void reset() {
+		// override if the property has any local state
+	}
 
-  public Property clone() throws CloneNotSupportedException {
-    return (Property) super.clone();
-  }
-  
-//--- the VMListener interface
-  @Override
-  public void vmInitialized(VM vm) {}
-  @Override
-  public void instructionExecuted(VM vm, ThreadInfo currentThread, Instruction nextInstruction, Instruction executedInstruction) {}
-  @Override
-  public void executeInstruction(VM vm, ThreadInfo currentThread, Instruction instructionToExecute) {}
-  @Override
-  public void threadStarted(VM vm, ThreadInfo startedThread) {}
-  @Override
-  public void threadWaiting (VM vm, ThreadInfo waitingThread) {}
-  @Override
-  public void threadNotified (VM vm, ThreadInfo notifiedThread) {}
-  @Override
-  public void threadInterrupted (VM vm, ThreadInfo interruptedThread) {}
-  @Override
-  public void threadScheduled (VM vm, ThreadInfo scheduledThread) {}
-  @Override
-  public void threadBlocked (VM vm, ThreadInfo blockedThread, ElementInfo lock) {}
-  @Override
-  public void threadTerminated(VM vm, ThreadInfo terminatedThread) {}
-  @Override
-  public void loadClass (VM vm, ClassFile cf) {}
-  @Override
-  public void classLoaded(VM vm, ClassInfo loadedClass) {}
-  @Override
-  public void objectCreated(VM vm, ThreadInfo currentThread, ElementInfo newObject) {}
-  @Override
-  public void objectReleased(VM vm, ThreadInfo currentThread, ElementInfo releasedObject) {}
-  @Override
-  public void objectLocked (VM vm, ThreadInfo currentThread, ElementInfo lockedObject) {}
-  @Override
-  public void objectUnlocked (VM vm, ThreadInfo currentThread, ElementInfo unlockedObject) {}
-  @Override
-  public void objectWait (VM vm, ThreadInfo currentThread, ElementInfo waitingObject) {}
-  @Override
-  public void objectNotify (VM vm, ThreadInfo currentThread, ElementInfo notifyingObject) {}
-  @Override
-  public void objectNotifyAll (VM vm, ThreadInfo currentThread, ElementInfo notifyingObject) {}
-  @Override
-  public void objectExposed (VM vm, ThreadInfo currentThread, ElementInfo sharedObject, ElementInfo exposedObject) {}
-  @Override
-  public void objectShared (VM vm, ThreadInfo currentThread, ElementInfo sharedObject) {}
-  @Override
-  public void gcBegin(VM vm) {}
-  @Override
-  public void gcEnd(VM vm) {}
-  @Override
-  public void exceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException) {}
-  @Override
-  public void exceptionBailout(VM vm, ThreadInfo currentThread) {}
-  @Override
-  public void exceptionHandled(VM vm, ThreadInfo currentThread) {}
-  @Override
-  public void choiceGeneratorRegistered (VM vm, ChoiceGenerator<?> nextCG, ThreadInfo currentThread, Instruction executedInstruction) {}
-  @Override
-  public void choiceGeneratorSet (VM vm, ChoiceGenerator<?> newCG) {}
-  @Override
-  public void choiceGeneratorAdvanced (VM vm, ChoiceGenerator<?> currentCG) {}
-  @Override
-  public void choiceGeneratorProcessed (VM vm, ChoiceGenerator<?> processedCG) {}
-  @Override
-  public void methodEntered (VM vm, ThreadInfo currentThread, MethodInfo enteredMethod) {}
-  @Override
-  public void methodExited (VM vm, ThreadInfo currentThread, MethodInfo exitedMethod) {}
+	@Override
+	public Property clone() throws CloneNotSupportedException {
+		return super.clone();
+	}
 
+	// --- the VMListener interface
+	@Override
+	public void vmInitialized(VM vm) {
+	}
 
-  //--- the SearchListener interface
-  @Override
-  public void stateAdvanced(Search search) {}
-  @Override
-  public void stateProcessed(Search search) {}
-  @Override
-  public void stateBacktracked(Search search) {}
-  @Override
-  public void statePurged(Search search) {}
-  @Override
-  public void stateStored(Search search) {}
-  @Override
-  public void stateRestored(Search search) {}
-  @Override
-  public void searchProbed (Search search){}
-  @Override
-  public void propertyViolated(Search search) {}
-  @Override
-  public void searchStarted(Search search) {
-    search.addProperty(this);
-  }
-  @Override
-  public void searchConstraintHit(Search search) {}
-  @Override
-  public void searchFinished(Search search) {}
+	@Override
+	public void instructionExecuted(VM vm, ThreadInfo currentThread,
+			Instruction nextInstruction, Instruction executedInstruction) {
+	}
 
+	@Override
+	public void executeInstruction(VM vm, ThreadInfo currentThread,
+			Instruction instructionToExecute) {
+	}
 
-  //--- PublisherExtension interface
-  @Override
-  public void publishStart (Publisher publisher) {}
-  @Override
-  public void publishTransition (Publisher publisher) {}
-  @Override
-  public void publishPropertyViolation (Publisher publisher) {}
-  @Override
-  public void publishConstraintHit (Publisher publisher) {}
-  @Override
-  public void publishFinished (Publisher publisher) {}
-  @Override
-  public void publishProbe (Publisher publisher) {}
+	@Override
+	public void threadStarted(VM vm, ThreadInfo startedThread) {
+	}
+
+	@Override
+	public void threadWaiting(VM vm, ThreadInfo waitingThread) {
+	}
+
+	@Override
+	public void threadNotified(VM vm, ThreadInfo notifiedThread) {
+	}
+
+	@Override
+	public void threadInterrupted(VM vm, ThreadInfo interruptedThread) {
+	}
+
+	@Override
+	public void threadScheduled(VM vm, ThreadInfo scheduledThread) {
+	}
+
+	@Override
+	public void threadBlocked(VM vm, ThreadInfo blockedThread, ElementInfo lock) {
+	}
+
+	@Override
+	public void threadTerminated(VM vm, ThreadInfo terminatedThread) {
+	}
+
+	@Override
+	public void loadClass(VM vm, ClassFile cf) {
+	}
+
+	@Override
+	public void classLoaded(VM vm, ClassInfo loadedClass) {
+	}
+
+	@Override
+	public void objectCreated(VM vm, ThreadInfo currentThread,
+			ElementInfo newObject) {
+	}
+
+	@Override
+	public void objectReleased(VM vm, ThreadInfo currentThread,
+			ElementInfo releasedObject) {
+	}
+
+	@Override
+	public void objectLocked(VM vm, ThreadInfo currentThread,
+			ElementInfo lockedObject) {
+	}
+
+	@Override
+	public void objectUnlocked(VM vm, ThreadInfo currentThread,
+			ElementInfo unlockedObject) {
+	}
+
+	@Override
+	public void objectWait(VM vm, ThreadInfo currentThread,
+			ElementInfo waitingObject) {
+	}
+
+	@Override
+	public void objectNotify(VM vm, ThreadInfo currentThread,
+			ElementInfo notifyingObject) {
+	}
+
+	@Override
+	public void objectNotifyAll(VM vm, ThreadInfo currentThread,
+			ElementInfo notifyingObject) {
+	}
+
+	@Override
+	public void objectExposed(VM vm, ThreadInfo currentThread,
+			ElementInfo sharedObject, ElementInfo exposedObject) {
+	}
+
+	@Override
+	public void objectShared(VM vm, ThreadInfo currentThread,
+			ElementInfo sharedObject) {
+	}
+
+	@Override
+	public void gcBegin(VM vm) {
+	}
+
+	@Override
+	public void gcEnd(VM vm) {
+	}
+
+	@Override
+	public void exceptionThrown(VM vm, ThreadInfo currentThread,
+			ElementInfo thrownException) {
+	}
+
+	@Override
+	public void exceptionBailout(VM vm, ThreadInfo currentThread) {
+	}
+
+	@Override
+	public void exceptionHandled(VM vm, ThreadInfo currentThread) {
+	}
+
+	@Override
+	public void choiceGeneratorRegistered(VM vm, ChoiceGenerator<?> nextCG,
+			ThreadInfo currentThread, Instruction executedInstruction) {
+	}
+
+	@Override
+	public void choiceGeneratorSet(VM vm, ChoiceGenerator<?> newCG) {
+	}
+
+	@Override
+	public void choiceGeneratorAdvanced(VM vm, ChoiceGenerator<?> currentCG) {
+	}
+
+	@Override
+	public void choiceGeneratorProcessed(VM vm, ChoiceGenerator<?> processedCG) {
+	}
+
+	@Override
+	public void methodEntered(VM vm, ThreadInfo currentThread,
+			MethodInfo enteredMethod) {
+	}
+
+	@Override
+	public void methodExited(VM vm, ThreadInfo currentThread,
+			MethodInfo exitedMethod) {
+	}
+
+	// --- the SearchListener interface
+	@Override
+	public void stateAdvanced(Search search) {
+	}
+
+	@Override
+	public void stateProcessed(Search search) {
+	}
+
+	@Override
+	public void stateBacktracked(Search search) {
+	}
+
+	@Override
+	public void statePurged(Search search) {
+	}
+
+	@Override
+	public void stateStored(Search search) {
+	}
+
+	@Override
+	public void stateRestored(Search search) {
+	}
+
+	@Override
+	public void searchProbed(Search search) {
+	}
+
+	@Override
+	public void propertyViolated(Search search) {
+	}
+
+	@Override
+	public void searchStarted(Search search) {
+		search.addProperty(this);
+	}
+
+	@Override
+	public void searchConstraintHit(Search search) {
+	}
+
+	@Override
+	public void searchFinished(Search search) {
+	}
+
+	// --- PublisherExtension interface
+	@Override
+	public void publishStart(Publisher publisher) {
+	}
+
+	@Override
+	public void publishTransition(Publisher publisher) {
+	}
+
+	@Override
+	public void publishPropertyViolation(Publisher publisher) {
+	}
+
+	@Override
+	public void publishConstraintHit(Publisher publisher) {
+	}
+
+	@Override
+	public void publishFinished(Publisher publisher) {
+	}
+
+	@Override
+	public void publishProbe(Publisher publisher) {
+	}
 }

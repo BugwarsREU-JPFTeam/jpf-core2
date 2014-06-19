@@ -18,49 +18,49 @@
 //
 package gov.nasa.jpf.vm;
 
-
 /**
- * NOTE - making VMStates fully restorable is currently very
- * expensive and should only be done on a selective basis
+ * NOTE - making VMStates fully restorable is currently very expensive and
+ * should only be done on a selective basis
  */
 public class RestorableVMState {
-  
-  /** the set of last executed insns */
-  Transition lastTransition;
-  
-  /* these are the icky parts - the history is kept as stacks inside the
-   * VM (for restoration reasons), hence we have to copy it if we want
-   * to restore a state. Since this is really expensive, it has to be done
-   * on demand, with varying degrees of information
-   */
-  Path path;
-  
-  Backtracker.RestorableState bkstate;
-  
-  VM vm;
-  
-  RestorableVMState (VM vm) {
-    this.vm = vm;
 
-    path = vm.getClonedPath();
-    bkstate = vm.getBacktracker().getRestorableState();
-    lastTransition = vm.lastTrailInfo;
-  }
-  
-  public Backtracker.RestorableState getBkState() {
-    return bkstate;
-  }
-  
-  public Transition getLastTransition () {
-    return lastTransition;
-  }
-  
-  public Path getPath () {
-    return path;
-  }
-  
-  public int getThread () {
-    return lastTransition.getThreadIndex();
-  }
+	/** the set of last executed insns */
+	Transition lastTransition;
+
+	/*
+	 * these are the icky parts - the history is kept as stacks inside the VM
+	 * (for restoration reasons), hence we have to copy it if we want to restore
+	 * a state. Since this is really expensive, it has to be done on demand,
+	 * with varying degrees of information
+	 */
+	Path path;
+
+	Backtracker.RestorableState bkstate;
+
+	VM vm;
+
+	RestorableVMState(VM vm) {
+		this.vm = vm;
+
+		path = vm.getClonedPath();
+		bkstate = vm.getBacktracker().getRestorableState();
+		lastTransition = vm.lastTrailInfo;
+	}
+
+	public Backtracker.RestorableState getBkState() {
+		return bkstate;
+	}
+
+	public Transition getLastTransition() {
+		return lastTransition;
+	}
+
+	public Path getPath() {
+		return path;
+	}
+
+	public int getThread() {
+		return lastTransition.getThreadIndex();
+	}
 
 }

@@ -34,88 +34,90 @@ import java.io.PrintWriter;
 
 /**
  * simple tool to log stack invocations
- *
- * at this point, it doesn't do fancy things yet, but gives a more high
- * level idea of what got executed by JPF than the ExecTracker
+ * 
+ * at this point, it doesn't do fancy things yet, but gives a more high level
+ * idea of what got executed by JPF than the ExecTracker
  */
 public class StackTracker extends ListenerAdapter {
 
-  static final String INDENT = "  ";
+	static final String INDENT = "  ";
 
-  MethodInfo lastMi;
-  PrintWriter out;
-  long nextLog;
-  int logPeriod;
+	MethodInfo lastMi;
+	PrintWriter out;
+	long nextLog;
+	int logPeriod;
 
-  public StackTracker (Config conf, JPF jpf) {
-    out = new PrintWriter(System.out, true);
-    logPeriod = conf.getInt("jpf.stack_tracker.log_period", 5000);
-  }
+	public StackTracker(Config conf, JPF jpf) {
+		out = new PrintWriter(System.out, true);
+		logPeriod = conf.getInt("jpf.stack_tracker.log_period", 5000);
+	}
 
-  void logStack(ThreadInfo ti) {
-    long time = System.currentTimeMillis();
+	void logStack(ThreadInfo ti) {
+		long time = System.currentTimeMillis();
 
-    if (time < nextLog) {
-      return;
-    }
+		if (time < nextLog) {
+			return;
+		}
 
-    nextLog = time + logPeriod;
+		nextLog = time + logPeriod;
 
-    out.println();
-    out.print("Thread: ");
-    out.print(ti.getId());
-    out.println(":");
+		out.println();
+		out.print("Thread: ");
+		out.print(ti.getId());
+		out.println(":");
 
-    out.println(ti.getStackTrace());
-    out.println();
-  }
+		out.println(ti.getStackTrace());
+		out.println();
+	}
 
-  @Override
-  public void executeInstruction (VM vm, ThreadInfo ti, Instruction insnToExecute) {
-    MethodInfo mi = insnToExecute.getMethodInfo();
+	@Override
+	public void executeInstruction(VM vm, ThreadInfo ti,
+			Instruction insnToExecute) {
+		MethodInfo mi = insnToExecute.getMethodInfo();
 
-    if (mi != lastMi) {
-      logStack(ti);
-      lastMi = mi;
+		if (mi != lastMi) {
+			logStack(ti);
+			lastMi = mi;
 
-    } else if (insnToExecute instanceof InvokeInstruction) {
-      MethodInfo callee;
+		} else if (insnToExecute instanceof InvokeInstruction) {
+			MethodInfo callee;
 
-      // that's the only little gist of it - if this is a VirtualInvocation,
-      // we have to dig the callee out by ourselves (it's not known
-      // before execution)
+			// that's the only little gist of it - if this is a
+			// VirtualInvocation,
+			// we have to dig the callee out by ourselves (it's not known
+			// before execution)
 
-      if (insnToExecute instanceof VirtualInvocation) {
-        VirtualInvocation callInsn = (VirtualInvocation)insnToExecute;
-        int objref = callInsn.getCalleeThis(ti);
-        callee = callInsn.getInvokedMethod(ti, objref);
+			if (insnToExecute instanceof VirtualInvocation) {
+				VirtualInvocation callInsn = (VirtualInvocation) insnToExecute;
+				int objref = callInsn.getCalleeThis(ti);
+				callee = callInsn.getInvokedMethod(ti, objref);
 
-      } else if (insnToExecute instanceof INVOKESPECIAL) {
-        INVOKESPECIAL callInsn = (INVOKESPECIAL)insnToExecute;
-        callee = callInsn.getInvokedMethod(ti);
+			} else if (insnToExecute instanceof INVOKESPECIAL) {
+				INVOKESPECIAL callInsn = (INVOKESPECIAL) insnToExecute;
+				callee = callInsn.getInvokedMethod(ti);
 
-      } else {
-        InvokeInstruction callInsn = (InvokeInstruction)insnToExecute;
-        callee = callInsn.getInvokedMethod(ti);
-      }
+			} else {
+				InvokeInstruction callInsn = (InvokeInstruction) insnToExecute;
+				callee = callInsn.getInvokedMethod(ti);
+			}
 
-      if (callee != null) {
-        if (callee.isMJI()) {
-          logStack(ti);
-        }
-      } else {
-        out.println("ERROR: unknown callee of: " + insnToExecute);
-      }
-    }
-  }
+			if (callee != null) {
+				if (callee.isMJI()) {
+					logStack(ti);
+				}
+			} else {
+				out.println("ERROR: unknown callee of: " + insnToExecute);
+			}
+		}
+	}
 
-  @Override
-  public void stateAdvanced(Search search) {
-    lastMi = null;
-  }
+	@Override
+	public void stateAdvanced(Search search) {
+		lastMi = null;
+	}
 
-  @Override
-  public void stateBacktracked(Search search) {
-    lastMi = null;
-  }
+	@Override
+	public void stateBacktracked(Search search) {
+		lastMi = null;
+	}
 }

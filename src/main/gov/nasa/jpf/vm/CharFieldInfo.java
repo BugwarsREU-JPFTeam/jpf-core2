@@ -26,41 +26,44 @@ import gov.nasa.jpf.JPFException;
  */
 public class CharFieldInfo extends SingleSlotFieldInfo {
 
-  char init;
+	char init;
 
-  public CharFieldInfo (String name, int modifiers) {
-    super(name, "C", modifiers);
-  }
+	public CharFieldInfo(String name, int modifiers) {
+		super(name, "C", modifiers);
+	}
 
-  public void setConstantValue(Object constValue){
-    if (constValue instanceof Integer){
-      cv = constValue;
-      init = (char) ((Integer)constValue).shortValue();
+	@Override
+	public void setConstantValue(Object constValue) {
+		if (constValue instanceof Integer) {
+			cv = constValue;
+			init = (char) ((Integer) constValue).shortValue();
 
-    } else {
-      throw new JPFException("illegal char ConstValue=" + constValue);
-    }
-  }
+		} else {
+			throw new JPFException("illegal char ConstValue=" + constValue);
+		}
+	}
 
+	@Override
+	public void initialize(ElementInfo ei, ThreadInfo ti) {
+		ei.getFields().setCharValue(storageOffset, init);
+	}
 
-  public void initialize (ElementInfo ei, ThreadInfo ti) {
-    ei.getFields().setCharValue(storageOffset, init);
-  }
+	@Override
+	public boolean isCharField() {
+		return true;
+	}
 
-  public boolean isCharField() {
-    return true;
-  }
+	@Override
+	public String valueToString(Fields f) {
+		char[] buf = new char[1];
+		buf[0] = f.getCharValue(storageOffset);
+		return new String(buf);
+	}
 
-  public String valueToString (Fields f) {
-    char[] buf = new char[1];
-    buf[0] = f.getCharValue(storageOffset);
-    return new String(buf);
-  }
-
-
-  public Object getValueObject (Fields f){
-    int i = f.getIntValue(storageOffset);
-    return new Character((char)i);
-  }
+	@Override
+	public Object getValueObject(Fields f) {
+		int i = f.getIntValue(storageOffset);
+		return new Character((char) i);
+	}
 
 }

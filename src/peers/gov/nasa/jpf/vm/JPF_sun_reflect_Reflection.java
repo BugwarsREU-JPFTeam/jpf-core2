@@ -29,32 +29,34 @@ import gov.nasa.jpf.vm.ThreadInfo;
 
 public class JPF_sun_reflect_Reflection extends NativePeer {
 
-  @MJI
-  public int getCallerClass__I__Ljava_lang_Class_2(MJIEnv env, int clsObjRef, int offset){
-    ThreadInfo ti = env.getThreadInfo();
-    
-    StackFrame frame = ti.getTopFrame();
-    MethodInfo mi = frame.getMethodInfo();
-    
-    while (offset > 0){
-      frame = frame.getPrevious();
-      if (frame == null){
-        return MJIEnv.NULL; // <2do> maybe this throws an exception
-      }
-      
-      if (frame.isDirectCallFrame()){
-        continue; // does not count
-      }
-      
-      mi = frame.getMethodInfo();
-      if (mi.getName().equals("invoke") && mi.getClassName().equals("java.lang.reflect.Method")){
-        continue; // does not count
-      }
-      
-      offset--;
-    }
- 
-    ClassInfo ci = mi.getClassInfo();
-    return ci.getClassObjectRef();
-  }
+	@MJI
+	public int getCallerClass__I__Ljava_lang_Class_2(MJIEnv env, int clsObjRef,
+			int offset) {
+		ThreadInfo ti = env.getThreadInfo();
+
+		StackFrame frame = ti.getTopFrame();
+		MethodInfo mi = frame.getMethodInfo();
+
+		while (offset > 0) {
+			frame = frame.getPrevious();
+			if (frame == null) {
+				return MJIEnv.NULL; // <2do> maybe this throws an exception
+			}
+
+			if (frame.isDirectCallFrame()) {
+				continue; // does not count
+			}
+
+			mi = frame.getMethodInfo();
+			if (mi.getName().equals("invoke")
+					&& mi.getClassName().equals("java.lang.reflect.Method")) {
+				continue; // does not count
+			}
+
+			offset--;
+		}
+
+		ClassInfo ci = mi.getClassInfo();
+		return ci.getClassObjectRef();
+	}
 }

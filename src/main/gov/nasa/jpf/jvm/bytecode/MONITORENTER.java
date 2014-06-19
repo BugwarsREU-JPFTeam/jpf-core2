@@ -27,73 +27,87 @@ import gov.nasa.jpf.vm.VM;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Enter monitor for object
- * ..., objectref => ...
+ * Enter monitor for object ..., objectref => ...
  */
 public class MONITORENTER extends LockInstruction {
 
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getTopFrame();
 
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getTopFrame();
+		int objref = frame.peek(); // Don't pop yet before we know we really
+									// enter
+		if (objref == MJIEnv.NULL) {
+			return ti.createAndThrowException("java.lang.NullPointerException",
+					"Attempt to acquire lock for null object");
+		}
 
-    int objref = frame.peek();      // Don't pop yet before we know we really enter
-    if (objref == MJIEnv.NULL){
-      return ti.createAndThrowException("java.lang.NullPointerException", "Attempt to acquire lock for null object");
-    }
+		lastLockRef = objref;
+		ElementInfo ei = ti.getModifiableElementInfo(objref);
 
-    lastLockRef = objref;
-    ElementInfo ei = ti.getModifiableElementInfo(objref);
+		if (!ti.isFirstStepInsn()) { // check if we have a choicepoint
+			if (!isLockOwner(ti, ei)) { // maybe its a recursive lock
+				VM vm = ti.getVM();
 
-    if (!ti.isFirstStepInsn()){ // check if we have a choicepoint
-      if (!isLockOwner(ti, ei)){  // maybe its a recursive lock
-        VM vm = ti.getVM();
+				if (ei.canLock(ti)) { // we can lock the object, the CG is
+										// optional
+					ei = ei.getInstanceWithUpdatedSharedness(ti);
+					if (ei.isShared()) {
+						ChoiceGenerator<?> cg = vm.getSchedulerFactory()
+								.createMonitorEnterCG(ei, ti);
+						if (cg != null) {
+							if (vm.setNextChoiceGenerator(cg)) {
+								ei.registerLockContender(ti); // Record that
+																// this thread
+																// would lock
+																// the object
+																// upon next
+																// execution
+								return this;
+							}
+						}
+					}
 
-        if (ei.canLock(ti)) { // we can lock the object, the CG is optional
-          ei = ei.getInstanceWithUpdatedSharedness(ti); 
-          if (ei.isShared()) {
-            ChoiceGenerator<?> cg = vm.getSchedulerFactory().createMonitorEnterCG(ei, ti);
-            if (cg != null) {
-              if (vm.setNextChoiceGenerator(cg)) {
-                ei.registerLockContender(ti);  // Record that this thread would lock the object upon next execution
-                return this;
-              }
-            }
-          }
+				} else { // already locked by another thread, we have to block
+							// and therefore need a CG
+					// the top half already did set the object shared
 
-        } else { // already locked by another thread, we have to block and therefore need a CG
-          // the top half already did set the object shared
+					ei.block(ti); // do this before we obtain the CG so that
+									// this thread is not in its choice set
 
-          ei.block(ti); // do this before we obtain the CG so that this thread is not in its choice set
+					ChoiceGenerator<?> cg = vm.getSchedulerFactory()
+							.createMonitorEnterCG(ei, ti);
+					if (cg != null) {
+						if (vm.setNextChoiceGenerator(cg)) {
+							return this;
+						} else {
+							throw new JPFException(
+									"listener did override ChoiceGenerator for blocking MONITOR_ENTER");
+						}
+					} else {
+						throw new JPFException(
+								"scheduling policy did not return ChoiceGenerator for blocking MONITOR_ENTER");
+					}
+				}
+			}
+		}
 
-          ChoiceGenerator<?> cg = vm.getSchedulerFactory().createMonitorEnterCG(ei, ti);
-          if (cg != null) {
-            if (vm.setNextChoiceGenerator(cg)) {
-              return this;
-            } else {
-              throw new JPFException("listener did override ChoiceGenerator for blocking MONITOR_ENTER");
-            }
-          } else {
-            throw new JPFException("scheduling policy did not return ChoiceGenerator for blocking MONITOR_ENTER");
-          }
-        }
-      }
-    }
+		// this is only executed in the bottom half
+		frame = ti.getModifiableTopFrame(); // now we need to modify it
+		frame.pop();
+		ei.lock(ti); // Still have to increment the lockCount
 
-    // this is only executed in the bottom half
-    frame = ti.getModifiableTopFrame(); // now we need to modify it
-    frame.pop();
-    ei.lock(ti);  // Still have to increment the lockCount
-    
-    return getNext(ti);
-  }  
+		return getNext(ti);
+	}
 
-  public int getByteCode () {
-    return 0xC2;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public int getByteCode() {
+		return 0xC2;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

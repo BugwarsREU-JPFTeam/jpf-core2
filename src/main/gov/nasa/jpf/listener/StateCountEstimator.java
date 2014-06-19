@@ -30,149 +30,143 @@ import java.io.PrintWriter;
 import java.util.Formatter;
 
 /**
- * From already visited states, estimates the total number of states by the branching factor.
+ * From already visited states, estimates the total number of states by the
+ * branching factor.
  */
 
-public class StateCountEstimator extends ListenerAdapter
-{
-   private final PrintWriter   m_out;
-   private final StringBuilder m_buffer    = new StringBuilder();
-   private final Formatter     m_formatter = new Formatter(m_buffer);
-   private final int           m_logPeriod;
-   private       double        m_lastPercent;
-   private       long          m_nextLog;
-   private       long          m_startTime;
+public class StateCountEstimator extends ListenerAdapter {
+	private final PrintWriter m_out;
+	private final StringBuilder m_buffer = new StringBuilder();
+	private final Formatter m_formatter = new Formatter(m_buffer);
+	private final int m_logPeriod;
+	private double m_lastPercent;
+	private long m_nextLog;
+	private long m_startTime;
 
-   public StateCountEstimator(Config config)
-   {
-      m_out       = new PrintWriter(System.out, true);
-      m_logPeriod = config.getInt("jpf.state_count_estimator.log_period", 0);
-   }
+	public StateCountEstimator(Config config) {
+		m_out = new PrintWriter(System.out, true);
+		m_logPeriod = config.getInt("jpf.state_count_estimator.log_period", 0);
+	}
 
-   @Override
-   public void searchStarted(Search search)
-   {
-      m_nextLog     = 0;
-      m_lastPercent = 0.0;
-      m_startTime   = System.currentTimeMillis();
-   }
+	@Override
+	public void searchStarted(Search search) {
+		m_nextLog = 0;
+		m_lastPercent = 0.0;
+		m_startTime = System.currentTimeMillis();
+	}
 
-   @Override
-   public void searchFinished(Search search)
-   {
-      log(search);
-   }
+	@Override
+	public void searchFinished(Search search) {
+		log(search);
+	}
 
-   @Override
-   public void stateProcessed(Search search)
-   {
-      if (m_nextLog > System.currentTimeMillis())
-         return;
-      
-      if (log(search))
-         m_nextLog = m_logPeriod + System.currentTimeMillis();
-   }
+	@Override
+	public void stateProcessed(Search search) {
+		if (m_nextLog > System.currentTimeMillis())
+			return;
 
-   private boolean log(Search search)
-   {
-      VM vm;
-      Path path;
-      Transition trans;
-      ChoiceGenerator cg;
-      double percent, delta;
-      long currentState, expectedState, currentTime, expectedTime;
-      int i, size, processed;
+		if (log(search))
+			m_nextLog = m_logPeriod + System.currentTimeMillis();
+	}
 
-      vm       = search.getVM();
-      path      = vm.getPath();
-      size      = path.size();
-      percent   = 0.0;
-      delta     = 1.0;
-      processed = 0;
-      
-      for (i = 0; i < size; i++)
-      {
-         trans      = path.get(i);
-         cg         = trans.getChoiceGenerator();
-         delta     /= cg.getTotalNumberOfChoices();
-         processed  = cg.getProcessedNumberOfChoices() - 1;
-         percent   += delta * processed;
-      }
-      
-      if (size == 0)
-         percent = 1.0;
-      
-      if (m_lastPercent > percent)  // Sometimes a state is declared as processed but doesn't show up in the path so the percentage appears to go backwards.
-         return(false);
-      
-      m_lastPercent = percent;
-         
-      currentState  = vm.getStateCount();
-      expectedState = (long) (currentState / percent);
-      
-      currentTime   = System.currentTimeMillis() - m_startTime;
-      expectedTime  = (long) (currentTime / percent);
-      
-      m_formatter.format("State:  %,d / %,d (%g%%)    Time:  ", currentState, expectedState, 100.0 * percent);
-      
-      formatTime(expectedTime);
-      m_buffer.append(" - ");
-      formatTime(currentTime);
-      m_buffer.append(" = ");
-      formatTime(expectedTime - currentTime);
+	private boolean log(Search search) {
+		VM vm;
+		Path path;
+		Transition trans;
+		ChoiceGenerator cg;
+		double percent, delta;
+		long currentState, expectedState, currentTime, expectedTime;
+		int i, size, processed;
 
-      m_out.println(m_buffer.toString());
-      m_buffer.setLength(0);
-      
-      return(true);
-   }
+		vm = search.getVM();
+		path = vm.getPath();
+		size = path.size();
+		percent = 0.0;
+		delta = 1.0;
+		processed = 0;
 
-   private void formatTime(long time)
-   {
-      long days, hours, minutes, seconds;
-      boolean commit;
+		for (i = 0; i < size; i++) {
+			trans = path.get(i);
+			cg = trans.getChoiceGenerator();
+			delta /= cg.getTotalNumberOfChoices();
+			processed = cg.getProcessedNumberOfChoices() - 1;
+			percent += delta * processed;
+		}
 
-      seconds = time / 1000;
-      minutes = seconds / 60;
-      hours   = minutes / 60;
-      days    = hours / 24;
+		if (size == 0)
+			percent = 1.0;
 
-      seconds %= 60;
-      minutes %= 60;
-      hours   %= 24;
+		if (m_lastPercent > percent) // Sometimes a state is declared as
+										// processed but doesn't show up in the
+										// path so the percentage appears to go
+										// backwards.
+			return (false);
 
-      commit = false;
+		m_lastPercent = percent;
 
-      if ((commit) || (days != 0))
-      {
-         commit = true;
-         m_buffer.append(days);
-         m_buffer.append(' ');
-      }
+		currentState = vm.getStateCount();
+		expectedState = (long) (currentState / percent);
 
-      if ((commit) || (hours != 0))
-      {
-         if ((commit) && (hours < 10))
-            m_buffer.append('0');
+		currentTime = System.currentTimeMillis() - m_startTime;
+		expectedTime = (long) (currentTime / percent);
 
-         m_buffer.append(hours);
-         m_buffer.append(':');
-         commit = true;
-      }
+		m_formatter.format("State:  %,d / %,d (%g%%)    Time:  ", currentState,
+				expectedState, 100.0 * percent);
 
-      if ((commit) || (minutes != 0))
-      {
-         if ((commit) && (minutes < 10))
-            m_buffer.append('0');
+		formatTime(expectedTime);
+		m_buffer.append(" - ");
+		formatTime(currentTime);
+		m_buffer.append(" = ");
+		formatTime(expectedTime - currentTime);
 
-         m_buffer.append(minutes);
-         m_buffer.append(':');
-         commit = true;
-      }
+		m_out.println(m_buffer.toString());
+		m_buffer.setLength(0);
 
-      if ((commit) && (seconds < 10))
-         m_buffer.append('0');
+		return (true);
+	}
 
-      m_buffer.append(seconds);
-   }
+	private void formatTime(long time) {
+		long days, hours, minutes, seconds;
+		boolean commit;
+
+		seconds = time / 1000;
+		minutes = seconds / 60;
+		hours = minutes / 60;
+		days = hours / 24;
+
+		seconds %= 60;
+		minutes %= 60;
+		hours %= 24;
+
+		commit = false;
+
+		if ((commit) || (days != 0)) {
+			commit = true;
+			m_buffer.append(days);
+			m_buffer.append(' ');
+		}
+
+		if ((commit) || (hours != 0)) {
+			if ((commit) && (hours < 10))
+				m_buffer.append('0');
+
+			m_buffer.append(hours);
+			m_buffer.append(':');
+			commit = true;
+		}
+
+		if ((commit) || (minutes != 0)) {
+			if ((commit) && (minutes < 10))
+				m_buffer.append('0');
+
+			m_buffer.append(minutes);
+			m_buffer.append(':');
+			commit = true;
+		}
+
+		if ((commit) && (seconds < 10))
+			m_buffer.append('0');
+
+		m_buffer.append(seconds);
+	}
 }

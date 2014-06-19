@@ -26,49 +26,49 @@ import gov.nasa.jpf.vm.ThreadList;
  */
 public class Error {
 
-  int            id;
-  
-  Property       property;
-  private String errorMessage;
-  
-  private Path   path;
-  ThreadList     threadList;
-  
-  public Error (int id, Property prop, Path p, ThreadList l) {
-    this.id = id;
-    property = prop;
-    errorMessage = prop.getErrorMessage();    
-    path = p; // client has to clone in case we go on
-    threadList = l;
-  }
+	int id;
 
-  public int getId() {
-    return id;
-  }
-  
-  public String getDescription () {
-    StringBuilder sb = new StringBuilder();
-    sb.append(property.getClass().getName());
-    
-    String s = property.getExplanation();
-    if (s != null) {
-      sb.append(" (\"");
-      sb.append(s);
-      sb.append("\")");
-    }
-    
-    return sb.toString();
-  }
+	Property property;
+	private String errorMessage;
 
-  public String getDetails() {
-    return errorMessage;
-  }
-  
-  public Path getPath () {
-    return path;
-  }
+	private Path path;
+	ThreadList threadList;
 
-  public Property getProperty () {
-    return property;
-  }
+	public Error(int id, Property prop, Path p, ThreadList l) {
+		this.id = id;
+		property = prop;
+		errorMessage = prop.getErrorMessage();
+		path = p; // client has to clone in case we go on
+		threadList = l;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public String getDescription() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(property.getClass().getName());
+
+		String s = property.getExplanation();
+		if (s != null) {
+			sb.append(" (\"");
+			sb.append(s);
+			sb.append("\")");
+		}
+
+		return sb.toString();
+	}
+
+	public String getDetails() {
+		return errorMessage;
+	}
+
+	public Path getPath() {
+		return path;
+	}
+
+	public Property getProperty() {
+		return property;
+	}
 }

@@ -19,7 +19,6 @@
 package gov.nasa.jpf.jvm.bytecode;
 
 import gov.nasa.jpf.jvm.JVMInstruction;
-import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.LoadOnJPFRequired;
 import gov.nasa.jpf.vm.MJIEnv;
@@ -27,67 +26,68 @@ import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.Types;
 
-
 /**
- * Determine if object is of given type
- * ..., objectref => ..., result
+ * Determine if object is of given type ..., objectref => ..., result
  */
 public class INSTANCEOF extends JVMInstruction {
-  private String type;
+	private String type;
 
+	/**
+	 * typeName is of a/b/C notation
+	 */
+	public INSTANCEOF(String typeName) {
+		type = Types.getTypeSignature(typeName, false);
+	}
 
-  /**
-   * typeName is of a/b/C notation
-   */
-  public INSTANCEOF (String typeName){
-    type = Types.getTypeSignature(typeName, false);
-  }
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		if (Types.isReferenceSignature(type)) {
+			String t;
+			if (Types.isArray(type)) {
+				// retrieve the component terminal
+				t = Types.getComponentTerminal(type);
+			} else {
+				t = type;
+			}
 
-  public Instruction execute (ThreadInfo ti) {
-    if(Types.isReferenceSignature(type)) {
-      String t;
-      if(Types.isArray(type)) {
-        // retrieve the component terminal
-        t = Types.getComponentTerminal(type);
-      } else {
-        t = type;
-      }
+			// resolve the referenced class
+			try {
+				ti.resolveReferencedClass(t);
+			} catch (LoadOnJPFRequired lre) {
+				return ti.getPC();
+			}
+		}
 
-      // resolve the referenced class
-      try {
-        ti.resolveReferencedClass(t);
-      } catch(LoadOnJPFRequired lre) {
-        return ti.getPC();
-      }
-    }
+		StackFrame frame = ti.getModifiableTopFrame();
+		int objref = frame.pop();
 
-    StackFrame frame = ti.getModifiableTopFrame();
-    int objref = frame.pop();
+		if (objref == MJIEnv.NULL) {
+			frame.push(0);
+		} else if (ti.getElementInfo(objref).instanceOf(type)) {
+			frame.push(1);
+		} else {
+			frame.push(0);
+		}
 
-    if (objref == MJIEnv.NULL) {
-      frame.push(0);
-    } else if (ti.getElementInfo(objref).instanceOf(type)) {
-      frame.push(1);
-    } else {
-      frame.push(0);
-    }
+		return getNext(ti);
+	}
 
-    return getNext(ti);
-  }
-  
-  public String getType() {
-	  return type;
-  }
+	public String getType() {
+		return type;
+	}
 
-  public int getLength() {
-    return 3; // opcode, index1, index2
-  }
-  
-  public int getByteCode () {
-    return 0xC1;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public int getLength() {
+		return 3; // opcode, index1, index2
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0xC1;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

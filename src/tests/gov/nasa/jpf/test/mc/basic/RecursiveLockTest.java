@@ -23,44 +23,38 @@ import gov.nasa.jpf.util.test.TestJPF;
 import org.junit.Test;
 
 /**
- * Ensures that a recursive lock/unlock doesn't leave the lock in an acquired state.
+ * Ensures that a recursive lock/unlock doesn't leave the lock in an acquired
+ * state.
  */
-public class RecursiveLockTest extends TestJPF
-{
-   @Test
-   public void recursiveUnlock() throws InterruptedException
-   {
-      final Object lock;
-      Thread thread;
-      Runnable task;
-      
-      if (verifyNoPropertyViolation())
-      {
-         lock = new Object();
-         
-         synchronized (lock)
-         {
-            synchronized (lock)
-            {
-               // nothing to do
-            }
-         }
-         
-         task = new Runnable()
-         {
-            public void run()
-            {
-               synchronized (lock)
-               {
-                  // nothing to do
-               }
-            }  
-         };
-         
-         thread = new Thread(task);
-         
-         thread.start();
-         thread.join();
-      }
-   }
+public class RecursiveLockTest extends TestJPF {
+	@Test
+	public void recursiveUnlock() throws InterruptedException {
+		final Object lock;
+		Thread thread;
+		Runnable task;
+
+		if (verifyNoPropertyViolation()) {
+			lock = new Object();
+
+			synchronized (lock) {
+				synchronized (lock) {
+					// nothing to do
+				}
+			}
+
+			task = new Runnable() {
+				@Override
+				public void run() {
+					synchronized (lock) {
+						// nothing to do
+					}
+				}
+			};
+
+			thread = new Thread(task);
+
+			thread.start();
+			thread.join();
+		}
+	}
 }

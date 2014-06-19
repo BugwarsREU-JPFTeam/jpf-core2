@@ -18,33 +18,36 @@
 //
 package gov.nasa.jpf.jvm.bytecode;
 
-
 /**
- * Invoke interface method
- * ..., objectref, [arg1, [arg2 ...]] => ...
+ * Invoke interface method ..., objectref, [arg1, [arg2 ...]] => ...
  */
 public class INVOKEINTERFACE extends VirtualInvocation {
-  public INVOKEINTERFACE () {}
+	public INVOKEINTERFACE() {
+	}
 
-  protected INVOKEINTERFACE (String clsDescriptor, String methodName, String signature){
-    super(clsDescriptor, methodName, signature);
-  }
+	protected INVOKEINTERFACE(String clsDescriptor, String methodName,
+			String signature) {
+		super(clsDescriptor, methodName, signature);
+	}
 
+	@Override
+	public int getLength() {
+		return 5; // opcode, index1, index2, nargs, 0
+	}
 
-  public int getLength() {
-    return 5; // opcode, index1, index2, nargs, 0
-  }
-  
-  public int getByteCode () {
-    return 0xB9;
-  }
+	@Override
+	public int getByteCode() {
+		return 0xB9;
+	}
 
-  public String toString() {
-    // methodInfo not set outside real call context (requires target object)
-    return "invokeinterface " + cname + '.' + mname;
-  }
+	@Override
+	public String toString() {
+		// methodInfo not set outside real call context (requires target object)
+		return "invokeinterface " + cname + '.' + mname;
+	}
 
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

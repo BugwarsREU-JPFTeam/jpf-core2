@@ -26,70 +26,75 @@ import org.junit.Test;
  * test cast operations
  */
 public class CastTest extends TestJPF {
-  
-  @SuppressWarnings("cast")
-  @Test public void testCast () {
-    if (verifyNoPropertyViolation()){
-      B b = new B();
-      A a = b;
 
-      B bb = (B) a;
-      K k = (K) a;
-      I i = (I) a;
+	@SuppressWarnings("cast")
+	@Test
+	public void testCast() {
+		if (verifyNoPropertyViolation()) {
+			B b = new B();
+			A a = b;
 
-      C c = new C();
-      k = (K) c;
-    }
-  }
+			B bb = (B) a;
+			K k = a;
+			I i = (I) a;
 
-  @Test public void testCastFail () {
-    if (verifyUnhandledException("java.lang.ClassCastException")){
-      A a = new A();
-      I i = (I) a;
-    }
-  }
+			C c = new C();
+			k = c;
+		}
+	}
 
-  @Test public void testArrayCast () {
-    if (verifyNoPropertyViolation()){
-      String[] sa = new String[1];
-      Object o = sa;
-      Object[] ol = (Object[])o; // that should succeed
-    }
-  }
-  
-  @Test public void testArrayCastFail() {
-    if (verifyUnhandledException("java.lang.ClassCastException")){
-      String[] sa = new String[1];
-      Object o = sa ;
-      Number[] na = (Number[])o; // that should fail
-    }
-  }
-  
-  @Test public void testPrimitiveArrayCast() {
-    if (verifyNoPropertyViolation()){
-      int[] a = new int[10];
-      Object o = a;
-      int[] b = (int[]) o;
-    }
-  }
-  
-  //--- helper types and methods
-  
-  static interface I {
-  }
+	@Test
+	public void testCastFail() {
+		if (verifyUnhandledException("java.lang.ClassCastException")) {
+			A a = new A();
+			I i = (I) a;
+		}
+	}
 
-  static interface J extends I {
-  }
+	@Test
+	public void testArrayCast() {
+		if (verifyNoPropertyViolation()) {
+			String[] sa = new String[1];
+			Object o = sa;
+			Object[] ol = (Object[]) o; // that should succeed
+		}
+	}
 
-  static interface K {
-  }
-  
-  static class A implements K {
-  }
+	@Test
+	public void testArrayCastFail() {
+		if (verifyUnhandledException("java.lang.ClassCastException")) {
+			String[] sa = new String[1];
+			Object o = sa;
+			Number[] na = (Number[]) o; // that should fail
+		}
+	}
 
-  static class B extends A implements J {
-  }
-  
-  static class C extends B {
-  }
+	@Test
+	public void testPrimitiveArrayCast() {
+		if (verifyNoPropertyViolation()) {
+			int[] a = new int[10];
+			Object o = a;
+			int[] b = (int[]) o;
+		}
+	}
+
+	// --- helper types and methods
+
+	static interface I {
+	}
+
+	static interface J extends I {
+	}
+
+	static interface K {
+	}
+
+	static class A implements K {
+	}
+
+	static class B extends A implements J {
+	}
+
+	static class C extends B {
+	}
 }

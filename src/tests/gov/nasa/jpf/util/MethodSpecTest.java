@@ -28,60 +28,59 @@ import org.junit.Test;
  */
 public class MethodSpecTest extends TestJPF {
 
-  @Test
-  public void testConstruction(){
+	@Test
+	public void testConstruction() {
 
-    //-- should be all non-null
-    String spec = "x.y.Foo.bar(java.lang.String,^float[])";
-    MethodSpec ms = MethodSpec.createMethodSpec(spec);
-    System.out.println(spec + " => " + ms);
-    assertTrue(ms != null);
+		// -- should be all non-null
+		String spec = "x.y.Foo.bar(java.lang.String,^float[])";
+		MethodSpec ms = MethodSpec.createMethodSpec(spec);
+		System.out.println(spec + " => " + ms);
+		assertTrue(ms != null);
 
-    spec = "x.y.Foo+.*";
-    ms = MethodSpec.createMethodSpec(spec);
-    System.out.println(spec + " => " + ms);
-    assertTrue(ms != null);
+		spec = "x.y.Foo+.*";
+		ms = MethodSpec.createMethodSpec(spec);
+		System.out.println(spec + " => " + ms);
+		assertTrue(ms != null);
 
-    spec = "*.foo(^int, ^double)";
-    ms = MethodSpec.createMethodSpec(spec);
-    System.out.println(spec + " => " + ms);
-    assertTrue(ms != null);
+		spec = "*.foo(^int, ^double)";
+		ms = MethodSpec.createMethodSpec(spec);
+		System.out.println(spec + " => " + ms);
+		assertTrue(ms != null);
 
-    spec = "( ^int, ^double)";
-    ms = MethodSpec.createMethodSpec(spec);
-    System.out.println(spec + " => " + ms);
-    assertTrue(ms != null);
+		spec = "( ^int, ^double)";
+		ms = MethodSpec.createMethodSpec(spec);
+		System.out.println(spec + " => " + ms);
+		assertTrue(ms != null);
 
-    spec = ".foo";
-    ms = MethodSpec.createMethodSpec(spec);
-    System.out.println(spec + " => " + ms);
-    assertTrue(ms != null);
+		spec = ".foo";
+		ms = MethodSpec.createMethodSpec(spec);
+		System.out.println(spec + " => " + ms);
+		assertTrue(ms != null);
 
-    spec = ".(int)";
-    ms = MethodSpec.createMethodSpec(spec);
-    System.out.println(spec + " => " + ms);
-    assertTrue(ms != null);
+		spec = ".(int)";
+		ms = MethodSpec.createMethodSpec(spec);
+		System.out.println(spec + " => " + ms);
+		assertTrue(ms != null);
 
-    spec = "!java.*.*";  // first '*' belongs to class spec, second to method
-    ms = MethodSpec.createMethodSpec(spec);
-    System.out.println(ms);
-    assertTrue(ms != null);
+		spec = "!java.*.*"; // first '*' belongs to class spec, second to method
+		ms = MethodSpec.createMethodSpec(spec);
+		System.out.println(ms);
+		assertTrue(ms != null);
 
-    spec = "java.*"; // not what you think - the class spec is "java" and the method is "*"
-    ms = MethodSpec.createMethodSpec(spec);
-    System.out.println(ms);
-    
+		spec = "java.*"; // not what you think - the class spec is "java" and
+							// the method is "*"
+		ms = MethodSpec.createMethodSpec(spec);
+		System.out.println(ms);
 
-    //--- should all produce null
+		// --- should all produce null
 
-    spec = "*.foo(^int, ^double";  // missing ')'
-    ms = MethodSpec.createMethodSpec(spec);
-    System.out.println(spec + " => " + ms);
-    assertTrue(ms == null);
+		spec = "*.foo(^int, ^double"; // missing ')'
+		ms = MethodSpec.createMethodSpec(spec);
+		System.out.println(spec + " => " + ms);
+		assertTrue(ms == null);
 
+		// System.out.println("matches (java.lang.Object,*): " +
+		// ms.matches("java.lang.Object", "*"));
 
-    //System.out.println("matches (java.lang.Object,*): " +
-    //                    ms.matches("java.lang.Object", "*"));
-
-  }
+	}
 }

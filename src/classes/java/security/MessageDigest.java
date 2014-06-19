@@ -20,45 +20,53 @@
 package java.security;
 
 /**
- * forwarding implementation of MessageDigest.
- * <2do> only partially implemented (as required by serialization)
+ * forwarding implementation of MessageDigest. <2do> only partially implemented
+ * (as required by serialization)
  */
 public class MessageDigest extends MessageDigestSpi {
 
-  String algorithm;
-  int id; // set by native peer
-  
-  private native int init0 (String algorithm);
-  
-  protected MessageDigest (String algorithm) throws NoSuchAlgorithmException {
-    if (!algorithm.equalsIgnoreCase("SHA") && !algorithm.equalsIgnoreCase("MD5")){
-      throw new NoSuchAlgorithmException("unknown algorithm: " + algorithm);
-    }
-    
-    this.algorithm = algorithm;
-    id = init0(algorithm);
-  }
-  
-  public static MessageDigest getInstance (String algorithm) throws NoSuchAlgorithmException {
-    return new MessageDigest(algorithm); // keep it simple
-  }
-  
-  public native byte[] digest (byte[] input);
-  
-  public native byte[] digest ();
+	String algorithm;
+	int id; // set by native peer
 
-  public native void update(byte[] input);
+	private native int init0(String algorithm);
 
-  protected native void finalize(); // to clean up
-  
-  // those are required by the compiler, but never used since we forward
-  // all public methods
-  protected native byte[] engineDigest ();
+	protected MessageDigest(String algorithm) throws NoSuchAlgorithmException {
+		if (!algorithm.equalsIgnoreCase("SHA")
+				&& !algorithm.equalsIgnoreCase("MD5")) {
+			throw new NoSuchAlgorithmException("unknown algorithm: "
+					+ algorithm);
+		}
 
-  protected native void engineReset ();
+		this.algorithm = algorithm;
+		id = init0(algorithm);
+	}
 
-  protected native void engineUpdate (byte input);
+	public static MessageDigest getInstance(String algorithm)
+			throws NoSuchAlgorithmException {
+		return new MessageDigest(algorithm); // keep it simple
+	}
 
-  protected native void engineUpdate (byte[] input, int offset, int len);
+	public native byte[] digest(byte[] input);
+
+	public native byte[] digest();
+
+	public native void update(byte[] input);
+
+	@Override
+	protected native void finalize(); // to clean up
+
+	// those are required by the compiler, but never used since we forward
+	// all public methods
+	@Override
+	protected native byte[] engineDigest();
+
+	@Override
+	protected native void engineReset();
+
+	@Override
+	protected native void engineUpdate(byte input);
+
+	@Override
+	protected native void engineUpdate(byte[] input, int offset, int len);
 
 }

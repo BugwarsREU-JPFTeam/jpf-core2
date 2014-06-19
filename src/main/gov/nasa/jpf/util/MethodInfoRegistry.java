@@ -28,46 +28,47 @@ import gov.nasa.jpf.vm.MethodInfo;
  * <2do> - it's overly simplistic for now
  */
 public class MethodInfoRegistry {
-  
-  final int NREG = 10;
-  MethodInfo[] registered;
-  int nRegistered;
-  
-  public MethodInfoRegistry () {
-    registered = new MethodInfo[NREG];
-    nRegistered = 0;
-  }
-    
-  public int registerMethodInfo (MethodInfo mi) {
-    int idx;
-    
-    for (idx=0; idx < nRegistered; idx++) {
-      if (registered[idx] == mi) {
-        return idx;
-      }
-    }
-    
-    if (idx == registered.length) {
-      MethodInfo[] newReg = new MethodInfo[registered.length+NREG];
-      System.arraycopy(registered, 0, newReg, 0, registered.length);
-      registered = newReg;
-    }
-    
-    registered[idx] = mi;
-    nRegistered++;
-    return idx;
-  }
-  
-  public MethodInfo getRegisteredFieldInfo (int idx) {
-    return registered[idx];
-  }
 
-  public MethodInfo getMethodInfo (MJIEnv env, int objRef, String fieldName) {
-    int idx = env.getIntField( objRef, fieldName);
-    
-    assert ((idx >= 0) || (idx < nRegistered)) : "illegal MethodInfo request: " + idx + ", " + nRegistered;
-    
-    return registered[idx];
-  }
+	final int NREG = 10;
+	MethodInfo[] registered;
+	int nRegistered;
+
+	public MethodInfoRegistry() {
+		registered = new MethodInfo[NREG];
+		nRegistered = 0;
+	}
+
+	public int registerMethodInfo(MethodInfo mi) {
+		int idx;
+
+		for (idx = 0; idx < nRegistered; idx++) {
+			if (registered[idx] == mi) {
+				return idx;
+			}
+		}
+
+		if (idx == registered.length) {
+			MethodInfo[] newReg = new MethodInfo[registered.length + NREG];
+			System.arraycopy(registered, 0, newReg, 0, registered.length);
+			registered = newReg;
+		}
+
+		registered[idx] = mi;
+		nRegistered++;
+		return idx;
+	}
+
+	public MethodInfo getRegisteredFieldInfo(int idx) {
+		return registered[idx];
+	}
+
+	public MethodInfo getMethodInfo(MJIEnv env, int objRef, String fieldName) {
+		int idx = env.getIntField(objRef, fieldName);
+
+		assert ((idx >= 0) || (idx < nRegistered)) : "illegal MethodInfo request: "
+				+ idx + ", " + nRegistered;
+
+		return registered[idx];
+	}
 
 }

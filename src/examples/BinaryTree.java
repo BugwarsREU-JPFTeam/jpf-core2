@@ -1,65 +1,49 @@
-
-
 import gov.nasa.jpf.vm.Verify;
 
-import java.util.Random; 
-
 public class BinaryTree {
-    
+
 	Node root;
-	
-	class Node
-	{
-		int  key;
+
+	class Node {
+		int key;
 		String name;
-		
+
 		Node leftChild;
 		Node rightChild;
-		
-		Node(int key, String name)
-		{
+
+		Node(int key, String name) {
 			this.key = key;
 			this.name = name;
 		}
-		
-		public String toString()
-		{
+
+		@Override
+		public String toString() {
 			return name + " has the value " + key;
 		}
 	}
-	
-	public void addNode(int key, String name)
-	{
+
+	public void addNode(int key, String name) {
 		Node newNode = new Node(key, name);
-		
-		if(root == null)
-		{
+
+		if (root == null) {
 			root = newNode;
-		}
-		else
-		{
+		} else {
 			Node focusNode = root;
 			Node parent;
-			
-			while(true)
-			{
+
+			while (true) {
 				parent = focusNode;
-				
-				if(key < focusNode.key)
-				{
+
+				if (key < focusNode.key) {
 					focusNode = focusNode.leftChild;
-					if(focusNode == null)
-					{
+					if (focusNode == null) {
 						parent.leftChild = newNode;
 						return;
 					}
-				}
-				else
-				{
+				} else {
 					focusNode = focusNode.rightChild;
-					
-					if(focusNode == null)
-					{
+
+					if (focusNode == null) {
 						parent.rightChild = newNode;
 						return;
 					}
@@ -67,56 +51,47 @@ public class BinaryTree {
 			}
 		}
 	}
-	
-	public Node findNode(int key)
-	{
+
+	public Node findNode(int key) {
 		Node focusNode = root;
-		
-		while(focusNode.key != key)
-		{
-			if(key < focusNode.key)
-			{
+
+		while (focusNode.key != key) {
+			if (key < focusNode.key) {
 				focusNode = focusNode.leftChild;
-			}
-			else
-			{
+			} else {
 				focusNode = focusNode.rightChild;
 			}
-			
-			if(focusNode == null)
+
+			if (focusNode == null)
 				return null;
 		}
-		
+
 		return focusNode;
 	}
-	
-	public void preorderTraverseTree(Node focusNode)
-	{
-		if(focusNode != null)
-		{
+
+	public void preorderTraverseTree(Node focusNode) {
+		if (focusNode != null) {
 			System.out.println(focusNode);
-			
+
 			preorderTraverseTree(focusNode.leftChild);
 			preorderTraverseTree(focusNode.rightChild);
 		}
 	}
-	
-	public static void main(String[] args)
-	{
+
+	public static void main(String[] args) {
 		BinaryTree theTree = new BinaryTree();
 		int n;
 		String str1;
-		
-		for(int x = 0; x < 1000; x++)
-		{
+
+		for (int x = 0; x < 1000; x++) {
 			str1 = Integer.toString(x);
 			n = Verify.random(50);
 			theTree.addNode(n, str1);
-			Verify.assertTrue(theTree.findNode(5).name==null);
+			Verify.assertTrue(theTree.findNode(5).name == null);
 		}
-		
+
 		theTree.preorderTraverseTree(theTree.root);
 
 	}
-	
+
 }

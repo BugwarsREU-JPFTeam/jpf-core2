@@ -18,7 +18,6 @@
 //
 package gov.nasa.jpf.jvm.bytecode;
 
-
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ClassLoaderInfo;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -29,150 +28,165 @@ import gov.nasa.jpf.vm.StaticElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.Types;
 
-
 /**
- * Invoke a class (static) method
- * ..., [arg1, [arg2 ...]]  => ...
+ * Invoke a class (static) method ..., [arg1, [arg2 ...]] => ...
  */
 public class INVOKESTATIC extends InvokeInstruction {
-  ClassInfo ci;
-  
-  protected INVOKESTATIC (String clsDescriptor, String methodName, String signature){
-    super(clsDescriptor, methodName, signature);
-  }
+	ClassInfo ci;
 
-  protected ClassInfo getClassInfo () {
-    if (ci == null) {
-      ci = ClassLoaderInfo.getCurrentResolvedClassInfo(cname);
-    }
-    return ci;
-  }
-  
-  public int getByteCode () {
-    return 0xB8;
-  }
+	protected INVOKESTATIC(String clsDescriptor, String methodName,
+			String signature) {
+		super(clsDescriptor, methodName, signature);
+	}
 
-  public StaticElementInfo getStaticElementInfo (){
-    return getClassInfo().getStaticElementInfo();
-  }
+	protected ClassInfo getClassInfo() {
+		if (ci == null) {
+			ci = ClassLoaderInfo.getCurrentResolvedClassInfo(cname);
+		}
+		return ci;
+	}
 
-  public int getClassObjectRef(){
-    return getClassInfo().getStaticElementInfo().getClassObjectRef();
-  }
+	@Override
+	public int getByteCode() {
+		return 0xB8;
+	}
 
-  public Instruction execute (ThreadInfo ti) {
-    MethodInfo callee;
-    
-    try {
-      callee = getInvokedMethod(ti);
-    } catch (LoadOnJPFRequired lre) {
-      return ti.getPC();
-    }
-        
-    if (callee == null) {
-      return ti.createAndThrowException("java.lang.NoSuchMethodException", cname + '.' + mname);
-    }
+	public StaticElementInfo getStaticElementInfo() {
+		return getClassInfo().getStaticElementInfo();
+	}
 
-    // this can be actually different than (can be a base)
-    ClassInfo ciCallee = callee.getClassInfo();
-    
-    if ( ciCallee.pushRequiredClinits(ti)) {
-      // do class initialization before continuing
-      // note - this returns the next insn in the topmost clinit that just got pushed
-      return ti.getPC();
-    }
+	public int getClassObjectRef() {
+		return getClassInfo().getStaticElementInfo().getClassObjectRef();
+	}
 
-    if (callee.isSynchronized()) {
-      ElementInfo ei = ciCallee.getClassObject();
-      ei = ei.getInstanceWithUpdatedSharedness(ti);
-      if (checkSyncCG(ei, ti)){
-        return this;
-      }
-    }
-        
-    setupCallee( ti, callee); // this creates, initializes and pushes the callee StackFrame
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		MethodInfo callee;
 
-    return ti.getPC(); // we can't just return the first callee insn if a listener throws an exception
-  }
+		try {
+			callee = getInvokedMethod(ti);
+		} catch (LoadOnJPFRequired lre) {
+			return ti.getPC();
+		}
 
-  public MethodInfo getInvokedMethod(){
-    if (invokedMethod != null){
-      return invokedMethod;
-    } else {
-      // Hmm, this would be pre-exec, but if the current thread is not the one executing the insn 
-      // this might result in false sharedness of the class object
-      return getInvokedMethod( ThreadInfo.getCurrentThread());
-    }
-  }
-  
-  public MethodInfo getInvokedMethod (ThreadInfo ti){
-    if (invokedMethod == null) {
-      ClassInfo clsInfo = getClassInfo();
-      if (clsInfo != null){
-        MethodInfo callee = clsInfo.getMethod(mname, true);
-        ClassInfo ciCallee = callee.getClassInfo(); // might be a superclass of ci, i.e. not what is referenced in the insn
-        
-        if (!ciCallee.isRegistered()){
-          // if it wasn't registered yet, classLoaded listeners didn't have a chance yet to modify it..
-          ciCallee.registerClass(ti);
-          // .. and might replace/remove MethodInfos
-          callee = clsInfo.getMethod(mname, true);
-        }
-        invokedMethod = callee;
-      }    
-    }
-    return invokedMethod;
-  }
-  
-  // can be different thatn the ci - method can be in a superclass
-  public ClassInfo getInvokedClassInfo(){
-    return getInvokedMethod().getClassInfo();
-  }
+		if (callee == null) {
+			return ti.createAndThrowException(
+					"java.lang.NoSuchMethodException", cname + '.' + mname);
+		}
 
-  public String getInvokedClassName(){
-    return getInvokedClassInfo().getName();
-  }
+		// this can be actually different than (can be a base)
+		ClassInfo ciCallee = callee.getClassInfo();
 
-  public int getArgSize () {
-    if (argSize < 0) {
-      argSize = Types.getArgumentsSize(signature);
-    }
+		if (ciCallee.pushRequiredClinits(ti)) {
+			// do class initialization before continuing
+			// note - this returns the next insn in the topmost clinit that just
+			// got pushed
+			return ti.getPC();
+		}
 
-    return argSize;
-  }
+		if (callee.isSynchronized()) {
+			ElementInfo ei = ciCallee.getClassObject();
+			ei = ei.getInstanceWithUpdatedSharedness(ti);
+			if (checkSyncCG(ei, ti)) {
+				return this;
+			}
+		}
 
-  
-  public String toString() {
-    // methodInfo not set outside real call context (requires target object)
-    return "invokestatic " + cname + '.' + mname;
-  }
+		setupCallee(ti, callee); // this creates, initializes and pushes the
+									// callee StackFrame
 
-  public Object getFieldValue (String id, ThreadInfo ti) {
-    return getClassInfo().getStaticFieldValueObject(id);
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		return ti.getPC(); // we can't just return the first callee insn if a
+							// listener throws an exception
+	}
 
-  @Override
-  public Instruction typeSafeClone(MethodInfo mi) {
-    INVOKESTATIC clone = null;
+	@Override
+	public MethodInfo getInvokedMethod() {
+		if (invokedMethod != null) {
+			return invokedMethod;
+		} else {
+			// Hmm, this would be pre-exec, but if the current thread is not the
+			// one executing the insn
+			// this might result in false sharedness of the class object
+			return getInvokedMethod(ThreadInfo.getCurrentThread());
+		}
+	}
 
-    try {
-      clone = (INVOKESTATIC) super.clone();
+	@Override
+	public MethodInfo getInvokedMethod(ThreadInfo ti) {
+		if (invokedMethod == null) {
+			ClassInfo clsInfo = getClassInfo();
+			if (clsInfo != null) {
+				MethodInfo callee = clsInfo.getMethod(mname, true);
+				ClassInfo ciCallee = callee.getClassInfo(); // might be a
+															// superclass of ci,
+															// i.e. not what is
+															// referenced in the
+															// insn
 
-      // reset the method that this insn belongs to
-      clone.mi = mi;
+				if (!ciCallee.isRegistered()) {
+					// if it wasn't registered yet, classLoaded listeners didn't
+					// have a chance yet to modify it..
+					ciCallee.registerClass(ti);
+					// .. and might replace/remove MethodInfos
+					callee = clsInfo.getMethod(mname, true);
+				}
+				invokedMethod = callee;
+			}
+		}
+		return invokedMethod;
+	}
 
-      clone.invokedMethod = null;
-      clone.lastObj = Integer.MIN_VALUE;
-      clone.ci = null;
-    } catch (CloneNotSupportedException e) {
-      e.printStackTrace();
-    }
+	// can be different thatn the ci - method can be in a superclass
+	public ClassInfo getInvokedClassInfo() {
+		return getInvokedMethod().getClassInfo();
+	}
 
-    return clone;
-  }
+	public String getInvokedClassName() {
+		return getInvokedClassInfo().getName();
+	}
+
+	@Override
+	public int getArgSize() {
+		if (argSize < 0) {
+			argSize = Types.getArgumentsSize(signature);
+		}
+
+		return argSize;
+	}
+
+	@Override
+	public String toString() {
+		// methodInfo not set outside real call context (requires target object)
+		return "invokestatic " + cname + '.' + mname;
+	}
+
+	@Override
+	public Object getFieldValue(String id, ThreadInfo ti) {
+		return getClassInfo().getStaticFieldValueObject(id);
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
+
+	@Override
+	public Instruction typeSafeClone(MethodInfo mi) {
+		INVOKESTATIC clone = null;
+
+		try {
+			clone = (INVOKESTATIC) super.clone();
+
+			// reset the method that this insn belongs to
+			clone.mi = mi;
+
+			clone.invokedMethod = null;
+			clone.lastObj = Integer.MIN_VALUE;
+			clone.ci = null;
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+		}
+
+		return clone;
+	}
 }
-

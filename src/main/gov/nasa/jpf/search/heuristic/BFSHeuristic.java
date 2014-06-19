@@ -22,21 +22,22 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.vm.VM;
 
-
 /**
  * breadth first search
  */
-public class BFSHeuristic extends SimplePriorityHeuristic {//put breakpoint here
-  
-  public BFSHeuristic (Config config, VM vm) {    
-  	super(config,vm);
-  	Search.log.info("BFS Search");
-  }
-  
-  protected int computeHeuristicValue () {
-    int priority = vm.getPathLength();
-    System.out.println("computed heuristic value is "+priority);
-    return priority;	//put breakpoint here
-  }
-  
+public class BFSHeuristic extends SimplePriorityHeuristic {// put breakpoint
+															// here
+
+	public BFSHeuristic(Config config, VM vm) {
+		super(config, vm);
+		Search.log.info("BFS Search");
+	}
+
+	@Override
+	protected int computeHeuristicValue() {
+		int priority = vm.getPathLength();
+		System.out.println("computed heuristic value is " + priority);
+		return priority; // put breakpoint here
+	}
+
 }

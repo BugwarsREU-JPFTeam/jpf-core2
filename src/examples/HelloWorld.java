@@ -21,7 +21,7 @@
  * you guess what that one does - just like a normal VM
  */
 public class HelloWorld {
-  public static void main(String[] args){
-    System.out.println("I won't say it!");
-  }
+	public static void main(String[] args) {
+		System.out.println("I won't say it!");
+	}
 }

@@ -20,28 +20,27 @@ package gov.nasa.jpf.jvm.bytecode;
 
 import gov.nasa.jpf.vm.StackFrame;
 
-
 /**
- * Branch if int comparison with zero succeeds
- * ..., value => ...
+ * Branch if int comparison with zero succeeds ..., value => ...
  */
 public class IFEQ extends IfInstruction {
 
-  public IFEQ(int targetPc) {
-    super(targetPc);
-  }
+	public IFEQ(int targetPc) {
+		super(targetPc);
+	}
 
+	@Override
+	public boolean popConditionValue(StackFrame frame) {
+		return (frame.pop() == 0);
+	}
 
-  public boolean popConditionValue (StackFrame frame) {
-    return (frame.pop() == 0);
-  }
-  
+	@Override
+	public int getByteCode() {
+		return 0x99;
+	}
 
-  public int getByteCode () {
-    return 0x99;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

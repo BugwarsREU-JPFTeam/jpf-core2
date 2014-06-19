@@ -30,22 +30,23 @@ import gov.nasa.jpf.vm.ThreadList;
  */
 public class EndStateListener extends ListenerAdapter {
 
-  @Override
-  public void stateAdvanced (Search search){
-    if (search.isEndState()){
+	@Override
+	public void stateAdvanced(Search search) {
+		if (search.isEndState()) {
 
-      VM vm = search.getVM();
-      ThreadList tl = vm.getThreadList();
+			VM vm = search.getVM();
+			ThreadList tl = vm.getThreadList();
 
-      for (ThreadInfo ti : tl){
-        System.out.println("EndStateListener checking thread: " + ti.getStateDescription());
+			for (ThreadInfo ti : tl) {
+				System.out.println("EndStateListener checking thread: "
+						+ ti.getStateDescription());
 
-        // check if there are no alive threads anymore
-        assert ti.isTerminated();
+				// check if there are no alive threads anymore
+				assert ti.isTerminated();
 
-        // check if none of the threads still holds a lock
-        assert !ti.hasLockedObjects();
-      }
-    }
-  }
+				// check if none of the threads still holds a lock
+				assert !ti.hasLockedObjects();
+			}
+		}
+	}
 }

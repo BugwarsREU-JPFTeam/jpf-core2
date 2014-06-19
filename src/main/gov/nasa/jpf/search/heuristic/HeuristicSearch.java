@@ -20,7 +20,6 @@ package gov.nasa.jpf.search.heuristic;
 
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.search.Search;
-import gov.nasa.jpf.vm.RestorableVMState;
 import gov.nasa.jpf.vm.VM;
 
 import java.util.ArrayList;
@@ -157,9 +156,9 @@ public abstract class HeuristicSearch extends Search {
 							System.out.println("child made! Hash code is "
 									+ newHState.hashCode() + " and ID is "
 									+ newHState.stateId);
-							childStates.add(newHState);	// add breakpoint here
-							notifyStateStored();	
-						}//add breakpoint here
+							childStates.add(newHState); // add breakpoint here
+							notifyStateStored();
+						}// add breakpoint here
 					}
 
 				} else {
@@ -183,10 +182,12 @@ public abstract class HeuristicSearch extends Search {
 		notifyStateRestored();
 	}
 
-	public void search() {	//commented out code here is for attempting to loop a heuristic search on state space
-		//RestorableVMState nice = this.getVM().getRestorableState();//mod
-		//for(int i=0;i<5;i++){//mod
-			//System.out.println("Run number "+i);//mod
+	@Override
+	public void search() { // commented out code here is for attempting to loop
+							// a heuristic search on state space
+		// RestorableVMState nice = this.getVM().getRestorableState();//mod
+		// for(int i=0;i<5;i++){//mod
+		// System.out.println("Run number "+i);//mod
 		queueCurrentState();
 		notifyStateStored();
 
@@ -207,10 +208,11 @@ public abstract class HeuristicSearch extends Search {
 			}
 		}
 		notifySearchFinished();
-		//this.getVM().restoreState(nice);//mod
-		//}//mod
+		// this.getVM().restoreState(nice);//mod
+		// }//mod
 	}
 
+	@Override
 	public boolean supportsBacktrack() {
 		// we don't do multi-level backtracks, but automatically do
 		// backtrackToParent()
@@ -218,4 +220,3 @@ public abstract class HeuristicSearch extends Search {
 		return false;
 	}
 }
-

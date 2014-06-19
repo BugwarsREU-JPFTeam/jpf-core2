@@ -23,38 +23,39 @@ import gov.nasa.jpf.vm.ClassLoaderInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.VM;
 
-
 /**
- * heuristic state prioritizer that uses fields of the Main class under test
- * to determine priorities (i.e. priorities can be set by the program under test)
- *  
+ * heuristic state prioritizer that uses fields of the Main class under test to
+ * determine priorities (i.e. priorities can be set by the program under test)
+ * 
  * <2do> pcm - does this still make sense in light of MJI ? If we keep it, this
  * has to be moved to the Verify interface!
  */
 public class UserHeuristic extends SimplePriorityHeuristic {
-  static final int defaultValue = 1000;
+	static final int defaultValue = 1000;
 
-  public UserHeuristic (Config config, VM vm) {
-    super(config, vm);
-  }
+	public UserHeuristic(Config config, VM vm) {
+		super(config, vm);
+	}
 
-  protected int computeHeuristicValue () {
-    
-    // <2do> pcm - BAD, this is WAY too hardwired
-    ClassLoaderInfo systemLoader = ClassLoaderInfo.getCurrentSystemClassLoader();
-    ElementInfo ei = systemLoader.getElementInfo("Main");
-    if (ei != null) {
-      // this code is ugly because of the Reference interface
-      ElementInfo b = ei.getObjectField("buffer");
+	@Override
+	protected int computeHeuristicValue() {
 
-      if (b != null) {
-        int current = b.getIntField("current");
-        int capacity = b.getIntField("capacity");
+		// <2do> pcm - BAD, this is WAY too hardwired
+		ClassLoaderInfo systemLoader = ClassLoaderInfo
+				.getCurrentSystemClassLoader();
+		ElementInfo ei = systemLoader.getElementInfo("Main");
+		if (ei != null) {
+			// this code is ugly because of the Reference interface
+			ElementInfo b = ei.getObjectField("buffer");
 
-        return (capacity - current);
-      }
-    }
+			if (b != null) {
+				int current = b.getIntField("current");
+				int capacity = b.getIntField("capacity");
 
-    return defaultValue;
-  }
+				return (capacity - current);
+			}
+		}
+
+		return defaultValue;
+	}
 }

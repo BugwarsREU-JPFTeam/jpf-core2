@@ -21,27 +21,27 @@ package gov.nasa.jpf.jvm.bytecode;
 import gov.nasa.jpf.vm.MJIEnv;
 import gov.nasa.jpf.vm.StackFrame;
 
-
 /**
- * Branch if reference not null
- * ..., value => ..., result
+ * Branch if reference not null ..., value => ..., result
  */
 public class IFNONNULL extends IfInstruction {
 
-  public IFNONNULL(int targetPc) {
-    super(targetPc);
-  }
+	public IFNONNULL(int targetPc) {
+		super(targetPc);
+	}
 
+	@Override
+	public boolean popConditionValue(StackFrame frame) {
+		return (frame.pop() != MJIEnv.NULL);
+	}
 
-  public boolean popConditionValue (StackFrame frame) {
-    return (frame.pop() != MJIEnv.NULL);
-  }
+	@Override
+	public int getByteCode() {
+		return 0xC7;
+	}
 
-  public int getByteCode () {
-    return 0xC7;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

@@ -21,27 +21,25 @@ package gov.nasa.jpf.search.heuristic;
 import gov.nasa.jpf.vm.VM;
 import gov.nasa.jpf.vm.RestorableVMState;
 
-
 /**
- * wrapper for states that are processed in an order that is
- * defined by a heuristic (i.e. not just depends on the shape
- * of the state graph)
+ * wrapper for states that are processed in an order that is defined by a
+ * heuristic (i.e. not just depends on the shape of the state graph)
  */
 public abstract class HeuristicState {
-  
-  protected RestorableVMState vmState;
-  protected int     stateId;
-    
-  public HeuristicState (VM vm) {
-    stateId = vm.getStateId();
-    vmState = vm.getRestorableState();
-  }
-  
-  public RestorableVMState getVMState () {
-    return vmState;
-  }
-  
-  public int getStateId() {
-    return stateId;
-  }
+
+	protected RestorableVMState vmState;
+	protected int stateId;
+
+	public HeuristicState(VM vm) {
+		stateId = vm.getStateId();
+		vmState = vm.getRestorableState();
+	}
+
+	public RestorableVMState getVMState() {
+		return vmState;
+	}
+
+	public int getStateId() {
+		return stateId;
+	}
 }

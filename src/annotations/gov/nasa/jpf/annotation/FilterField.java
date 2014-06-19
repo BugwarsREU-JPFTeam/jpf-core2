@@ -18,29 +18,29 @@
 //
 package gov.nasa.jpf.annotation;
 
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Indicates that a field in the model should not be considered during
- * state matching.
+ * Indicates that a field in the model should not be considered during state
+ * matching.
+ * 
  * @author peterd
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD})
+@Target({ ElementType.FIELD })
 public @interface FilterField {
-  /**
-   * If not the empty string, specifies a property that must be "true" to
-   * activate this filter--unless <code>invert</code> is set.
-   */
-  String condition() default "";
-  
-  /**
-   * If set to <code>true</code>, property must be "false" to activate filter.
-   * Does nothing if <code>condition</code> is empty string.
-   */
-  boolean invert() default false;
+	/**
+	 * If not the empty string, specifies a property that must be "true" to
+	 * activate this filter--unless <code>invert</code> is set.
+	 */
+	String condition() default "";
+
+	/**
+	 * If set to <code>true</code>, property must be "false" to activate filter.
+	 * Does nothing if <code>condition</code> is empty string.
+	 */
+	boolean invert() default false;
 }

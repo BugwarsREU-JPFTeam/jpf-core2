@@ -22,67 +22,72 @@ package java.io;
 import java.nio.channels.FileChannel;
 
 /**
- * a simple model to read data w/o dragging the file system content into
- * the JPF memory
+ * a simple model to read data w/o dragging the file system content into the JPF
+ * memory
  */
 public class FileInputStream extends InputStream {
 
-  FileDescriptor fd;
-  private FileChannel fc = null;
+	FileDescriptor fd;
+	private FileChannel fc = null;
 
-  public FileInputStream (String fname) throws FileNotFoundException {
-    try {
-      fd = new FileDescriptor(fname, FileDescriptor.FD_READ);
-    } catch (IOException iox){
-      throw new FileNotFoundException(fname);
-    }
-  }
-  
-  public FileInputStream (File file) throws FileNotFoundException {
-    this( file.getAbsolutePath());
-  }
-  
-  public FileInputStream (FileDescriptor fd) {
-    this.fd = fd;
-  }
-  
-  public int read(byte b[]) throws IOException {
-    return read(b,0,b.length);
-  }
+	public FileInputStream(String fname) throws FileNotFoundException {
+		try {
+			fd = new FileDescriptor(fname, FileDescriptor.FD_READ);
+		} catch (IOException iox) {
+			throw new FileNotFoundException(fname);
+		}
+	}
 
-  public FileChannel getChannel() {
-    if(this.fc ==null){
-      this.fc = new FileChannel(fd);
-    }
-    return this.fc;
-  }
-  
-  //--- our native peer methods
-  
-  boolean open (String fname) {
-    // this sets the FileDescriptor from the peer side
-    return false;
-  }
-  
-  public int read() throws IOException {
-    return fd.read();
-  }
+	public FileInputStream(File file) throws FileNotFoundException {
+		this(file.getAbsolutePath());
+	}
 
-  public int read(byte b[], int off, int len) throws IOException {
-    return fd.read(b,off,len);
-  }
-  
-  public long skip(long n) throws IOException {
-    return fd.skip(n);
-  }
+	public FileInputStream(FileDescriptor fd) {
+		this.fd = fd;
+	}
 
-  public int available () throws IOException {
-    return fd.available();
-  }
-  
-  public void close () throws IOException {
-    fd.close();
-  }
-  
-  
+	@Override
+	public int read(byte b[]) throws IOException {
+		return read(b, 0, b.length);
+	}
+
+	public FileChannel getChannel() {
+		if (this.fc == null) {
+			this.fc = new FileChannel(fd);
+		}
+		return this.fc;
+	}
+
+	// --- our native peer methods
+
+	boolean open(String fname) {
+		// this sets the FileDescriptor from the peer side
+		return false;
+	}
+
+	@Override
+	public int read() throws IOException {
+		return fd.read();
+	}
+
+	@Override
+	public int read(byte b[], int off, int len) throws IOException {
+		return fd.read(b, off, len);
+	}
+
+	@Override
+	public long skip(long n) throws IOException {
+		return fd.skip(n);
+	}
+
+	@Override
+	public int available() throws IOException {
+		return fd.available();
+	}
+
+	@Override
+	public void close() throws IOException {
+		fd.close();
+	}
+
 }

@@ -29,19 +29,19 @@ import gov.nasa.jpf.vm.ThreadInfo;
  */
 public abstract class DoubleCompareInstruction extends JVMInstruction {
 
-  @Override
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
-    
-    double v1 = frame.popDouble();
-    double v2 = frame.popDouble();
-    
-    int condVal = conditionValue(v1, v2);
-    
-    frame.push( condVal);
-    
-    return getNext(ti);
-  }
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-  protected abstract int conditionValue (double v1, double v2);
+		double v1 = frame.popDouble();
+		double v2 = frame.popDouble();
+
+		int condVal = conditionValue(v1, v2);
+
+		frame.push(condVal);
+
+		return getNext(ti);
+	}
+
+	protected abstract int conditionValue(double v1, double v2);
 }

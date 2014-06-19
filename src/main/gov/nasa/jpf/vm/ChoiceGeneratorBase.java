@@ -30,381 +30,435 @@ import java.util.Random;
  */
 public abstract class ChoiceGeneratorBase<T> implements ChoiceGenerator<T> {
 
-  /**
-   * choice randomization policies, which can be set from JPF configuration
-   */
-  static enum ChoiceRandomizationPolicy {
-    VAR_SEED,    // randomize choices using a different seed for every JPF run 
-    FIXED_SEED,  // randomize choices using a fixed seed for each JPF run (reproducible, seed can be specified as cg.seed)
-    NONE         // don't randomize choices
-  };
-  
-  static ChoiceRandomizationPolicy randomization;
-  
-  // the marker for the current choice used in String conversion
-  public static final char MARKER = '>';
-  protected static Random random = new Random(42);
-  
-  
-  // want the id to be visible to subclasses outside package
-  protected String id;
-  
-  // for subsequent access, there is no need to translate a JPF String object reference
-  // into a host VM String anymore (we just need it for creation to look up
-  // the class if this is a named CG)
-  protected int idRef;
-  
-  // used to cut off further choice enumeration
-  protected boolean isDone;
-  
-  // we keep a linked list of CG's
-  protected ChoiceGenerator<?> prev;
+	/**
+	 * choice randomization policies, which can be set from JPF configuration
+	 */
+	static enum ChoiceRandomizationPolicy {
+		VAR_SEED, // randomize choices using a different seed for every JPF run
+		FIXED_SEED, // randomize choices using a fixed seed for each JPF run
+					// (reproducible, seed can be specified as cg.seed)
+		NONE // don't randomize choices
+	};
 
-  // the instruction that created this CG
-  protected Instruction insn;
+	static ChoiceRandomizationPolicy randomization;
 
-  // and the thread that executed this insn
-  protected ThreadInfo ti;
+	// the marker for the current choice used in String conversion
+	public static final char MARKER = '>';
+	protected static Random random = new Random(42);
 
-  // free attributes (set on demand)
-  protected Object attr;
+	// want the id to be visible to subclasses outside package
+	protected String id;
 
-  // answer if this is a cascaded CG, i.e. we had more than one registered
-  // within the same transition. Note this is NOT set for the last CG registered
-  protected boolean isCascaded;
+	// for subsequent access, there is no need to translate a JPF String object
+	// reference
+	// into a host VM String anymore (we just need it for creation to look up
+	// the class if this is a named CG)
+	protected int idRef;
 
-  // in case this is initialized from a VM context
-  public static void init(Config config) {
+	// used to cut off further choice enumeration
+	protected boolean isDone;
 
-    randomization = config.getEnum("cg.randomize_choices", 
-                                   ChoiceRandomizationPolicy.values(), ChoiceRandomizationPolicy.NONE);
+	// we keep a linked list of CG's
+	protected ChoiceGenerator<?> prev;
 
-    // if the randomize_choices is set to random then we need to 
-    // pick the seed based on the system time. 
+	// the instruction that created this CG
+	protected Instruction insn;
 
-    if (randomization == ChoiceRandomizationPolicy.VAR_SEED) {
-      random.setSeed(System.currentTimeMillis());
-    } else if (randomization == ChoiceRandomizationPolicy.FIXED_SEED){
-      long seed = config.getLong("cg.seed", 42);
-      random.setSeed( seed);
-    }
-  }
-  
-  public static boolean useRandomization() {
-    return (randomization != ChoiceRandomizationPolicy.NONE);
-  }
+	// and the thread that executed this insn
+	protected ThreadInfo ti;
 
-  /**
-   *  don't use this since it is not safe for cascaded ChoiceGenerators
-   * (we need the 'id' to be as context specific as possible)
-   */
-  @Deprecated
-  protected ChoiceGeneratorBase() {
-    id = "?";
-  }
+	// free attributes (set on demand)
+	protected Object attr;
 
-  protected ChoiceGeneratorBase(String id) {
-    this.id = id;
-  }
+	// answer if this is a cascaded CG, i.e. we had more than one registered
+	// within the same transition. Note this is NOT set for the last CG
+	// registered
+	protected boolean isCascaded;
 
-  public ChoiceGeneratorBase<?> clone() throws CloneNotSupportedException {
-    return (ChoiceGeneratorBase<?>)super.clone();
-  }
+	// in case this is initialized from a VM context
+	public static void init(Config config) {
 
-  public ChoiceGenerator<?> deepClone() throws CloneNotSupportedException {
-    ChoiceGenerator<?> clone = (ChoiceGenerator<?>) super.clone();
-    // we need to deep copy the parent CG
-    if (prev != null){
-      clone.setPreviousChoiceGenerator( prev.deepClone());
-    }
-    return clone;
-  }
-  
-  public String getId() {
-    return id;
-  }
+		randomization = config.getEnum("cg.randomize_choices",
+				ChoiceRandomizationPolicy.values(),
+				ChoiceRandomizationPolicy.NONE);
 
-  public int getIdRef() {
-    return idRef;
-  }
+		// if the randomize_choices is set to random then we need to
+		// pick the seed based on the system time.
 
-  public void setIdRef(int idRef) {
-    this.idRef = idRef;
-  }
+		if (randomization == ChoiceRandomizationPolicy.VAR_SEED) {
+			random.setSeed(System.currentTimeMillis());
+		} else if (randomization == ChoiceRandomizationPolicy.FIXED_SEED) {
+			long seed = config.getLong("cg.seed", 42);
+			random.setSeed(seed);
+		}
+	}
 
-  public void setId(String id) {
-    this.id = id;
-  }
+	public static boolean useRandomization() {
+		return (randomization != ChoiceRandomizationPolicy.NONE);
+	}
 
-  public boolean isSchedulingPoint() {
-    return false;
-  }
+	/**
+	 * don't use this since it is not safe for cascaded ChoiceGenerators (we
+	 * need the 'id' to be as context specific as possible)
+	 */
+	@Deprecated
+	protected ChoiceGeneratorBase() {
+		id = "?";
+	}
 
-  //--- the getters and setters for the CG creation info
-  public void setThreadInfo(ThreadInfo ti) {
-    this.ti = ti;
-  }
+	protected ChoiceGeneratorBase(String id) {
+		this.id = id;
+	}
 
-  public ThreadInfo getThreadInfo() {
-    return ti;
-  }
+	@Override
+	public ChoiceGeneratorBase<?> clone() throws CloneNotSupportedException {
+		return (ChoiceGeneratorBase<?>) super.clone();
+	}
 
-  public void setInsn(Instruction insn) {
-    this.insn = insn;
-  }
+	@Override
+	public ChoiceGenerator<?> deepClone() throws CloneNotSupportedException {
+		ChoiceGenerator<?> clone = (ChoiceGenerator<?>) super.clone();
+		// we need to deep copy the parent CG
+		if (prev != null) {
+			clone.setPreviousChoiceGenerator(prev.deepClone());
+		}
+		return clone;
+	}
 
-  public Instruction getInsn() {
-    return insn;
-  }
+	@Override
+	public String getId() {
+		return id;
+	}
 
-  public void setContext(ThreadInfo tiCreator) {
-    ti = tiCreator;
-    insn = tiCreator.getPC();
-  }
+	@Override
+	public int getIdRef() {
+		return idRef;
+	}
 
-  public String getSourceLocation() {
-    return insn.getSourceLocation();
-  }
+	@Override
+	public void setIdRef(int idRef) {
+		this.idRef = idRef;
+	}
 
-  public boolean supportsReordering(){
-    return false;
-  }
-  
-  /**
-   * reorder according to a user provided comparator
-   * @returns instance to reordered CG of same choice type, 
-   * null if not supported by particular CG subclass
-   * 
-   * Note: this should only be called before the first advance, since it
-   * can reset the CG enumeration status
-   */
-  public ChoiceGenerator<T> reorder (Comparator<T> comparator){
-    return null;
-  }
-  
-  public void setPreviousChoiceGenerator(ChoiceGenerator<?> cg) {
-    prev = cg;
-  }
+	@Override
+	public void setId(String id) {
+		this.id = id;
+	}
 
-  public void setCascaded() {
-    isCascaded = true;
-  }
+	@Override
+	public boolean isSchedulingPoint() {
+		return false;
+	}
 
-  public boolean isCascaded() {
-    return isCascaded;
-  }
+	// --- the getters and setters for the CG creation info
+	@Override
+	public void setThreadInfo(ThreadInfo ti) {
+		this.ti = ti;
+	}
 
-  public <C extends ChoiceGenerator<?>> C getPreviousChoiceGeneratorOfType(Class<C> cls) {
-    ChoiceGenerator<?> cg = prev;
+	@Override
+	public ThreadInfo getThreadInfo() {
+		return ti;
+	}
 
-    while (cg != null) {
-      if (cls.isInstance(cg)) {
-        return (C) cg;
-      }
-      cg = cg.getPreviousChoiceGenerator();
-    }
-    return null;
-  }
+	@Override
+	public void setInsn(Instruction insn) {
+		this.insn = insn;
+	}
 
-  /**
-   * returns the prev CG if it was registered for the same insn
-   */
-  public ChoiceGenerator<?> getCascadedParent() {
-    if (prev != null) {
-      if (prev.isCascaded()) {
-        return prev;
-      }
-    }
+	@Override
+	public Instruction getInsn() {
+		return insn;
+	}
 
-    return null;
-  }
+	@Override
+	public void setContext(ThreadInfo tiCreator) {
+		ti = tiCreator;
+		insn = tiCreator.getPC();
+	}
 
-  /**
-   * return array with all cascaded parents and this CG, in registration order
-   */
-  public ChoiceGenerator<?>[] getCascade() {
-    int n = 0;
-    for (ChoiceGenerator<?> cg = this; cg != null; cg = cg.getCascadedParent()) {
-      n++;
-    }
+	@Override
+	public String getSourceLocation() {
+		return insn.getSourceLocation();
+	}
 
-    ChoiceGenerator<?>[] a = new ChoiceGenerator<?>[n];
+	@Override
+	public boolean supportsReordering() {
+		return false;
+	}
 
-    for (ChoiceGenerator<?> cg = this; cg != null; cg = cg.getCascadedParent()) {
-      a[--n] = cg;
-    }
+	/**
+	 * reorder according to a user provided comparator
+	 * 
+	 * @returns instance to reordered CG of same choice type, null if not
+	 *          supported by particular CG subclass
+	 * 
+	 *          Note: this should only be called before the first advance, since
+	 *          it can reset the CG enumeration status
+	 */
+	@Override
+	public ChoiceGenerator<T> reorder(Comparator<T> comparator) {
+		return null;
+	}
 
-    return a;
-  }
+	@Override
+	public void setPreviousChoiceGenerator(ChoiceGenerator<?> cg) {
+		prev = cg;
+	}
 
-  /**
-   * return array with all parents and this CG, in registration order
-   */
-  public ChoiceGenerator<?>[] getAll() {
-    int n = 0;
-    for (ChoiceGenerator<?> cg = this; cg != null; cg = cg.getPreviousChoiceGenerator()) {
-      n++;
-    }
+	@Override
+	public void setCascaded() {
+		isCascaded = true;
+	}
 
-    ChoiceGenerator<?>[] a = new ChoiceGenerator<?>[n];
+	@Override
+	public boolean isCascaded() {
+		return isCascaded;
+	}
 
-    for (ChoiceGenerator<?> cg = this; cg != null; cg = cg.getPreviousChoiceGenerator()) {
-      a[--n] = cg;
-    }
+	@Override
+	public <C extends ChoiceGenerator<?>> C getPreviousChoiceGeneratorOfType(
+			Class<C> cls) {
+		ChoiceGenerator<?> cg = prev;
 
-    return a;
-  }
+		while (cg != null) {
+			if (cls.isInstance(cg)) {
+				return (C) cg;
+			}
+			cg = cg.getPreviousChoiceGenerator();
+		}
+		return null;
+	}
 
-  /**
-   * return array with all CGs (including this one) of given 'cgType', in registration order
-   */
-  public <C extends ChoiceGenerator<?>> C[] getAllOfType(Class<C> cgType) {
-    int n = 0;
-    for (ChoiceGenerator<?> cg = this; cg != null; cg = cg.getPreviousChoiceGenerator()) {
-      if (cgType.isAssignableFrom(cg.getClass())) {
-        n++;
-      }
-    }
+	/**
+	 * returns the prev CG if it was registered for the same insn
+	 */
+	@Override
+	public ChoiceGenerator<?> getCascadedParent() {
+		if (prev != null) {
+			if (prev.isCascaded()) {
+				return prev;
+			}
+		}
 
-    C[] a = (C[]) Array.newInstance(cgType, n);
+		return null;
+	}
 
-    for (ChoiceGenerator<?> cg = this; cg != null; cg = cg.getPreviousChoiceGenerator()) {
-      if (cgType.isAssignableFrom(cg.getClass())) {
-        a[--n] = (C) cg;
-      }
-    }
+	/**
+	 * return array with all cascaded parents and this CG, in registration order
+	 */
+	@Override
+	public ChoiceGenerator<?>[] getCascade() {
+		int n = 0;
+		for (ChoiceGenerator<?> cg = this; cg != null; cg = cg
+				.getCascadedParent()) {
+			n++;
+		}
 
-    return a;
-  }
+		ChoiceGenerator<?>[] a = new ChoiceGenerator<?>[n];
 
-  // we can't put the advanceForCurrentInsn() here because it has to do
-  // notifications, which are the SystemState responsibility
-  /**
-   * advance n choices
-   * pretty braindead generic solution, but if more speed is needed, we can easily override
-   * in the concrete CGs (it's used for path replay)
-   */
-  public void advance(int nChoices) {
-    while (nChoices-- > 0) {
-      advance();
-    }
-  }
+		for (ChoiceGenerator<?> cg = this; cg != null; cg = cg
+				.getCascadedParent()) {
+			a[--n] = cg;
+		}
 
-  public void select(int nChoice) {
-    advance(nChoice);
-    setDone();
-  }
+		return a;
+	}
 
-  public boolean isDone() {
-    return isDone;
-  }
+	/**
+	 * return array with all parents and this CG, in registration order
+	 */
+	@Override
+	public ChoiceGenerator<?>[] getAll() {
+		int n = 0;
+		for (ChoiceGenerator<?> cg = this; cg != null; cg = cg
+				.getPreviousChoiceGenerator()) {
+			n++;
+		}
 
-  public void setDone() {
-    isDone = true;
-  }
+		ChoiceGenerator<?>[] a = new ChoiceGenerator<?>[n];
 
-  public boolean isProcessed() {
-    return isDone || !hasMoreChoices();
-  }
+		for (ChoiceGenerator<?> cg = this; cg != null; cg = cg
+				.getPreviousChoiceGenerator()) {
+			a[--n] = cg;
+		}
 
-  //--- the generic attribute API
-  public boolean hasAttr() {
-    return (attr != null);
-  }
+		return a;
+	}
 
-  public boolean hasAttr(Class<?> attrType) {
-    return ObjectList.containsType(attr, attrType);
-  }
+	/**
+	 * return array with all CGs (including this one) of given 'cgType', in
+	 * registration order
+	 */
+	@Override
+	public <C extends ChoiceGenerator<?>> C[] getAllOfType(Class<C> cgType) {
+		int n = 0;
+		for (ChoiceGenerator<?> cg = this; cg != null; cg = cg
+				.getPreviousChoiceGenerator()) {
+			if (cgType.isAssignableFrom(cg.getClass())) {
+				n++;
+			}
+		}
 
-  public boolean hasAttrValue (Object a){
-    return ObjectList.contains(attr, a);
-  }
-  
-  /**
-   * this returns all of them - use either if you know there will be only
-   * one attribute at a time, or check/process result with ObjectList
-   */
-  public Object getAttr() {
-    return attr;
-  }
+		C[] a = (C[]) Array.newInstance(cgType, n);
 
-  /**
-   * this replaces all of them - use only if you know 
-   *  - there will be only one attribute at a time
-   *  - you obtained the value you set by a previous getXAttr()
-   *  - you constructed a multi value list with ObjectList.createList()
-   */
-  public void setAttr(Object a) {
-    attr = a;
-  }
+		for (ChoiceGenerator<?> cg = this; cg != null; cg = cg
+				.getPreviousChoiceGenerator()) {
+			if (cgType.isAssignableFrom(cg.getClass())) {
+				a[--n] = (C) cg;
+			}
+		}
 
-  public void addAttr(Object a) {
-    attr = ObjectList.add(attr, a);
-  }
+		return a;
+	}
 
-  public void removeAttr(Object a) {
-    attr = ObjectList.remove(attr, a);
-  }
+	// we can't put the advanceForCurrentInsn() here because it has to do
+	// notifications, which are the SystemState responsibility
+	/**
+	 * advance n choices pretty braindead generic solution, but if more speed is
+	 * needed, we can easily override in the concrete CGs (it's used for path
+	 * replay)
+	 */
+	@Override
+	public void advance(int nChoices) {
+		while (nChoices-- > 0) {
+			advance();
+		}
+	}
 
-  public void replaceAttr(Object oldAttr, Object newAttr) {
-    attr = ObjectList.replace(attr, oldAttr, newAttr);
-  }
+	@Override
+	public void select(int nChoice) {
+		advance(nChoice);
+		setDone();
+	}
 
-  /**
-   * this only returns the first attr of this type, there can be more
-   * if you don't use client private types or the provided type is too general
-   */
-  public <T> T getAttr(Class<T> attrType) {
-    return ObjectList.getFirst(attr, attrType);
-  }
+	@Override
+	public boolean isDone() {
+		return isDone;
+	}
 
-  public <T> T getNextAttr(Class<T> attrType, Object prev) {
-    return ObjectList.getNext(attr, attrType, prev);
-  }
+	@Override
+	public void setDone() {
+		isDone = true;
+	}
 
-  public ObjectList.Iterator attrIterator() {
-    return ObjectList.iterator(attr);
-  }
+	@Override
+	public boolean isProcessed() {
+		return isDone || !hasMoreChoices();
+	}
 
-  public <T> ObjectList.TypedIterator<T> attrIterator(Class<T> attrType) {
-    return ObjectList.typedIterator(attr, attrType);
-  }
+	// --- the generic attribute API
+	@Override
+	public boolean hasAttr() {
+		return (attr != null);
+	}
 
-  // -- end attrs --
-  public String toString() {
-    StringBuilder b = new StringBuilder(getClass().getName());
-    b.append(" {id:\"");
-    b.append(id);
-    b.append("\" ,");
-    b.append(getProcessedNumberOfChoices());
-    b.append('/');
-    b.append(getTotalNumberOfChoices());
-    b.append(",isCascaded:");
-    b.append(isCascaded);
+	@Override
+	public boolean hasAttr(Class<?> attrType) {
+		return ObjectList.containsType(attr, attrType);
+	}
 
-    if (attr != null) {
-      b.append(",attrs:[");
-      int i = 0;
-      for (Object a : ObjectList.iterator(attr)) {
-        if (i++ > 1) {
-          b.append(',');
-        }
-        b.append(a);
-      }
-      b.append(']');
-    }
+	public boolean hasAttrValue(Object a) {
+		return ObjectList.contains(attr, a);
+	}
 
-    b.append('}');
+	/**
+	 * this returns all of them - use either if you know there will be only one
+	 * attribute at a time, or check/process result with ObjectList
+	 */
+	@Override
+	public Object getAttr() {
+		return attr;
+	}
 
-    return b.toString();
-  }
+	/**
+	 * this replaces all of them - use only if you know - there will be only one
+	 * attribute at a time - you obtained the value you set by a previous
+	 * getXAttr() - you constructed a multi value list with
+	 * ObjectList.createList()
+	 */
+	@Override
+	public void setAttr(Object a) {
+		attr = a;
+	}
 
-  public ChoiceGenerator<?> getPreviousChoiceGenerator() {
-    return prev;
-  }
+	@Override
+	public void addAttr(Object a) {
+		attr = ObjectList.add(attr, a);
+	}
 
-  // override if there is special choice randomization support
-  public ChoiceGenerator<T> randomize(){
-    return this;
-  }
+	@Override
+	public void removeAttr(Object a) {
+		attr = ObjectList.remove(attr, a);
+	}
+
+	@Override
+	public void replaceAttr(Object oldAttr, Object newAttr) {
+		attr = ObjectList.replace(attr, oldAttr, newAttr);
+	}
+
+	/**
+	 * this only returns the first attr of this type, there can be more if you
+	 * don't use client private types or the provided type is too general
+	 */
+	@Override
+	public <T> T getAttr(Class<T> attrType) {
+		return ObjectList.getFirst(attr, attrType);
+	}
+
+	@Override
+	public <T> T getNextAttr(Class<T> attrType, Object prev) {
+		return ObjectList.getNext(attr, attrType, prev);
+	}
+
+	@Override
+	public ObjectList.Iterator attrIterator() {
+		return ObjectList.iterator(attr);
+	}
+
+	@Override
+	public <T> ObjectList.TypedIterator<T> attrIterator(Class<T> attrType) {
+		return ObjectList.typedIterator(attr, attrType);
+	}
+
+	// -- end attrs --
+	@Override
+	public String toString() {
+		StringBuilder b = new StringBuilder(getClass().getName());
+		b.append(" {id:\"");
+		b.append(id);
+		b.append("\" ,");
+		b.append(getProcessedNumberOfChoices());
+		b.append('/');
+		b.append(getTotalNumberOfChoices());
+		b.append(",isCascaded:");
+		b.append(isCascaded);
+
+		if (attr != null) {
+			b.append(",attrs:[");
+			int i = 0;
+			for (Object a : ObjectList.iterator(attr)) {
+				if (i++ > 1) {
+					b.append(',');
+				}
+				b.append(a);
+			}
+			b.append(']');
+		}
+
+		b.append('}');
+
+		return b.toString();
+	}
+
+	@Override
+	public ChoiceGenerator<?> getPreviousChoiceGenerator() {
+		return prev;
+	}
+
+	// override if there is special choice randomization support
+	@Override
+	public ChoiceGenerator<T> randomize() {
+		return this;
+	}
 }

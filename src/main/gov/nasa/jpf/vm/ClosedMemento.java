@@ -19,16 +19,16 @@
 package gov.nasa.jpf.vm;
 
 /**
- * this is a self-contained memento that remembers which object to restore,
- * and where to restore it into (e.g. a container).
+ * this is a self-contained memento that remembers which object to restore, and
+ * where to restore it into (e.g. a container).
  * 
  * This differs from a normal Memento in that it requires nothing from the
  * caller except of being called at the right times.
  * 
- * Normally, implementors keep a reference to the original object, and copy
- * the field values which have to be restored.
+ * Normally, implementors keep a reference to the original object, and copy the
+ * field values which have to be restored.
  */
 public interface ClosedMemento {
 
-  void restore();
+	void restore();
 }

@@ -23,5 +23,5 @@ package gov.nasa.jpf.vm;
  */
 public interface TableSwitchInstruction {
 
-  void setTarget(int index, int targetPc);
+	void setTarget(int index, int targetPc);
 }

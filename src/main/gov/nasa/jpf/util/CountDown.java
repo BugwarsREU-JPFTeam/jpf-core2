@@ -20,25 +20,25 @@
 package gov.nasa.jpf.util;
 
 final class CountDown extends RuntimeException {
-  private int remaining;
-  
-  CountDown (int remaining){
-    this.remaining = remaining;
-  }
-  
-  public final int dec(){
-    if (remaining <= 0){
-      throw this;
-    }
-    remaining--;
-    return remaining;
-  }
-  
-  public final void expire (){
-    remaining = 0;
-  }
-  
-  public final void set(int remaining){
-    this.remaining = remaining;
-  }
+	private int remaining;
+
+	CountDown(int remaining) {
+		this.remaining = remaining;
+	}
+
+	public final int dec() {
+		if (remaining <= 0) {
+			throw this;
+		}
+		remaining--;
+		return remaining;
+	}
+
+	public final void expire() {
+		remaining = 0;
+	}
+
+	public final void set(int remaining) {
+		this.remaining = remaining;
+	}
 }

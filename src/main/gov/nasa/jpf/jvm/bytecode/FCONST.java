@@ -23,41 +23,39 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Push float
- * ... => ..., <f>
+ * Push float ... => ..., <f>
  */
 public class FCONST extends JVMInstruction {
-  protected float value;
+	protected float value;
 
+	public FCONST() {
+	} // this is going away
 
-  public FCONST(){} // this is going away
+	public FCONST(float f) {
+		value = f;
+	}
 
-  public FCONST(float f){
-    value = f;
-  }
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-  @Override
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
-    
-    frame.pushFloat(value);
+		frame.pushFloat(value);
 
-    return getNext(ti);
-  }
+		return getNext(ti);
+	}
 
-  public float getValue(){
-	  return value;
-  }
-  
-  @Override
-  public int getByteCode () {
-    return 0x0B; // ?? FCONST_0, _1, _2
-  }
-  
-  @Override
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	public float getValue() {
+		return value;
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0x0B; // ?? FCONST_0, _1, _2
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

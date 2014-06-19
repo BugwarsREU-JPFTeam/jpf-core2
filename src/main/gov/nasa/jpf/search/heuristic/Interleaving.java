@@ -22,45 +22,46 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.vm.VM;
 import gov.nasa.jpf.vm.Path;
 
-
 /**
  * Heuristic to maximize thread interleavings. It is particularly good at
- * flushing out concurrency errors, since it schedules different threads 
- * as much as possible.
+ * flushing out concurrency errors, since it schedules different threads as much
+ * as possible.
  * 
  */
 public class Interleaving extends SimplePriorityHeuristic {
-    
-  int historyLimit;
 
-  public Interleaving (Config config, VM vm) {
-    super(config,vm);
-    
-    historyLimit = config.getInt("search.heuristic.thread_history_limit", -1);
-  }
+	int historyLimit;
 
-  /*
-   * heuristic based on how often, how long ago, and within how many
-   * live threads a certain thread did run
-   */
-  protected int computeHeuristicValue () {
-    int aliveThreads = vm.getThreadList().getMatchingCount(aliveThread);
+	public Interleaving(Config config, VM vm) {
+		super(config, vm);
 
-    Path path = vm.getPath();
-    int  pathSize = path.size();
-    
-    int tid = vm.getCurrentThread().getId();
-    int h_value = 0;
+		historyLimit = config.getInt("search.heuristic.thread_history_limit",
+				-1);
+	}
 
-    if (aliveThreads > 1) { // otherwise there's nothing to interleave
-      
-      for (int i= Math.max(0, pathSize - historyLimit); i<pathSize; i++) {
-        if (path.get(i).getThreadIndex() == tid) {
-          h_value += (pathSize - i) * aliveThreads;
-        }
-      }
-    }
+	/*
+	 * heuristic based on how often, how long ago, and within how many live
+	 * threads a certain thread did run
+	 */
+	@Override
+	protected int computeHeuristicValue() {
+		int aliveThreads = vm.getThreadList().getMatchingCount(aliveThread);
 
-    return h_value;
-  }
+		Path path = vm.getPath();
+		int pathSize = path.size();
+
+		int tid = vm.getCurrentThread().getId();
+		int h_value = 0;
+
+		if (aliveThreads > 1) { // otherwise there's nothing to interleave
+
+			for (int i = Math.max(0, pathSize - historyLimit); i < pathSize; i++) {
+				if (path.get(i).getThreadIndex() == tid) {
+					h_value += (pathSize - i) * aliveThreads;
+				}
+			}
+		}
+
+		return h_value;
+	}
 }

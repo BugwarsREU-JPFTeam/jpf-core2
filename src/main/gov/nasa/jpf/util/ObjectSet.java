@@ -20,16 +20,18 @@
 package gov.nasa.jpf.util;
 
 /**
- * generic interface for object sets
- * this one makes no guarantees about identity or value comparison
+ * generic interface for object sets this one makes no guarantees about identity
+ * or value comparison
  */
 public interface ObjectSet<E> extends Cloneable {
 
-  boolean add (E e);
-  boolean contains (E e);
-  boolean remove (E e);
-  
-  int size();
-  
-  ObjectSet<E> clone();
+	boolean add(E e);
+
+	boolean contains(E e);
+
+	boolean remove(E e);
+
+	int size();
+
+	ObjectSet<E> clone();
 }

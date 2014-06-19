@@ -21,26 +21,27 @@ package gov.nasa.jpf.search.heuristic;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.vm.VM;
 
-
 /**
- * Heuristic state prioriizer that maximizes number of blocked states. This
- * is a classic heuristic for finding deadlocks, since a deadlock requires 
- * all threads to be blocked.
+ * Heuristic state prioriizer that maximizes number of blocked states. This is a
+ * classic heuristic for finding deadlocks, since a deadlock requires all
+ * threads to be blocked.
  */
 public class MostBlocked extends SimplePriorityHeuristic {
 
-  public MostBlocked (Config config, VM vm) {
-    super(config,vm);
-  }
+	public MostBlocked(Config config, VM vm) {
+		super(config, vm);
+	}
 
-  protected int computeHeuristicValue () {
-    int alive = vm.getThreadList().getMatchingCount(aliveThread);
-    int runnable = vm.getThreadList().getMatchingCount(vm.getTimedoutRunnablePredicate());
+	@Override
+	protected int computeHeuristicValue() {
+		int alive = vm.getThreadList().getMatchingCount(aliveThread);
+		int runnable = vm.getThreadList().getMatchingCount(
+				vm.getTimedoutRunnablePredicate());
 
-    // pcm - the (iSystemState based) condition was "!runnable && alive"
-    // the '10000' is just a potential max thread count
-    int h_value = (10000 - (alive - runnable));
+		// pcm - the (iSystemState based) condition was "!runnable && alive"
+		// the '10000' is just a potential max thread count
+		int h_value = (10000 - (alive - runnable));
 
-    return h_value;
-  }
+		return h_value;
+	}
 }

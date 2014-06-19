@@ -30,56 +30,56 @@ import org.junit.Test;
  */
 public class IntChoiceFromListTest extends TestJPF {
 
-  private void testListContents(ChoiceGenerator<Integer> cg) {
-    cg.advance();
-    assertTrue (cg.hasMoreChoices());
-    assertEquals ((int)cg.getNextChoice(), 1);
-    cg.advance();
-    assertTrue (cg.hasMoreChoices());
-    assertEquals ((int)cg.getNextChoice(), 2);
-    cg.advance();
-    assertTrue (cg.hasMoreChoices());
-    assertEquals ((int)cg.getNextChoice(), 3);
-    cg.advance();
-    assertEquals ((int)cg.getNextChoice(), 4);
-  }
+	private void testListContents(ChoiceGenerator<Integer> cg) {
+		cg.advance();
+		assertTrue(cg.hasMoreChoices());
+		assertEquals((int) cg.getNextChoice(), 1);
+		cg.advance();
+		assertTrue(cg.hasMoreChoices());
+		assertEquals((int) cg.getNextChoice(), 2);
+		cg.advance();
+		assertTrue(cg.hasMoreChoices());
+		assertEquals((int) cg.getNextChoice(), 3);
+		cg.advance();
+		assertEquals((int) cg.getNextChoice(), 4);
+	}
 
-  @Test
-  public void testListWithOutDuplicates() {
-    IntChoiceFromList cg = new IntChoiceFromList("test", 1, 2, 3, 4);
-    testListContents(cg);
-    assertFalse (cg.hasMoreChoices());
-  }
+	@Test
+	public void testListWithOutDuplicates() {
+		IntChoiceFromList cg = new IntChoiceFromList("test", 1, 2, 3, 4);
+		testListContents(cg);
+		assertFalse(cg.hasMoreChoices());
+	}
 
-  @Test
-  public void testListWithDuplicates() {
-    IntChoiceFromList cg = new IntChoiceFromList("test1", 1, 2, 3, 4, 4);
-    testListContents(cg);
-    cg.advance();
-    assertFalse (cg.hasMoreChoices());
-    assertEquals ((int)cg.getNextChoice(), 4);
-  }
+	@Test
+	public void testListWithDuplicates() {
+		IntChoiceFromList cg = new IntChoiceFromList("test1", 1, 2, 3, 4, 4);
+		testListContents(cg);
+		cg.advance();
+		assertFalse(cg.hasMoreChoices());
+		assertEquals((int) cg.getNextChoice(), 4);
+	}
 
-  @Test
-  public void testListWithDuplicates2() {
-    IntChoiceFromList cg = new IntChoiceFromList("test2", 1, 2, 1, 2, 1, 2);
-    cg.advance();
-    assertTrue (cg.hasMoreChoices());
-    assertEquals ((int)cg.getNextChoice(), 1);
-    cg.advance();
-    assertTrue (cg.hasMoreChoices());
-    assertEquals ((int)cg.getNextChoice(), 2);
-    cg.advance();
-    assertTrue (cg.hasMoreChoices());
-    assertEquals ((int)cg.getNextChoice(), 1);
-    cg.advance();
-    assertTrue (cg.hasMoreChoices());
-    assertEquals ((int)cg.getNextChoice(), 2);
-    cg.advance();
-    assertTrue (cg.hasMoreChoices());
-    assertEquals ((int)cg.getNextChoice(), 1);
-    cg.advance();
-    assertFalse (cg.hasMoreChoices());
-    assertEquals ((int)cg.getNextChoice(), 2);
-  }
+	@Test
+	public void testListWithDuplicates2() {
+		IntChoiceFromList cg = new IntChoiceFromList("test2", 1, 2, 1, 2, 1, 2);
+		cg.advance();
+		assertTrue(cg.hasMoreChoices());
+		assertEquals((int) cg.getNextChoice(), 1);
+		cg.advance();
+		assertTrue(cg.hasMoreChoices());
+		assertEquals((int) cg.getNextChoice(), 2);
+		cg.advance();
+		assertTrue(cg.hasMoreChoices());
+		assertEquals((int) cg.getNextChoice(), 1);
+		cg.advance();
+		assertTrue(cg.hasMoreChoices());
+		assertEquals((int) cg.getNextChoice(), 2);
+		cg.advance();
+		assertTrue(cg.hasMoreChoices());
+		assertEquals((int) cg.getNextChoice(), 1);
+		cg.advance();
+		assertFalse(cg.hasMoreChoices());
+		assertEquals((int) cg.getNextChoice(), 2);
+	}
 }

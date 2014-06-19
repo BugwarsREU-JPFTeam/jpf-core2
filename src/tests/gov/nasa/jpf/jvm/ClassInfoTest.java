@@ -25,7 +25,6 @@ import gov.nasa.jpf.vm.ClassParseException;
 import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.MethodInfo;
 
-
 import java.io.File;
 
 import org.junit.Test;
@@ -35,113 +34,120 @@ import org.junit.Test;
  */
 public class ClassInfoTest extends TestJPF {
 
-  @interface X {
-    String value() default "nothing";
-  }
+	@interface X {
+		String value() default "nothing";
+	}
 
-  @interface Y {
-    int[] value();
-  }
+	@interface Y {
+		int[] value();
+	}
 
-  @X
-  public static class MyClass implements Cloneable {
-    public static final int D = 42;
+	@X
+	public static class MyClass implements Cloneable {
+		public static final int D = 42;
 
-    @X("data") String s;
+		@X("data")
+		String s;
 
-    public MyClass(String s) {
-      this.s = s;
-      foo();
-    }
+		public MyClass(String s) {
+			this.s = s;
+			foo();
+		}
 
-    public static int whatIsIt() {
-      int d = D;
-      switch (d) {
-        case 41:
-          d = -1;
-          break;
-        case 42:
-          d = 0;
-          break;
-        case 43:
-          d = 1;
-          break;
-        default:
-          d = 2;
-          break;
-      }
-      return d;
-    }
+		public static int whatIsIt() {
+			int d = D;
+			switch (d) {
+			case 41:
+				d = -1;
+				break;
+			case 42:
+				d = 0;
+				break;
+			case 43:
+				d = 1;
+				break;
+			default:
+				d = 2;
+				break;
+			}
+			return d;
+		}
 
-    public boolean isItTheAnswer (boolean b, @X @Y({1,2,3}) int d, String s){
-      switch (d){
-        case 42: return true;
-        default: return false;
-      }
-    }
+		public boolean isItTheAnswer(boolean b, @X @Y({ 1, 2, 3 }) int d,
+				String s) {
+			switch (d) {
+			case 42:
+				return true;
+			default:
+				return false;
+			}
+		}
 
-    protected void foo() throws IndexOutOfBoundsException {
-      @X int d = D;
+		protected void foo() throws IndexOutOfBoundsException {
+			@X
+			int d = D;
 
-      Object[] a = new Object[2];
-      String s = "blah";
-      a[0] = s;
+			Object[] a = new Object[2];
+			String s = "blah";
+			a[0] = s;
 
-      String x = (String)a[0];
-      Object o = a;
-      if (o instanceof Object[]){
-        o = x;
-      }
-      if (o instanceof String){
-        o = null;
-      }
+			String x = (String) a[0];
+			Object o = a;
+			if (o instanceof Object[]) {
+				o = x;
+			}
+			if (o instanceof String) {
+				o = null;
+			}
 
-      Object[][] aa = new Object[2][2];
+			Object[][] aa = new Object[2][2];
 
-      try {
-        char c = s.charAt(d);
-      } catch (IndexOutOfBoundsException ioobx) {
-        System.out.println("too big");
-        throw ioobx;
-      }
-    }
+			try {
+				char c = s.charAt(d);
+			} catch (IndexOutOfBoundsException ioobx) {
+				System.out.println("too big");
+				throw ioobx;
+			}
+		}
 
-    @X
-    String getString() {
-      return s;
-    }
-  }
+		@X
+		String getString() {
+			return s;
+		}
+	}
 
-  @Test
-  public void testClassFileInitialization() {
-    File file = new File("build/tests/gov/nasa/jpf/jvm/ClassInfoTest$MyClass.class");
+	@Test
+	public void testClassFileInitialization() {
+		File file = new File(
+				"build/tests/gov/nasa/jpf/jvm/ClassInfoTest$MyClass.class");
 
-    try {
-      ClassInfo ci = new NonResolvedClassInfo( "gov.nasa.jpf.jvm.ClassInfoTest$MyClass", file);
+		try {
+			ClassInfo ci = new NonResolvedClassInfo(
+					"gov.nasa.jpf.jvm.ClassInfoTest$MyClass", file);
 
-      assert ci.getName().equals("gov.nasa.jpf.jvm.ClassInfoTest$MyClass");
+			assert ci.getName()
+					.equals("gov.nasa.jpf.jvm.ClassInfoTest$MyClass");
 
-      System.out.println("-- declared instance fields");
-      for (FieldInfo fi : ci.getDeclaredInstanceFields()){
-        System.out.print(fi.getType());
-        System.out.print(' ');
-        System.out.println(fi.getName());
-      }
+			System.out.println("-- declared instance fields");
+			for (FieldInfo fi : ci.getDeclaredInstanceFields()) {
+				System.out.print(fi.getType());
+				System.out.print(' ');
+				System.out.println(fi.getName());
+			}
 
-      assert ci.getNumberOfDeclaredInstanceFields() == 1;
-      assert ci.getNumberOfStaticFields() == 1;
+			assert ci.getNumberOfDeclaredInstanceFields() == 1;
+			assert ci.getNumberOfStaticFields() == 1;
 
-      System.out.println();
-      System.out.println("-- methods");
-      for (MethodInfo mi : ci){
-        System.out.println(mi.getUniqueName());
-      }
+			System.out.println();
+			System.out.println("-- methods");
+			for (MethodInfo mi : ci) {
+				System.out.println(mi.getUniqueName());
+			}
 
-
-    } catch (ClassParseException cfx){
-      //cfx.printStackTrace();
-      fail("ClassParseException: " + cfx);
-    }
-  }
+		} catch (ClassParseException cfx) {
+			// cfx.printStackTrace();
+			fail("ClassParseException: " + cfx);
+		}
+	}
 
 }

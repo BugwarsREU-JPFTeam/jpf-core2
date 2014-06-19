@@ -26,72 +26,69 @@ import gov.nasa.jpf.vm.ClassLoaderInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.VM;
-import gov.nasa.jpf.vm.StaticElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
 
 public class DoubleSpec {
 
-  /**
-   * return double from String spec, which can be either a literal
-   * or a local variable name, or a field name
-   */
-  public static double eval (String spec) {
-    double ret;
-    
-    char c = spec.charAt(0);
-    if (Character.isDigit(c) || (c == '+') || (c == '-') || (c == '.')) {
-      try {
-        ret = Double.parseDouble(spec); 
-      } 
-      catch (NumberFormatException nfx) {
-        throw new JPFException("illegal double spec: " + spec);
-      }
-    } else {
-      ret = resolveVar(spec);      
-    }
-    return ret;
-  }
+	/**
+	 * return double from String spec, which can be either a literal or a local
+	 * variable name, or a field name
+	 */
+	public static double eval(String spec) {
+		double ret;
 
-  public static double resolveVar(String spec){
-    VM vm = VM.getVM();
-    String[] varId = spec.split("[.]+");
+		char c = spec.charAt(0);
+		if (Character.isDigit(c) || (c == '+') || (c == '-') || (c == '.')) {
+			try {
+				ret = Double.parseDouble(spec);
+			} catch (NumberFormatException nfx) {
+				throw new JPFException("illegal double spec: " + spec);
+			}
+		} else {
+			ret = resolveVar(spec);
+		}
+		return ret;
+	}
 
-    double ret;
-    switch (varId.length){
-    case 1: { // variable name
-      ThreadInfo ti = ThreadInfo.getCurrentThread();
-      try {
-        StackFrame frame = ti.getTopFrame();
+	public static double resolveVar(String spec) {
+		VM vm = VM.getVM();
+		String[] varId = spec.split("[.]+");
 
-        ret = frame.getDoubleLocalVariable(varId[0]);
-        // that throws an exception (a few calls down) if  
-        // the name is not found...
-      }
-      catch (JPFException e){ //not local? try a field!
-        int id = ti.getThis();
-        if(id>=0){  // in a normal (non-static) method
-          ElementInfo ei = vm.getElementInfo(id);
-          ret = ei.getDoubleField(varId[0]);
-        }
-        else { // static method (no this)- must be static var
-          ClassInfo ci = ti.getTopFrameMethodInfo().getClassInfo();
-          ElementInfo ei = ci.getStaticElementInfo();
-          ret = ei.getDoubleField(varId[0]);
-        }
-      }
-      break;
-    }
-    case 2: { // static variable name TODO other cases here...
-      ClassInfo ci = ClassLoaderInfo.getCurrentResolvedClassInfo( varId[0]);
-      ElementInfo ei = ci.getStaticElementInfo();
-      ret = ei.getDoubleField(varId[1]);
-      break;
-    }
-    default: 
-      throw new JPFException("Choice value format error parsing \"" + spec +"\"");
-    }
-    return ret;
-  }
+		double ret;
+		switch (varId.length) {
+		case 1: { // variable name
+			ThreadInfo ti = ThreadInfo.getCurrentThread();
+			try {
+				StackFrame frame = ti.getTopFrame();
 
-  
+				ret = frame.getDoubleLocalVariable(varId[0]);
+				// that throws an exception (a few calls down) if
+				// the name is not found...
+			} catch (JPFException e) { // not local? try a field!
+				int id = ti.getThis();
+				if (id >= 0) { // in a normal (non-static) method
+					ElementInfo ei = vm.getElementInfo(id);
+					ret = ei.getDoubleField(varId[0]);
+				} else { // static method (no this)- must be static var
+					ClassInfo ci = ti.getTopFrameMethodInfo().getClassInfo();
+					ElementInfo ei = ci.getStaticElementInfo();
+					ret = ei.getDoubleField(varId[0]);
+				}
+			}
+			break;
+		}
+		case 2: { // static variable name TODO other cases here...
+			ClassInfo ci = ClassLoaderInfo
+					.getCurrentResolvedClassInfo(varId[0]);
+			ElementInfo ei = ci.getStaticElementInfo();
+			ret = ei.getDoubleField(varId[1]);
+			break;
+		}
+		default:
+			throw new JPFException("Choice value format error parsing \""
+					+ spec + "\"");
+		}
+		return ret;
+	}
+
 }

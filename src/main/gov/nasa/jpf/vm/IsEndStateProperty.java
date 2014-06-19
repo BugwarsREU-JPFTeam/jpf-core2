@@ -21,16 +21,17 @@ package gov.nasa.jpf.vm;
 import gov.nasa.jpf.GenericProperty;
 import gov.nasa.jpf.search.Search;
 
-
 /**
  * property class to check if we have reached the end state of the program
  */
 class IsEndStateProperty extends GenericProperty {
-  public String getErrorMessage () {
-    return "End State Reached";
-  }
+	@Override
+	public String getErrorMessage() {
+		return "End State Reached";
+	}
 
-  public boolean check (Search search, VM vm) {
-    return vm.isEndState();
-  }
+	@Override
+	public boolean check(Search search, VM vm) {
+		return vm.isEndState();
+	}
 }

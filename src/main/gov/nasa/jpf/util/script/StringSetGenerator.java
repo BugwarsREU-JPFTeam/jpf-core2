@@ -23,37 +23,42 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-class CG {}
+class CG {
+}
 
 class SingleChoice extends CG {
-  Event event;
+	Event event;
 
-  SingleChoice (Event e) {
-    event = e;
-  }
-  public String toString() {
-    return event.toString();
-  }
+	SingleChoice(Event e) {
+		event = e;
+	}
+
+	@Override
+	public String toString() {
+		return event.toString();
+	}
 }
 
 class SetChoice extends CG {
-  ArrayList<Event> choices = new ArrayList<Event>();
+	ArrayList<Event> choices = new ArrayList<Event>();
 
-  public void add(Event e) {
-    choices.add(e);
-  }
+	public void add(Event e) {
+		choices.add(e);
+	}
 
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append('{');
-    int i=0, n = choices.size();
-    for (Event e : choices) {
-      sb.append(e);
-      if (++i < n) sb.append(',');
-    }
-    sb.append('}');
-    return sb.toString();
-  }
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append('{');
+		int i = 0, n = choices.size();
+		for (Event e : choices) {
+			sb.append(e);
+			if (++i < n)
+				sb.append(',');
+		}
+		sb.append('}');
+		return sb.toString();
+	}
 }
 
 /**
@@ -61,55 +66,59 @@ class SetChoice extends CG {
  * having any side effects in the ElementProcessor
  */
 public class StringSetGenerator implements ElementProcessor {
-  LinkedHashMap<String,ArrayList<CG>> sections;
-  ArrayList<CG> queue;
-  
-  StringSetGenerator() {
-    sections = new LinkedHashMap<String,ArrayList<CG>>();
-    queue = new ArrayList<CG>();
-    sections.put("default", queue);
-  }
-  
-  public void process (Section sec) {
-    queue = new ArrayList<CG>();    
-    sec.processChildren(this);
-    
-    for (String id : sec.getIds()) {
-      sections.put(id,queue);      
-    }
-  }
-  
-  public void process (Event e) {
-    for (Event ee : e.expand()) {
-      queue.add( new SingleChoice(ee));
-    }    
-  }
+	LinkedHashMap<String, ArrayList<CG>> sections;
+	ArrayList<CG> queue;
 
-  public void process (Alternative a) {
-    SetChoice cg = new SetChoice();
-    for (ScriptElement e = a.getFirstChild(); e != null; e = e.getNextSibling()) {
-      if (e instanceof Event) {
-        for (Event ee : ((Event)e).expand()) {
-          cg.add(ee);
-        }
-      }
-    }
-    queue.add(cg);
-  }
-  
+	StringSetGenerator() {
+		sections = new LinkedHashMap<String, ArrayList<CG>>();
+		queue = new ArrayList<CG>();
+		sections.put("default", queue);
+	}
 
-  public void process (Repetition r) {
-    int n = r.getRepeatCount();
-    for (int i=0; i<n; i++) {
-      r.processChildren(this);
-    }
-  }
-  
-  public LinkedHashMap<String,ArrayList<CG>> getSections () {
-    return sections;
-  }
+	@Override
+	public void process(Section sec) {
+		queue = new ArrayList<CG>();
+		sec.processChildren(this);
 
-  public List<CG> getCGQueue() {
-    return queue;
-  }
+		for (String id : sec.getIds()) {
+			sections.put(id, queue);
+		}
+	}
+
+	@Override
+	public void process(Event e) {
+		for (Event ee : e.expand()) {
+			queue.add(new SingleChoice(ee));
+		}
+	}
+
+	@Override
+	public void process(Alternative a) {
+		SetChoice cg = new SetChoice();
+		for (ScriptElement e = a.getFirstChild(); e != null; e = e
+				.getNextSibling()) {
+			if (e instanceof Event) {
+				for (Event ee : ((Event) e).expand()) {
+					cg.add(ee);
+				}
+			}
+		}
+		queue.add(cg);
+	}
+
+	@Override
+	public void process(Repetition r) {
+		int n = r.getRepeatCount();
+		for (int i = 0; i < n; i++) {
+			r.processChildren(this);
+		}
+	}
+
+	public LinkedHashMap<String, ArrayList<CG>> getSections() {
+		return sections;
+	}
+
+	public List<CG> getCGQueue() {
+		return queue;
+	}
 }

@@ -7,7 +7,7 @@ import gov.nasa.jpf.vm.ChoiceGeneratorBase;
  */
 public abstract class EventGenerator<T> extends ChoiceGeneratorBase<T> {
 
-  protected EventGenerator (String id){
-    super(id);
-  }
+	protected EventGenerator(String id) {
+		super(id);
+	}
 }

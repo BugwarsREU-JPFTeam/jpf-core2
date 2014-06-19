@@ -20,25 +20,32 @@ package gov.nasa.jpf.vm;
 
 import gov.nasa.jpf.annotation.MJI;
 
-
 public class JPF_java_lang_reflect_Proxy extends NativePeer {
-  @MJI
-  public int defineClass0 (MJIEnv env, int clsObjRef, int classLoaderRef, int nameRef, int bufferRef, int offset, int length) {  
-    String clsName = env.getStringObject(nameRef);
-    byte[] buffer = env.getByteArrayObject(bufferRef);
-    
-    try {
-      ClassInfo ci = ClassLoaderInfo.getCurrentClassLoader().getResolvedClassInfo( clsName, buffer, offset, length);
-      if (!ci.isRegistered()) {
-        ThreadInfo ti = env.getThreadInfo();
-        ci.registerClass(ti);
-      }
-      return ci.getClassObjectRef();
-      
-    } catch (ClassInfoException cix){
-      env.throwException("java.lang.ClassFormatError", clsName); // <2do> check if this is the right one
-      return MJIEnv.NULL;
-    }
-  }
-}
+	@MJI
+	public int defineClass0(MJIEnv env, int clsObjRef, int classLoaderRef,
+			int nameRef, int bufferRef, int offset, int length) {
+		String clsName = env.getStringObject(nameRef);
+		byte[] buffer = env.getByteArrayObject(bufferRef);
 
+		try {
+			ClassInfo ci = ClassLoaderInfo.getCurrentClassLoader()
+					.getResolvedClassInfo(clsName, buffer, offset, length);
+			if (!ci.isRegistered()) {
+				ThreadInfo ti = env.getThreadInfo();
+				ci.registerClass(ti);
+			}
+			return ci.getClassObjectRef();
+
+		} catch (ClassInfoException cix) {
+			env.throwException("java.lang.ClassFormatError", clsName); // <2do>
+																		// check
+																		// if
+																		// this
+																		// is
+																		// the
+																		// right
+																		// one
+			return MJIEnv.NULL;
+		}
+	}
+}

@@ -27,57 +27,63 @@ import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
 /**
- * Exit monitor for object 
- * ..., objectref => ... 
+ * Exit monitor for object ..., objectref => ...
  */
 public class MONITOREXIT extends LockInstruction {
 
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
-    
-    int objref = frame.peek();
-    if (objref == MJIEnv.NULL) {
-      return ti.createAndThrowException("java.lang.NullPointerException",
-                                        "attempt to release lock for null object");
-    }
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    lastLockRef = objref;
+		int objref = frame.peek();
+		if (objref == MJIEnv.NULL) {
+			return ti.createAndThrowException("java.lang.NullPointerException",
+					"attempt to release lock for null object");
+		}
 
-    if (!ti.isFirstStepInsn()){
-      ElementInfo ei = ti.getModifiableElementInfo(objref);
-      
-      // we only do this in the bottom half, but before potentially creating
-      // a CG so that other threads that might become runnable are included
-      ei.unlock(ti); // might still be recursive
+		lastLockRef = objref;
 
-      if (ei.getLockCount() == 0){ // this gave up the lock, check for CG
-        // this thread obviously has referenced the object before, but other
-        // referencers might have terminated so we want to update anyways
-        ei = ei.getInstanceWithUpdatedSharedness(ti); 
-        if (ei.isShared()) {
-          VM vm  = ti.getVM();
-          ChoiceGenerator<?> cg = vm.getSchedulerFactory().createMonitorExitCG(ei, ti);
-          if (cg != null) {
-            if (vm.setNextChoiceGenerator(cg)) {
-              return this;
-            }
-          }
-        }
-      }
-    }
+		if (!ti.isFirstStepInsn()) {
+			ElementInfo ei = ti.getModifiableElementInfo(objref);
 
-    frame = ti.getModifiableTopFrame(); // now we need to modify it
-    frame.pop();
+			// we only do this in the bottom half, but before potentially
+			// creating
+			// a CG so that other threads that might become runnable are
+			// included
+			ei.unlock(ti); // might still be recursive
 
-    return getNext(ti);
-  }
+			if (ei.getLockCount() == 0) { // this gave up the lock, check for CG
+				// this thread obviously has referenced the object before, but
+				// other
+				// referencers might have terminated so we want to update
+				// anyways
+				ei = ei.getInstanceWithUpdatedSharedness(ti);
+				if (ei.isShared()) {
+					VM vm = ti.getVM();
+					ChoiceGenerator<?> cg = vm.getSchedulerFactory()
+							.createMonitorExitCG(ei, ti);
+					if (cg != null) {
+						if (vm.setNextChoiceGenerator(cg)) {
+							return this;
+						}
+					}
+				}
+			}
+		}
 
+		frame = ti.getModifiableTopFrame(); // now we need to modify it
+		frame.pop();
 
-  public int getByteCode () {
-    return 0xC3;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		return getNext(ti);
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0xC3;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

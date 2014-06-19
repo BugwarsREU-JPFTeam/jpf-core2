@@ -29,110 +29,117 @@ import gov.nasa.jpf.vm.choice.IntIntervalGenerator;
 
 /**
  * common root class for LOOKUPSWITCH and TABLESWITCH insns
- *
- * <2do> this is inefficient. First, we should store targets as instruction indexes
- * to avoid execution() looping. Second, there are no matches for a TABLESWITCH
+ * 
+ * <2do> this is inefficient. First, we should store targets as instruction
+ * indexes to avoid execution() looping. Second, there are no matches for a
+ * TABLESWITCH
  */
 public abstract class SwitchInstruction extends JVMInstruction {
 
-  public static final int DEFAULT = -1; 
-  
-  protected int   target;   // default branch
-  protected int[] targets;  // explicit value branches
-  protected int[] matches;  // branch consts
+	public static final int DEFAULT = -1;
 
-  protected int lastIdx;
+	protected int target; // default branch
+	protected int[] targets; // explicit value branches
+	protected int[] matches; // branch consts
 
-  protected SwitchInstruction (int defaultTarget, int numberOfTargets){
-    target = defaultTarget;
-    targets = new int[numberOfTargets];
-    matches = new int[numberOfTargets];
-  }
+	protected int lastIdx;
 
-  public int getNumberOfEntries() {
-    return targets.length;
-  }
+	protected SwitchInstruction(int defaultTarget, int numberOfTargets) {
+		target = defaultTarget;
+		targets = new int[numberOfTargets];
+		matches = new int[numberOfTargets];
+	}
 
-  protected Instruction executeConditional (ThreadInfo ti){
-    StackFrame frame = ti.getModifiableTopFrame();
+	public int getNumberOfEntries() {
+		return targets.length;
+	}
 
-    int value = frame.pop();
+	protected Instruction executeConditional(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    lastIdx = DEFAULT;
+		int value = frame.pop();
 
-    for (int i = 0, l = matches.length; i < l; i++) {
-      if (value == matches[i]) {
-        lastIdx = i;
-        return mi.getInstructionAt(targets[i]);
-      }
-    }
+		lastIdx = DEFAULT;
 
-    return mi.getInstructionAt(target);
-  }
-  
-  public Instruction execute (ThreadInfo ti) {
-    // this can be overridden by subclasses, so we have to delegate the conditional execution
-    // to avoid getting recursive in executeAllBranches()
-    return executeConditional(ti);
-  }
+		for (int i = 0, l = matches.length; i < l; i++) {
+			if (value == matches[i]) {
+				lastIdx = i;
+				return mi.getInstructionAt(targets[i]);
+			}
+		}
 
-  /** useful for symbolic execution modes */
-  public Instruction executeAllBranches (SystemState ss, KernelState ks, ThreadInfo ti) {
-    if (!ti.isFirstStepInsn()) {
-      IntIntervalGenerator cg = new IntIntervalGenerator("switchAll", 0,matches.length);
-      if (ss.setNextChoiceGenerator(cg)){
-        return this;
+		return mi.getInstructionAt(target);
+	}
 
-      } else {
-        // listener did override CG, fall back to conditional execution
-        return executeConditional(ti);
-      }
-      
-    } else {
-      IntIntervalGenerator cg = ss.getCurrentChoiceGenerator("switchAll", IntIntervalGenerator.class);
-      assert (cg != null) : "no IntIntervalGenerator";
-      
-      StackFrame frame = ti.getModifiableTopFrame();
-      int idx = frame.pop(); // but we are not using it
-      idx = cg.getNextChoice();
-      
-      if (idx == matches.length){ // default branch
-        lastIdx = DEFAULT;
-        return mi.getInstructionAt(target);
-      } else {
-        lastIdx = idx;
-        return mi.getInstructionAt(targets[idx]);
-      }
-    }
-  }
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		// this can be overridden by subclasses, so we have to delegate the
+		// conditional execution
+		// to avoid getting recursive in executeAllBranches()
+		return executeConditional(ti);
+	}
 
-  //--- a little inspection, but only post exec yet
-  
-  public int getLastTargetIndex () {
-    return lastIdx;
-  }
-  
-  public int getNumberOfTargets () {
-    return matches.length;
-  }
-  
-  public int getMatchConst (int idx){
-    return matches[idx];
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	/** useful for symbolic execution modes */
+	public Instruction executeAllBranches(SystemState ss, KernelState ks,
+			ThreadInfo ti) {
+		if (!ti.isFirstStepInsn()) {
+			IntIntervalGenerator cg = new IntIntervalGenerator("switchAll", 0,
+					matches.length);
+			if (ss.setNextChoiceGenerator(cg)) {
+				return this;
 
-  public int getTarget() {
-	return target;
-  }
+			} else {
+				// listener did override CG, fall back to conditional execution
+				return executeConditional(ti);
+			}
 
-  public int[] getTargets() {
-	return targets;
-  }
+		} else {
+			IntIntervalGenerator cg = ss.getCurrentChoiceGenerator("switchAll",
+					IntIntervalGenerator.class);
+			assert (cg != null) : "no IntIntervalGenerator";
 
-  public int[] getMatches() {
-	return matches;
-  }
+			StackFrame frame = ti.getModifiableTopFrame();
+			int idx = frame.pop(); // but we are not using it
+			idx = cg.getNextChoice();
+
+			if (idx == matches.length) { // default branch
+				lastIdx = DEFAULT;
+				return mi.getInstructionAt(target);
+			} else {
+				lastIdx = idx;
+				return mi.getInstructionAt(targets[idx]);
+			}
+		}
+	}
+
+	// --- a little inspection, but only post exec yet
+
+	public int getLastTargetIndex() {
+		return lastIdx;
+	}
+
+	public int getNumberOfTargets() {
+		return matches.length;
+	}
+
+	public int getMatchConst(int idx) {
+		return matches[idx];
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
+
+	public int getTarget() {
+		return target;
+	}
+
+	public int[] getTargets() {
+		return targets;
+	}
+
+	public int[] getMatches() {
+		return matches;
+	}
 }

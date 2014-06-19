@@ -34,61 +34,61 @@ import org.junit.Test;
  */
 public class BufferedInputStreamTest extends TestJPF {
 
-  @Before
-  public void setUp() {
-    System.out.println("setUp() creating test file");
-    createTestFile();
-  }
+	@Before
+	public void setUp() {
+		System.out.println("setUp() creating test file");
+		createTestFile();
+	}
 
-  @After
-  public void tearDown() {
-    System.out.println("setUp() deleting test file");
-    deleteTestFile();
-  }
+	@After
+	public void tearDown() {
+		System.out.println("setUp() deleting test file");
+		deleteTestFile();
+	}
 
-  public static void createTestFile() {
-    try {
-      FileOutputStream fo = new FileOutputStream(testFile);
-      fo.write(TEST_DATA);
-      fo.close();
-    } catch (Throwable t) {
-      throw new RuntimeException("failed to create test file", t);
-    }
-  }
+	public static void createTestFile() {
+		try {
+			FileOutputStream fo = new FileOutputStream(testFile);
+			fo.write(TEST_DATA);
+			fo.close();
+		} catch (Throwable t) {
+			throw new RuntimeException("failed to create test file", t);
+		}
+	}
 
-  public static void deleteTestFile() {
-    if (testFile.exists()) {
-      testFile.delete();
-    }
-  }
+	public static void deleteTestFile() {
+		if (testFile.exists()) {
+			testFile.delete();
+		}
+	}
 
-  //--- the tests
-  static File testFile = new File("__test__");
-  static final byte[] TEST_DATA = {42, 42, 42};
+	// --- the tests
+	static File testFile = new File("__test__");
+	static final byte[] TEST_DATA = { 42, 42, 42 };
 
-  @Test
-  public void testSimpleRead() {
-    if (verifyNoPropertyViolation()) {
-      try {
-        FileInputStream fis = new FileInputStream(testFile);
-        BufferedInputStream bis = new BufferedInputStream(fis);
-        int n = bis.available();
+	@Test
+	public void testSimpleRead() {
+		if (verifyNoPropertyViolation()) {
+			try {
+				FileInputStream fis = new FileInputStream(testFile);
+				BufferedInputStream bis = new BufferedInputStream(fis);
+				int n = bis.available();
 
-        assert n == TEST_DATA.length : "wrong available count: " + n;
+				assert n == TEST_DATA.length : "wrong available count: " + n;
 
-        for (int i = 0; i < n; i++) {
-          int d = bis.read();
-          System.out.print(d);
-          System.out.print(',');
-          assert d == TEST_DATA[i] : "wrong read data";
-        }
-        System.out.println();
+				for (int i = 0; i < n; i++) {
+					int d = bis.read();
+					System.out.print(d);
+					System.out.print(',');
+					assert d == TEST_DATA[i] : "wrong read data";
+				}
+				System.out.println();
 
-        bis.close();
+				bis.close();
 
-      } catch (Throwable t) {
-        assert false : "BufferedInputStream test failed: " + t;
-      }
-    }
-  }
+			} catch (Throwable t) {
+				assert false : "BufferedInputStream test failed: " + t;
+			}
+		}
+	}
 }

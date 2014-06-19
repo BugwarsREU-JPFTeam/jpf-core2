@@ -27,41 +27,41 @@ import org.junit.Test;
  */
 public class IdentityArrayObjectSetTest extends TestJPF {
 
-  @Test
-  public void testBasic(){
-    String a = "a";
-    String b = "b";
-    
-    IdentityArrayObjectSet<String> s = new IdentityArrayObjectSet<String>();
-    
-    assertTrue(  s.isEmpty());
-    System.out.println(s);
+	@Test
+	public void testBasic() {
+		String a = "a";
+		String b = "b";
 
-    assertTrue(  s.add(a));
-    assertTrue(  s.size() == 1);
-    assertTrue(  s.contains(a));
-    System.out.println(s);
-    
-    assertFalse( s.add(a)); // already in
-    assertTrue(  s.size() == 1);
-    System.out.println(s);
-    
-    assertTrue(  s.add(b));
-    assertTrue(  s.size() == 2);
-    assertTrue(  s.contains(b));
-    System.out.println(s);
+		IdentityArrayObjectSet<String> s = new IdentityArrayObjectSet<String>();
 
-    assertTrue(  s.remove(a));
-    assertTrue(  s.size() == 1);
-    assertFalse( s.contains(a));
-    assertTrue(  s.contains(b));
-    System.out.println(s);
-    
-    assertFalse( s.remove(a)); // can't remove it a second time
-    System.out.println(s);
-    
-    assertTrue(  s.remove(b));
-    assertTrue(  s.isEmpty());
-    System.out.println(s);
-  }
+		assertTrue(s.isEmpty());
+		System.out.println(s);
+
+		assertTrue(s.add(a));
+		assertTrue(s.size() == 1);
+		assertTrue(s.contains(a));
+		System.out.println(s);
+
+		assertFalse(s.add(a)); // already in
+		assertTrue(s.size() == 1);
+		System.out.println(s);
+
+		assertTrue(s.add(b));
+		assertTrue(s.size() == 2);
+		assertTrue(s.contains(b));
+		System.out.println(s);
+
+		assertTrue(s.remove(a));
+		assertTrue(s.size() == 1);
+		assertFalse(s.contains(a));
+		assertTrue(s.contains(b));
+		System.out.println(s);
+
+		assertFalse(s.remove(a)); // can't remove it a second time
+		System.out.println(s);
+
+		assertTrue(s.remove(b));
+		assertTrue(s.isEmpty());
+		System.out.println(s);
+	}
 }

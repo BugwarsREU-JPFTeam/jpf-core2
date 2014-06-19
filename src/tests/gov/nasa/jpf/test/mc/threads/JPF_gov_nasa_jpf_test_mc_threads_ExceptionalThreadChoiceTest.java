@@ -30,35 +30,41 @@ import gov.nasa.jpf.vm.choice.ExceptionThreadChoiceFromSet;
 /**
  *
  */
-public class JPF_gov_nasa_jpf_test_mc_threads_ExceptionalThreadChoiceTest extends NativePeer {
+public class JPF_gov_nasa_jpf_test_mc_threads_ExceptionalThreadChoiceTest
+		extends NativePeer {
 
-  @MJI
-  public void foo____V (MJIEnv env, int objRef){
-    
-    ThreadInfo ti = env.getThreadInfo();
-    if (!ti.isFirstStepInsn()){
-      String[] exceptions = { "java.net.SocketTimeoutException", "java.io.IOException" };
-      
-      System.out.println("    in top half of native foo()");
-      VM vm = ti.getVM();
-      ThreadInfo[] runnables = vm.getThreadList().getAllMatching(vm.getTimedoutRunnablePredicate());
-      ExceptionThreadChoiceFromSet cg = new ExceptionThreadChoiceFromSet("FOO_CG", runnables, ti, exceptions);
-      
-      ti.getVM().getSystemState().setNextChoiceGenerator(cg);
-      env.repeatInvocation();
-      
-    } else {
-      System.out.println("    in bottom half of native foo()");
-      
-      ExceptionThreadChoiceFromSet cg = ti.getVM().getCurrentChoiceGenerator("FOO_CG", ExceptionThreadChoiceFromSet.class);
-      if (cg == null){
-        throw new JPFException("wrong CG: " + cg);
-      }
-        
-      String exceptionName = cg.getExceptionForCurrentChoice();
-      if (exceptionName != null){
-        env.throwException(exceptionName);
-      }
-    }
-  }
+	@MJI
+	public void foo____V(MJIEnv env, int objRef) {
+
+		ThreadInfo ti = env.getThreadInfo();
+		if (!ti.isFirstStepInsn()) {
+			String[] exceptions = { "java.net.SocketTimeoutException",
+					"java.io.IOException" };
+
+			System.out.println("    in top half of native foo()");
+			VM vm = ti.getVM();
+			ThreadInfo[] runnables = vm.getThreadList().getAllMatching(
+					vm.getTimedoutRunnablePredicate());
+			ExceptionThreadChoiceFromSet cg = new ExceptionThreadChoiceFromSet(
+					"FOO_CG", runnables, ti, exceptions);
+
+			ti.getVM().getSystemState().setNextChoiceGenerator(cg);
+			env.repeatInvocation();
+
+		} else {
+			System.out.println("    in bottom half of native foo()");
+
+			ExceptionThreadChoiceFromSet cg = ti.getVM()
+					.getCurrentChoiceGenerator("FOO_CG",
+							ExceptionThreadChoiceFromSet.class);
+			if (cg == null) {
+				throw new JPFException("wrong CG: " + cg);
+			}
+
+			String exceptionName = cg.getExceptionForCurrentChoice();
+			if (exceptionName != null) {
+				env.throwException(exceptionName);
+			}
+		}
+	}
 }

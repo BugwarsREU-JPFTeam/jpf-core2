@@ -18,10 +18,9 @@
 //
 package gov.nasa.jpf.vm;
 
-
 /**
-* Choice Generator that creates Integer values - this is just an interface
-* so that we can type test for implementors that have their own generic hierarchy
-*/
+ * Choice Generator that creates Integer values - this is just an interface so
+ * that we can type test for implementors that have their own generic hierarchy
+ */
 public interface IntChoiceGenerator extends ChoiceGenerator<Integer> {
 }

@@ -25,34 +25,34 @@ import gov.nasa.jpf.vm.VM;
 
 /**
  * little listener that tries to detect endless while() loops by counting
- * backjumps, breaking transitions if the count exceeds a threshold, and
- * then checking if program states match. If they do, there would be no progress
- * in this thread.
+ * backjumps, breaking transitions if the count exceeds a threshold, and then
+ * checking if program states match. If they do, there would be no progress in
+ * this thread.
  */
 public class EndlessLoopDetector extends IdleFilter {
 
-  boolean foundEndlessLoop = false;
+	boolean foundEndlessLoop = false;
 
-  public EndlessLoopDetector(Config config) {
-    super(config);
+	public EndlessLoopDetector(Config config) {
+		super(config);
 
-    action = Action.BREAK;
-  }
+		action = Action.BREAK;
+	}
 
-  @Override
-  public void stateAdvanced(Search search) {
-    if (brokeTransition && search.isVisitedState()) {
-      foundEndlessLoop = true;
-    }
-  }
+	@Override
+	public void stateAdvanced(Search search) {
+		if (brokeTransition && search.isVisitedState()) {
+			foundEndlessLoop = true;
+		}
+	}
 
-  @Override
-  public boolean check(Search search, VM vm) {
-    return !foundEndlessLoop;
-  }
+	@Override
+	public boolean check(Search search, VM vm) {
+		return !foundEndlessLoop;
+	}
 
-  @Override
-  public void reset () {
-    foundEndlessLoop = false;
-  }
+	@Override
+	public void reset() {
+		foundEndlessLoop = false;
+	}
 }

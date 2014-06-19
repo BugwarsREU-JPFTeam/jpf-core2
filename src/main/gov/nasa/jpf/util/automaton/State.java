@@ -24,90 +24,90 @@ import java.io.PrintStream;
  *
  */
 public class State {
-  
-  static final int TRANSITION_INC = 4;
-  
-  protected int id;
-  protected String label;
-  
-  protected int nTransitions;
-  protected Transition[] transitions;
-  
-  public State (String label, int numberOfTransitions){
-    this.label = label;
-    transitions = new Transition[numberOfTransitions];
-  }
-  
-  public State (String label){
-    this( label, TRANSITION_INC);
-  }
 
-  public State (){
-    this( null, TRANSITION_INC);
-  }
-  
-  // to be set by Automaton.addState()
-  protected void setId(int id){
-    this.id = id;
-    if (label == null){
-      label = Integer.toString(id);
-    }
-  }
-  
-  public int getId(){
-    return id;
-  }
-  
-  public String getLabel(){
-    return label;
-  }
-  
-  public int getNumberOfTransitions(){
-    return nTransitions;
-  }
-  
-  public Transition getTransition (int idx){
-    return transitions[idx];
-  }
-  
-  public void addTransition(Transition newTransition){
-    if (nTransitions == transitions.length){
-      Transition[] a = new Transition[nTransitions + TRANSITION_INC];
-      System.arraycopy(transitions, 0, a, 0, nTransitions);
-      transitions = a;
-    }
-    
-    transitions[nTransitions] = newTransition;
-    newTransition.setId(nTransitions);
-    nTransitions++;
-  }
-  
-  public void addTransitions(Transition ... newTransitions){
-    int n = nTransitions + newTransitions.length;
-    if (n >= transitions.length){
-      Transition[] a = new Transition[n];
-      System.arraycopy(transitions, 0, a, 0, nTransitions);
-      transitions = a;      
-    }
-    
-    for (int i=0; i<newTransitions.length; i++){
-      transitions[nTransitions] = newTransitions[i];
-      nTransitions++;
-    }
-  }
-  
-  public void enter(){
-    // just here to be overridden, for Moore machines
-  }
-  
-  public void exit(){
-    // just here to be overridden, for Moore machines
-  }
-  
-  public void printOn (PrintStream ps){
-    ps.printf("\t[%d] State '%s'\n", id, label);
-    for (int i=0; i<nTransitions; i++){
-      transitions[i].printOn( ps);
-    }
-  }
+	static final int TRANSITION_INC = 4;
+
+	protected int id;
+	protected String label;
+
+	protected int nTransitions;
+	protected Transition[] transitions;
+
+	public State(String label, int numberOfTransitions) {
+		this.label = label;
+		transitions = new Transition[numberOfTransitions];
+	}
+
+	public State(String label) {
+		this(label, TRANSITION_INC);
+	}
+
+	public State() {
+		this(null, TRANSITION_INC);
+	}
+
+	// to be set by Automaton.addState()
+	protected void setId(int id) {
+		this.id = id;
+		if (label == null) {
+			label = Integer.toString(id);
+		}
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public String getLabel() {
+		return label;
+	}
+
+	public int getNumberOfTransitions() {
+		return nTransitions;
+	}
+
+	public Transition getTransition(int idx) {
+		return transitions[idx];
+	}
+
+	public void addTransition(Transition newTransition) {
+		if (nTransitions == transitions.length) {
+			Transition[] a = new Transition[nTransitions + TRANSITION_INC];
+			System.arraycopy(transitions, 0, a, 0, nTransitions);
+			transitions = a;
+		}
+
+		transitions[nTransitions] = newTransition;
+		newTransition.setId(nTransitions);
+		nTransitions++;
+	}
+
+	public void addTransitions(Transition... newTransitions) {
+		int n = nTransitions + newTransitions.length;
+		if (n >= transitions.length) {
+			Transition[] a = new Transition[n];
+			System.arraycopy(transitions, 0, a, 0, nTransitions);
+			transitions = a;
+		}
+
+		for (int i = 0; i < newTransitions.length; i++) {
+			transitions[nTransitions] = newTransitions[i];
+			nTransitions++;
+		}
+	}
+
+	public void enter() {
+		// just here to be overridden, for Moore machines
+	}
+
+	public void exit() {
+		// just here to be overridden, for Moore machines
+	}
+
+	public void printOn(PrintStream ps) {
+		ps.printf("\t[%d] State '%s'\n", id, label);
+		for (int i = 0; i < nTransitions; i++) {
+			transitions[i].printOn(ps);
+		}
+	}
 }

@@ -23,14 +23,14 @@ package gov.nasa.jpf;
  * if this class can be loaded, the JPF core is in the CLASSPATH.
  * 
  * The reason to use an empty, non-instantiable tag class for this is to make
- * sure we don't get conflicts between CLs - this class should not be used
- * for anything but to check if it can be found
- *
+ * sure we don't get conflicts between CLs - this class should not be used for
+ * anything but to check if it can be found
+ * 
  * NOTE - this class has to be reachable through the same CP entry like
  * gov.nasa.jpf.JPF and gov.nasa.jpf.Config
  */
 public final class $coreTag {
-  private $coreTag() {
-    // nobody can call this
-  }
+	private $coreTag() {
+		// nobody can call this
+	}
 }

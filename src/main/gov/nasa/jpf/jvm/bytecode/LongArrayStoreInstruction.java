@@ -23,38 +23,40 @@ import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
  * absraction for long array stores
- *
+ * 
  * ... array, index, long-value => ...
  */
 public abstract class LongArrayStoreInstruction extends ArrayStoreInstruction {
-  protected void setField (ElementInfo e, int index, long value)
-                    throws ArrayIndexOutOfBoundsExecutiveException {
-    e.checkArrayBounds(index);
-    e.setLongElement(index, value);
-  }
+	protected void setField(ElementInfo e, int index, long value)
+			throws ArrayIndexOutOfBoundsExecutiveException {
+		e.checkArrayBounds(index);
+		e.setLongElement(index, value);
+	}
 
-  protected int getElementSize () {
-    return 2;
-  }
+	@Override
+	protected int getElementSize() {
+		return 2;
+	}
 
-  protected long getValue (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();    
-    return frame.popLong();
-  }
-  
-  public int peekArrayRef(ThreadInfo ti) {
-    return ti.getTopFrame().peek(3);  // ..,ref,idx,long(value)
-  }
+	protected long getValue(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
+		return frame.popLong();
+	}
 
-  @Override
-  public int peekIndex(ThreadInfo ti){
-    return ti.getTopFrame().peek(2);
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public int peekArrayRef(ThreadInfo ti) {
+		return ti.getTopFrame().peek(3); // ..,ref,idx,long(value)
+	}
+
+	@Override
+	public int peekIndex(ThreadInfo ti) {
+		return ti.getTopFrame().peek(2);
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

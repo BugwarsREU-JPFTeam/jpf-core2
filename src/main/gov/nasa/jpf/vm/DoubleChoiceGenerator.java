@@ -19,9 +19,8 @@
 package gov.nasa.jpf.vm;
 
 /**
-* Choice Generator that creates double values - this is only an
-* interface so that we can type check implementors that use 
-* their own generic hierarchy
-*/
+ * Choice Generator that creates double values - this is only an interface so
+ * that we can type check implementors that use their own generic hierarchy
+ */
 public interface DoubleChoiceGenerator extends ChoiceGenerator<Double> {
 }

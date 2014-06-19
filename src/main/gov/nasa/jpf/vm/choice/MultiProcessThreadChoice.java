@@ -23,18 +23,21 @@ import gov.nasa.jpf.vm.MultiProcessChoiceGenerator;
 import gov.nasa.jpf.vm.ThreadInfo;
 
 /**
- * This is used to create global choices where more than two different processes interleave
+ * This is used to create global choices where more than two different processes
+ * interleave
  * 
  * @author Nastaran Shafiei <nastaran.shafiei@gmail.com>
  */
-public class MultiProcessThreadChoice extends ThreadChoiceFromSet implements MultiProcessChoiceGenerator {
-  
-  public MultiProcessThreadChoice (String id, ThreadInfo[] set, boolean isSchedulingPoint) {
-    super(id, set, isSchedulingPoint);
-  }
-  
-  @Override
-  public boolean isGlobal () {
-    return true;
-  }
+public class MultiProcessThreadChoice extends ThreadChoiceFromSet implements
+		MultiProcessChoiceGenerator {
+
+	public MultiProcessThreadChoice(String id, ThreadInfo[] set,
+			boolean isSchedulingPoint) {
+		super(id, set, isSchedulingPoint);
+	}
+
+	@Override
+	public boolean isGlobal() {
+		return true;
+	}
 }

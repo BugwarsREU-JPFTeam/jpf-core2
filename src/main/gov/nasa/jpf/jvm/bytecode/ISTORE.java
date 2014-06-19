@@ -22,52 +22,57 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Store int into local variable
- * ..., value => ...
+ * Store int into local variable ..., value => ...
  */
-public class ISTORE extends LocalVariableInstruction implements StoreInstruction {
+public class ISTORE extends LocalVariableInstruction implements
+		StoreInstruction {
 
-  public ISTORE(int localVarIndex){
-    super(localVarIndex);
-  }
+	public ISTORE(int localVarIndex) {
+		super(localVarIndex);
+	}
 
-  @Override
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
-    
-    frame.storeOperand(index);
-    
-    return getNext(ti);
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-  }
+		frame.storeOperand(index);
 
-  public int getLength() {
-    if (index > 3){
-      return 2; // bytecode, index
-    } else {
-      return 1;
-    }
-  }
-  
-  @Override
-  public int getByteCode () {
-    switch (index) {
-    case 0: return 0x3b;
-    case 1: return 0x3c;
-    case 2: return 0x3d;
-    case 3: return 0x3e;
-    }
-    return 0x36; // ?? wide, ISTORE_n
-  }
-  
-  public String getBaseMnemonic() {
-    return "istore";
-  }
-  
-  @Override
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		return getNext(ti);
+
+	}
+
+	@Override
+	public int getLength() {
+		if (index > 3) {
+			return 2; // bytecode, index
+		} else {
+			return 1;
+		}
+	}
+
+	@Override
+	public int getByteCode() {
+		switch (index) {
+		case 0:
+			return 0x3b;
+		case 1:
+			return 0x3c;
+		case 2:
+			return 0x3d;
+		case 3:
+			return 0x3e;
+		}
+		return 0x36; // ?? wide, ISTORE_n
+	}
+
+	@Override
+	public String getBaseMnemonic() {
+		return "istore";
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

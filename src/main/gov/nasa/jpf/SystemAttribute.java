@@ -20,10 +20,10 @@
 package gov.nasa.jpf;
 
 /**
- * a type tag for attributes used by JPF
- * SystemAttributes are protected by the .util.ObjectList API against accidental
- * set(..) overwrite, they have to be removed by forceSet(..)
+ * a type tag for attributes used by JPF SystemAttributes are protected by the
+ * .util.ObjectList API against accidental set(..) overwrite, they have to be
+ * removed by forceSet(..)
  */
 public interface SystemAttribute {
-  // nothing in here
+	// nothing in here
 }

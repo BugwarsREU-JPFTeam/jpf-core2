@@ -23,34 +23,32 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Subtract long
- * ..., value1, value2 => ..., result
+ * Subtract long ..., value1, value2 => ..., result
  */
 public class LSUB extends JVMInstruction {
 
-  @Override
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
-    
-    long v1 = frame.popLong();
-    long v2 = frame.popLong();
-    
-    long r = v2 - v1;
-    
-    frame.pushLong(r);
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    return getNext(ti);
-  }
+		long v1 = frame.popLong();
+		long v2 = frame.popLong();
 
-  @Override
-  public int getByteCode () {
-    return 0x65;
-  }
-  
-  @Override
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		long r = v2 - v1;
+
+		frame.pushLong(r);
+
+		return getNext(ti);
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0x65;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

@@ -28,28 +28,40 @@ import org.junit.Test;
  */
 public class NativePeerTest extends TestMultiProcessJPF {
 
-  native void incNativeCounters();
+	native void incNativeCounters();
 
-  native int getNativeCounter();
+	native int getNativeCounter();
 
-  // To make sure that native peers are kept separately - note different class
-  // with the same fully qualified name still share the same NativePeer class
-  // but they keep different instances of it
-  @Test
-  public void nativePeerTest() {
-    // Note that this code is executed 4 times (twice by each process main thread).
-    // Since we do not restore NativePeer states the maximum value of counter in 
-    // NativePeer should be 2
-    if (mpVerifyNoPropertyViolation(2, "+vm.max_transition_length=MAX")) { // make sure we don't get a spurious CG
-      incNativeCounters();
+	// To make sure that native peers are kept separately - note different class
+	// with the same fully qualified name still share the same NativePeer class
+	// but they keep different instances of it
+	@Test
+	public void nativePeerTest() {
+		// Note that this code is executed 4 times (twice by each process main
+		// thread).
+		// Since we do not restore NativePeer states the maximum value of
+		// counter in
+		// NativePeer should be 2
+		if (mpVerifyNoPropertyViolation(2, "+vm.max_transition_length=MAX")) { // make
+																				// sure
+																				// we
+																				// don't
+																				// get
+																				// a
+																				// spurious
+																				// CG
+			incNativeCounters();
 
-      int i = getNativeCounter();
-      assertTrue(i==1 || i==2);
-    }
+			int i = getNativeCounter();
+			assertTrue(i == 1 || i == 2);
+		}
 
-    if(!isJPFRun()) {
-      // To make sure this code is executed 4 times
-      assertEquals(JPF_gov_nasa_jpf_vm_multiProcess_NativePeerTest.getStaticNativeCounter(), 4);
-    }
-  }
+		if (!isJPFRun()) {
+			// To make sure this code is executed 4 times
+			assertEquals(
+					JPF_gov_nasa_jpf_vm_multiProcess_NativePeerTest
+							.getStaticNativeCounter(),
+					4);
+		}
+	}
 }

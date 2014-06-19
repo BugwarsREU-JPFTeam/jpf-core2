@@ -21,25 +21,26 @@ package gov.nasa.jpf.jvm.bytecode;
 import gov.nasa.jpf.vm.ArrayIndexOutOfBoundsExecutiveException;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.StackFrame;
-import gov.nasa.jpf.vm.ThreadInfo;
-
 
 /**
- * Load char from array
- * ..., arrayref, index => ..., value
+ * Load char from array ..., arrayref, index => ..., value
  */
 public class CALOAD extends ArrayLoadInstruction {
 
-  protected void push (StackFrame frame, ElementInfo e, int index) throws ArrayIndexOutOfBoundsExecutiveException {
-    e.checkArrayBounds(index);
-    frame.push( e.getCharElement(index), isReference());
-  }
+	@Override
+	protected void push(StackFrame frame, ElementInfo e, int index)
+			throws ArrayIndexOutOfBoundsExecutiveException {
+		e.checkArrayBounds(index);
+		frame.push(e.getCharElement(index), isReference());
+	}
 
-  public int getByteCode () {
-    return 0x34;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public int getByteCode() {
+		return 0x34;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

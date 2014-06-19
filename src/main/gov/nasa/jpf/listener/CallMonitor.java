@@ -32,48 +32,49 @@ import gov.nasa.jpf.vm.ThreadInfo;
  */
 public class CallMonitor extends ListenerAdapter {
 
-  @Override
-  public void instructionExecuted (VM vm, ThreadInfo ti, Instruction nextInsn, Instruction executedInsn) {
-    
-    if (executedInsn instanceof InvokeInstruction) {
-      if (executedInsn.isCompleted(ti) && !ti.isInstructionSkipped()) {
-        InvokeInstruction call = (InvokeInstruction)executedInsn;
-        MethodInfo mi = call.getInvokedMethod();
-        Object[] args = call.getArgumentValues(ti);
-        ClassInfo ci = mi.getClassInfo();
+	@Override
+	public void instructionExecuted(VM vm, ThreadInfo ti, Instruction nextInsn,
+			Instruction executedInsn) {
 
-        StringBuilder sb = new StringBuilder();
+		if (executedInsn instanceof InvokeInstruction) {
+			if (executedInsn.isCompleted(ti) && !ti.isInstructionSkipped()) {
+				InvokeInstruction call = (InvokeInstruction) executedInsn;
+				MethodInfo mi = call.getInvokedMethod();
+				Object[] args = call.getArgumentValues(ti);
+				ClassInfo ci = mi.getClassInfo();
 
-        sb.append(ti.getId());
-        sb.append(": ");
+				StringBuilder sb = new StringBuilder();
 
-        int d = ti.getStackDepth();
-        for (int i=0; i<d; i++){
-          sb.append(" ");
-        }
+				sb.append(ti.getId());
+				sb.append(": ");
 
-        if (ci != null){
-          sb.append(ci.getName());
-          sb.append('.');
-        }
-        sb.append(mi.getName());
-        sb.append('(');
+				int d = ti.getStackDepth();
+				for (int i = 0; i < d; i++) {
+					sb.append(" ");
+				}
 
-        int n = args.length-1;
-        for (int i=0; i<=n; i++) {
-          if (args[i] != null) {
-            sb.append(args[i].toString());
-          } else {
-            sb.append("null");
-          }
-          if (i<n) {
-            sb.append(',');
-          }
-        }
-        sb.append(')');
+				if (ci != null) {
+					sb.append(ci.getName());
+					sb.append('.');
+				}
+				sb.append(mi.getName());
+				sb.append('(');
 
-        System.out.println(sb);
-      }
-    }
-  }
+				int n = args.length - 1;
+				for (int i = 0; i <= n; i++) {
+					if (args[i] != null) {
+						sb.append(args[i].toString());
+					} else {
+						sb.append("null");
+					}
+					if (i < n) {
+						sb.append(',');
+					}
+				}
+				sb.append(')');
+
+				System.out.println(sb);
+			}
+		}
+	}
 }

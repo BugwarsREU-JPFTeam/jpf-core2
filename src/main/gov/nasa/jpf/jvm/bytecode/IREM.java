@@ -23,33 +23,35 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Remainder int
- * ..., value1, value2  => ..., result
+ * Remainder int ..., value1, value2 => ..., result
  */
 public class IREM extends JVMInstruction {
 
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    int v1 = frame.pop();
-    int v2 = frame.pop();
+		int v1 = frame.pop();
+		int v2 = frame.pop();
 
-    if (v1 == 0){
-      return ti.createAndThrowException("java.lang.ArithmeticException", "division by zero");
-    }
-    
-    frame.push(v2 % v1);
+		if (v1 == 0) {
+			return ti.createAndThrowException("java.lang.ArithmeticException",
+					"division by zero");
+		}
 
-    return getNext(ti);
-  }
+		frame.push(v2 % v1);
 
-  public int getByteCode () {
-    return 0x70;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		return getNext(ti);
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0x70;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

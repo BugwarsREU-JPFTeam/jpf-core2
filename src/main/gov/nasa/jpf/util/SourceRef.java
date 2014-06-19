@@ -22,122 +22,125 @@ package gov.nasa.jpf.util;
  * a source reference abstraction wrapping file and line information
  */
 public class SourceRef {
-  public String fileName;
-  public int    line;
+	public String fileName;
+	public int line;
 
-  public SourceRef (String f, int l) {
-    if (f == null) {
-      fileName = "?";
-    } else {
-      fileName = f;
-    }
-    
-    line = l;
-  }
+	public SourceRef(String f, int l) {
+		if (f == null) {
+			fileName = "?";
+		} else {
+			fileName = f;
+		}
 
-  public SourceRef (String spec){
-    int idx = spec.indexOf(':');
-    if (idx > 0){
-      fileName = spec.substring(0, idx);
-      line = Integer.parseInt(spec.substring(idx+1));
-    } else {
-      fileName = spec;
-      line = 0;
-    }
-  }
+		line = l;
+	}
 
-  public String getLocationString() {
-    return (fileName + ':' + line);
-  }
-  
-  public String getLineString () {
-    Source source = Source.getSource(fileName);
-    if (source != null) {
-      return source.getLine(line);
-    } else {
-      return null;
-    }
-  }
+	public SourceRef(String spec) {
+		int idx = spec.indexOf(':');
+		if (idx > 0) {
+			fileName = spec.substring(0, idx);
+			line = Integer.parseInt(spec.substring(idx + 1));
+		} else {
+			fileName = spec;
+			line = 0;
+		}
+	}
 
-  public boolean equals (Object o) {
-    if (o == null) {
-      return false;
-    }
+	public String getLocationString() {
+		return (fileName + ':' + line);
+	}
 
-    if (!(o instanceof SourceRef)) {
-      return false;
-    }
+	public String getLineString() {
+		Source source = Source.getSource(fileName);
+		if (source != null) {
+			return source.getLine(line);
+		} else {
+			return null;
+		}
+	}
 
-    SourceRef that = (SourceRef) o;
+	@Override
+	public boolean equals(Object o) {
+		if (o == null) {
+			return false;
+		}
 
-    if (this.fileName == null) {
-      return false;
-    }
+		if (!(o instanceof SourceRef)) {
+			return false;
+		}
 
-    if (this.line == -1) {
-      return false;
-    }
+		SourceRef that = (SourceRef) o;
 
-    if (!this.fileName.equals(that.fileName)) {
-      return false;
-    }
+		if (this.fileName == null) {
+			return false;
+		}
 
-    if (this.line != that.line) {
-      return false;
-    }
+		if (this.line == -1) {
+			return false;
+		}
 
-    return true;
-  }
+		if (!this.fileName.equals(that.fileName)) {
+			return false;
+		}
 
-  public boolean equals (String f, int l) {
-    if (fileName == null) {
-      return false;
-    }
+		if (this.line != that.line) {
+			return false;
+		}
 
-    if (line == -1) {
-      return false;
-    }
+		return true;
+	}
 
-    if (!fileName.equals(f)) {
-      return false;
-    }
+	public boolean equals(String f, int l) {
+		if (fileName == null) {
+			return false;
+		}
 
-    if (line != l) {
-      return false;
-    }
+		if (line == -1) {
+			return false;
+		}
 
-    return true;
-  }
+		if (!fileName.equals(f)) {
+			return false;
+		}
 
-  public boolean equals (String filePos){
-    if (filePos.startsWith(fileName)){
-      int len = fileName.length();
-      if (filePos.charAt(len) == ':'){
-        if (Integer.parseInt(filePos.substring(len+1)) == line){
-          return true;
-        }
-      }
-    }
+		if (line != l) {
+			return false;
+		}
 
-    return false;
-  }
+		return true;
+	}
 
-  public int hashCode() {
-    assert false : "hashCode not designed";
-    return 42; // any arbitrary constant will do
-    // thanks, FindBugs!
-  }
+	public boolean equals(String filePos) {
+		if (filePos.startsWith(fileName)) {
+			int len = fileName.length();
+			if (filePos.charAt(len) == ':') {
+				if (Integer.parseInt(filePos.substring(len + 1)) == line) {
+					return true;
+				}
+			}
+		}
 
-  public String getFileName () {
-    return fileName;
-  }
+		return false;
+	}
 
-  public void set (SourceRef sr) {
-    fileName = sr.fileName;
-    line = sr.line;
-  }
+	@Override
+	public int hashCode() {
+		assert false : "hashCode not designed";
+		return 42; // any arbitrary constant will do
+		// thanks, FindBugs!
+	}
 
-  public String toString () {
-    return (fileName + ':' + line);
-  }
+	public String getFileName() {
+		return fileName;
+	}
+
+	public void set(SourceRef sr) {
+		fileName = sr.fileName;
+		line = sr.line;
+	}
+
+	@Override
+	public String toString() {
+		return (fileName + ':' + line);
+	}
 }

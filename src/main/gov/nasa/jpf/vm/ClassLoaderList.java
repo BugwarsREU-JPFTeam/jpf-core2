@@ -22,142 +22,146 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
- * container for all ClassLoaderInfos that are in the current state.
- * It is important to keep this as canonically (search globally) sorted list so that
+ * container for all ClassLoaderInfos that are in the current state. It is
+ * important to keep this as canonically (search globally) sorted list so that
  * we can use the iterator for state matching
  */
-public class ClassLoaderList implements Cloneable, Iterable<ClassLoaderInfo>, Restorable<ClassLoaderList> {
+public class ClassLoaderList implements Cloneable, Iterable<ClassLoaderInfo>,
+		Restorable<ClassLoaderList> {
 
-  /** the ordered list of the class loaders */
-  ClassLoaderInfo[] classLoaders;
+	/** the ordered list of the class loaders */
+	ClassLoaderInfo[] classLoaders;
 
-  static class CllMemento implements Memento<ClassLoaderList> {
-    Memento<ClassLoaderInfo>[] clMementos;
+	static class CllMemento implements Memento<ClassLoaderList> {
+		Memento<ClassLoaderInfo>[] clMementos;
 
-    CllMemento (ClassLoaderList cll) {
-      ClassLoaderInfo[] classLoaders = cll.classLoaders;
-      
-      int len = classLoaders.length;
-      clMementos =  new Memento[len];
-    
-      for (int i=0; i<len; i++){
-        ClassLoaderInfo cl = classLoaders[i];
-        Memento<ClassLoaderInfo> m = cl.getMemento();
-        clMementos[i] = m;
-      }
-    }
+		CllMemento(ClassLoaderList cll) {
+			ClassLoaderInfo[] classLoaders = cll.classLoaders;
 
-    public ClassLoaderList restore (ClassLoaderList cll){
-      int len = clMementos.length;
-      ClassLoaderInfo[] classLoaders = new ClassLoaderInfo[len];
-      for (int i=0; i<len; i++){
-        Memento<ClassLoaderInfo> m = clMementos[i];
-        ClassLoaderInfo cl = m.restore(null);
-        classLoaders[i] = cl;
-      }
-      cll.classLoaders = classLoaders;
+			int len = classLoaders.length;
+			clMementos = new Memento[len];
 
-      return cll;
-    }
-  }
-  
-  class CllIterator implements Iterator<ClassLoaderInfo>{
-    int next = 0;
-    
-    @Override
-    public boolean hasNext() {
-      if (classLoaders != null) {
-        return next < classLoaders.length;
-      } else {
-        return false;
-      }
-    }
+			for (int i = 0; i < len; i++) {
+				ClassLoaderInfo cl = classLoaders[i];
+				Memento<ClassLoaderInfo> m = cl.getMemento();
+				clMementos[i] = m;
+			}
+		}
 
-    @Override
-    public ClassLoaderInfo next() {
-      if (classLoaders != null) {
-        if (next < classLoaders.length) {
-          return classLoaders[next++];
-        }
-      }
-      
-      throw new NoSuchElementException();
-    }
+		@Override
+		public ClassLoaderList restore(ClassLoaderList cll) {
+			int len = clMementos.length;
+			ClassLoaderInfo[] classLoaders = new ClassLoaderInfo[len];
+			for (int i = 0; i < len; i++) {
+				Memento<ClassLoaderInfo> m = clMementos[i];
+				ClassLoaderInfo cl = m.restore(null);
+				classLoaders[i] = cl;
+			}
+			cll.classLoaders = classLoaders;
 
-    @Override
-    public void remove() {
-      throw new UnsupportedOperationException();
-    }
-  }
+			return cll;
+		}
+	}
 
-  public ClassLoaderList() {
-  }
+	class CllIterator implements Iterator<ClassLoaderInfo> {
+		int next = 0;
 
-  public Memento<ClassLoaderList> getMemento (MementoFactory factory) {
-    return factory.getMemento(this);
-  }
+		@Override
+		public boolean hasNext() {
+			if (classLoaders != null) {
+				return next < classLoaders.length;
+			} else {
+				return false;
+			}
+		}
 
-  public Memento<ClassLoaderList> getMemento(){
-    return new CllMemento(this);
-  }
+		@Override
+		public ClassLoaderInfo next() {
+			if (classLoaders != null) {
+				if (next < classLoaders.length) {
+					return classLoaders[next++];
+				}
+			}
 
-  public Iterator<ClassLoaderInfo> iterator () {
-    return new CllIterator();
-  }
+			throw new NoSuchElementException();
+		}
 
-  public void add (ClassLoaderInfo cli) {
-    int id = cli.getId();
-    
-    if (classLoaders == null) {
-      classLoaders = new ClassLoaderInfo[1];
-      classLoaders[0] = cli;
-      
-    } else { // sort it in
-      int len = classLoaders.length;
-      ClassLoaderInfo[] a = new ClassLoaderInfo[len+1];
-      
-      for (int i=0; i<len; i++) {
-        ClassLoaderInfo c = classLoaders[i];
-        if (c.getId() > id) {
-          System.arraycopy(classLoaders, i, a, i+1, (len-i));
-          a[i] = cli;
-          classLoaders = a;
-          return;
-        } else {
-          a[i] = c;
-        }
-      }
-      
-      a[len] = cli;
-      classLoaders = a;
-    }
-  }
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException();
+		}
+	}
 
-  public ClassLoaderInfo get(int i) {
-    return classLoaders[i];
-  }
-  
-  public ClassLoaderInfo getClassLoaderInfoWithId (int id) {
-    int len = classLoaders.length;
-    for (int i=0; i<len; i++) {
-      ClassLoaderInfo c = classLoaders[i];
-      if (c.getId() == id) {
-        return c;
-      }
-    }
-    
-    return null;
-  }
+	public ClassLoaderList() {
+	}
 
-  public int size() {
-    return classLoaders.length;
-  }
-  
-  public void markRoots (Heap heap) {
-    int len = classLoaders.length;
-    for (int i=0; i<len; i++) {
-      ClassLoaderInfo cli = classLoaders[i];
-      cli.getStatics().markRoots(heap);
-    }
-  }
+	@Override
+	public Memento<ClassLoaderList> getMemento(MementoFactory factory) {
+		return factory.getMemento(this);
+	}
+
+	public Memento<ClassLoaderList> getMemento() {
+		return new CllMemento(this);
+	}
+
+	@Override
+	public Iterator<ClassLoaderInfo> iterator() {
+		return new CllIterator();
+	}
+
+	public void add(ClassLoaderInfo cli) {
+		int id = cli.getId();
+
+		if (classLoaders == null) {
+			classLoaders = new ClassLoaderInfo[1];
+			classLoaders[0] = cli;
+
+		} else { // sort it in
+			int len = classLoaders.length;
+			ClassLoaderInfo[] a = new ClassLoaderInfo[len + 1];
+
+			for (int i = 0; i < len; i++) {
+				ClassLoaderInfo c = classLoaders[i];
+				if (c.getId() > id) {
+					System.arraycopy(classLoaders, i, a, i + 1, (len - i));
+					a[i] = cli;
+					classLoaders = a;
+					return;
+				} else {
+					a[i] = c;
+				}
+			}
+
+			a[len] = cli;
+			classLoaders = a;
+		}
+	}
+
+	public ClassLoaderInfo get(int i) {
+		return classLoaders[i];
+	}
+
+	public ClassLoaderInfo getClassLoaderInfoWithId(int id) {
+		int len = classLoaders.length;
+		for (int i = 0; i < len; i++) {
+			ClassLoaderInfo c = classLoaders[i];
+			if (c.getId() == id) {
+				return c;
+			}
+		}
+
+		return null;
+	}
+
+	public int size() {
+		return classLoaders.length;
+	}
+
+	public void markRoots(Heap heap) {
+		int len = classLoaders.length;
+		for (int i = 0; i < len; i++) {
+			ClassLoaderInfo cli = classLoaders[i];
+			cli.getStatics().markRoots(heap);
+		}
+	}
 }

@@ -19,7 +19,6 @@
 
 package gov.nasa.jpf.test.vm.basic;
 
-import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.util.test.TestJPF;
 
 import org.junit.Test;
@@ -29,28 +28,34 @@ import org.junit.Test;
  */
 public class EndStateTest extends TestJPF {
 
-  @Test 
-  public void testSingleThread () {
-    if (verifyNoPropertyViolation("+listener=.test.vm.basic.EndStateListener")){
-      System.out.println("** this is testSingleThread - it should succeed");      
-    }
-  }
+	@Test
+	public void testSingleThread() {
+		if (verifyNoPropertyViolation("+listener=.test.vm.basic.EndStateListener")) {
+			System.out
+					.println("** this is testSingleThread - it should succeed");
+		}
+	}
 
-  @Test 
-  public void testMultipleThreads () {
-    if (verifyNoPropertyViolation("+listener=.test.vm.basic.EndStateListener")){
-      System.out.println("** this is testMultipleThreads - it should succeed");
+	@Test
+	public void testMultipleThreads() {
+		if (verifyNoPropertyViolation("+listener=.test.vm.basic.EndStateListener")) {
+			System.out
+					.println("** this is testMultipleThreads - it should succeed");
 
-      Thread t = new Thread() {
-        public synchronized void run() {
-          System.out.println("** this is " + Thread.currentThread().getName() + " terminating");
-        }
-      };
-      t.start();
+			Thread t = new Thread() {
+				@Override
+				public synchronized void run() {
+					System.out
+							.println("** this is "
+									+ Thread.currentThread().getName()
+									+ " terminating");
+				}
+			};
+			t.start();
 
-      synchronized(this){
-        System.out.println("** this is thread main terminating");
-      }
-    }
-  }
+			synchronized (this) {
+				System.out.println("** this is thread main terminating");
+			}
+		}
+	}
 }

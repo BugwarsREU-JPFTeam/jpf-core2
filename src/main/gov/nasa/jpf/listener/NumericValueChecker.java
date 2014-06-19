@@ -36,243 +36,268 @@ import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
 /**
- * little listener that checks value ranges of specified numeric fields and local vars
- *
+ * little listener that checks value ranges of specified numeric fields and
+ * local vars
+ * 
  * configuration examples:
- *
- *  range.fields=speed,..
- *  range.speed.field=x.y.SomeClass.velocity
- *  range.speed.min=300
- *  range.speed.max=500
- *
- *  range.vars=altitude,..
- *  range.altitude.var=x.y.SomeClass.computeTrajectory(int):a
- *  range.altitude.min=125000
- *
+ * 
+ * range.fields=speed,.. range.speed.field=x.y.SomeClass.velocity
+ * range.speed.min=300 range.speed.max=500
+ * 
+ * range.vars=altitude,..
+ * range.altitude.var=x.y.SomeClass.computeTrajectory(int):a
+ * range.altitude.min=125000
+ * 
  */
 public class NumericValueChecker extends PropertyListenerAdapter {
 
-  static abstract class RangeCheck {
-    double min, max;
+	static abstract class RangeCheck {
+		double min, max;
 
-    RangeCheck (double min, double max){
-      this.min = min;
-      this.max = max;
-    }
+		RangeCheck(double min, double max) {
+			this.min = min;
+			this.max = max;
+		}
 
-    String check (long v){
-      if (v < (long)min){
-        return String.format("%d < %d", v, (long)min);
-      } else if (v > (long)max){
-        return String.format("%d > %d", v, (long)max);
-      }
-      return null;
-    }
-    String check (double v){
-      if (v < min){
-        return String.format("%f < %f", v, min);
-      } else if (v > (long)max){
-        return String.format("%f > %f", v, max);
-      }
-      return null;
-    }
-  }
+		String check(long v) {
+			if (v < (long) min) {
+				return String.format("%d < %d", v, (long) min);
+			} else if (v > (long) max) {
+				return String.format("%d > %d", v, (long) max);
+			}
+			return null;
+		}
 
-  static class FieldCheck extends RangeCheck {
-    FieldSpec fspec;
+		String check(double v) {
+			if (v < min) {
+				return String.format("%f < %f", v, min);
+			} else if (v > (long) max) {
+				return String.format("%f > %f", v, max);
+			}
+			return null;
+		}
+	}
 
-    FieldCheck (FieldSpec fspec, double min, double max){
-      super(min,max);
-      this.fspec = fspec;
-    }
+	static class FieldCheck extends RangeCheck {
+		FieldSpec fspec;
 
-    boolean matches (FieldInfo fi){
-      return fspec.matches(fi);
-    }
-  }
+		FieldCheck(FieldSpec fspec, double min, double max) {
+			super(min, max);
+			this.fspec = fspec;
+		}
 
-  static class VarCheck extends RangeCheck {
-    VarSpec vspec;
+		boolean matches(FieldInfo fi) {
+			return fspec.matches(fi);
+		}
+	}
 
-    VarCheck (VarSpec vspec, double min, double max){
-      super(min,max);
-      this.vspec = vspec;
-    }
+	static class VarCheck extends RangeCheck {
+		VarSpec vspec;
 
-    LocalVarInfo getMatch (MethodInfo mi, int pc, int slotIdx){
-      return vspec.getMatchingLocalVarInfo(mi, pc, slotIdx);
-    }
-  }
-  
-  class Visitor extends InstructionVisitorAdapter {
-    
-    void checkFieldInsn (FieldInstruction insn){
-      if (fieldChecks != null){
-        FieldInfo fi = insn.getFieldInfo();
+		VarCheck(VarSpec vspec, double min, double max) {
+			super(min, max);
+			this.vspec = vspec;
+		}
 
-        for (int i = 0; i < fieldChecks.length; i++) {
-          FieldCheck fc = fieldChecks[i];
-          if (fc.matches(fi)) {
-            if (fi.isNumericField()) {
-              long lv = insn.getLastValue();
-              String errorCond = fi.isFloatingPointField()
-                      ? fc.check(Double.longBitsToDouble(lv)) : fc.check(lv);
+		LocalVarInfo getMatch(MethodInfo mi, int pc, int slotIdx) {
+			return vspec.getMatchingLocalVarInfo(mi, pc, slotIdx);
+		}
+	}
 
-              if (errorCond != null) {
-                error = String.format("field %s out of range: %s\n\t at %s",
-                        fi.getFullName(), errorCond, insn.getSourceLocation());
-                vm.breakTransition("fieldValueOutOfRange"); // terminate this transition
-                break;
-              }
-            }
-          }
-        }
-      }
-    }
+	class Visitor extends InstructionVisitorAdapter {
 
-    void checkVarInsn (LocalVariableInstruction insn){
-      if (varChecks != null){
-        ThreadInfo ti = ThreadInfo.getCurrentThread();
-        StackFrame frame = ti.getTopFrame();
-        int slotIdx = insn.getLocalVariableIndex();
+		void checkFieldInsn(FieldInstruction insn) {
+			if (fieldChecks != null) {
+				FieldInfo fi = insn.getFieldInfo();
 
-        for (int i = 0; i < varChecks.length; i++) {
-          VarCheck vc = varChecks[i];
+				for (int i = 0; i < fieldChecks.length; i++) {
+					FieldCheck fc = fieldChecks[i];
+					if (fc.matches(fi)) {
+						if (fi.isNumericField()) {
+							long lv = insn.getLastValue();
+							String errorCond = fi.isFloatingPointField() ? fc
+									.check(Double.longBitsToDouble(lv)) : fc
+									.check(lv);
 
-          MethodInfo mi = insn.getMethodInfo();
-          int pc = insn.getPosition()+1; // the scope would begin on the next insn, we are still at the xSTORE
-          LocalVarInfo lvar = vc.getMatch(mi, pc, slotIdx);
-          if (lvar != null) {
-            long v = lvar.getSlotSize() == 1 ? frame.getLocalVariable(slotIdx) : frame.getLongLocalVariable(slotIdx);
-            String errorCond = lvar.isFloatingPoint()
-                    ? vc.check(Double.longBitsToDouble(v)) : vc.check(v);
+							if (errorCond != null) {
+								error = String.format(
+										"field %s out of range: %s\n\t at %s",
+										fi.getFullName(), errorCond,
+										insn.getSourceLocation());
+								vm.breakTransition("fieldValueOutOfRange"); // terminate
+																			// this
+																			// transition
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
 
-            if (errorCond != null) {
-              error = String.format("local variable %s out of range: %s\n\t at %s",
-                      lvar.getName(), errorCond, insn.getSourceLocation());
-              vm.breakTransition("localVarValueOutOfRange"); // terminate this transition
-              break;
-            }
-          }
-        }
-      }
-    }
+		void checkVarInsn(LocalVariableInstruction insn) {
+			if (varChecks != null) {
+				ThreadInfo ti = ThreadInfo.getCurrentThread();
+				StackFrame frame = ti.getTopFrame();
+				int slotIdx = insn.getLocalVariableIndex();
 
-    @Override
-    public void visit(PUTFIELD insn){
-      checkFieldInsn(insn);
-    }
-    @Override
-    public void visit(PUTSTATIC insn){
-      checkFieldInsn(insn);
-    }
+				for (int i = 0; i < varChecks.length; i++) {
+					VarCheck vc = varChecks[i];
 
-    @Override
-    public void visit(ISTORE insn){
-      checkVarInsn(insn);
-    }
-    @Override    
-    public void visit(LSTORE insn){
-      checkVarInsn(insn);
-    }
-    @Override
-    public void visit(FSTORE insn){
-      checkVarInsn(insn);
-    }
-    @Override
-    public void visit(DSTORE insn){
-      checkVarInsn(insn);
-    }
+					MethodInfo mi = insn.getMethodInfo();
+					int pc = insn.getPosition() + 1; // the scope would begin on
+														// the next insn, we are
+														// still at the xSTORE
+					LocalVarInfo lvar = vc.getMatch(mi, pc, slotIdx);
+					if (lvar != null) {
+						long v = lvar.getSlotSize() == 1 ? frame
+								.getLocalVariable(slotIdx) : frame
+								.getLongLocalVariable(slotIdx);
+						String errorCond = lvar.isFloatingPoint() ? vc
+								.check(Double.longBitsToDouble(v)) : vc
+								.check(v);
 
-  }
+						if (errorCond != null) {
+							error = String
+									.format("local variable %s out of range: %s\n\t at %s",
+											lvar.getName(), errorCond,
+											insn.getSourceLocation());
+							vm.breakTransition("localVarValueOutOfRange"); // terminate
+																			// this
+																			// transition
+							break;
+						}
+					}
+				}
+			}
+		}
 
+		@Override
+		public void visit(PUTFIELD insn) {
+			checkFieldInsn(insn);
+		}
 
-  VM vm;
-  Visitor visitor;
+		@Override
+		public void visit(PUTSTATIC insn) {
+			checkFieldInsn(insn);
+		}
 
-  // the stuff we monitor
-  FieldCheck[] fieldChecks;
-  VarCheck[] varChecks;
+		@Override
+		public void visit(ISTORE insn) {
+			checkVarInsn(insn);
+		}
 
-  String error; // where we store errorCond details
+		@Override
+		public void visit(LSTORE insn) {
+			checkVarInsn(insn);
+		}
 
-  public NumericValueChecker (Config conf){
-    visitor = new Visitor();
+		@Override
+		public void visit(FSTORE insn) {
+			checkVarInsn(insn);
+		}
 
-    createFieldChecks(conf);
-    createVarChecks(conf);
-  }
+		@Override
+		public void visit(DSTORE insn) {
+			checkVarInsn(insn);
+		}
 
-  private void createFieldChecks(Config conf){
-    String[] checkIds = conf.getCompactTrimmedStringArray("range.fields");
-    if (checkIds.length > 0){
-      fieldChecks = new FieldCheck[checkIds.length];
+	}
 
-      for (int i = 0; i < checkIds.length; i++) {
-        String id = checkIds[i];
-        FieldCheck check = null;
-        String keyPrefix = "range." + id;
-        String spec = conf.getString(keyPrefix + ".field");
-        if (spec != null) {
-          FieldSpec fs = FieldSpec.createFieldSpec(spec);
-          if (fs != null) {
-            double min = conf.getDouble(keyPrefix + ".min", Double.MIN_VALUE);
-            double max = conf.getDouble(keyPrefix + ".max", Double.MAX_VALUE);
-            check = new FieldCheck(fs, min, max);
-          }
-        }
-        if (check == null) {
-          throw new JPFConfigException("illegal field range check specification for " + id);
-        }
-        fieldChecks[i] = check;
-      }
-    }
-  }
+	VM vm;
+	Visitor visitor;
 
-  private void createVarChecks(Config conf){
-    String[] checkIds = conf.getCompactTrimmedStringArray("range.vars");
-    if (checkIds.length > 0){
-      varChecks = new VarCheck[checkIds.length];
+	// the stuff we monitor
+	FieldCheck[] fieldChecks;
+	VarCheck[] varChecks;
 
-      for (int i = 0; i < checkIds.length; i++) {
-        String id = checkIds[i];
-        VarCheck check = null;
-        String keyPrefix = "range." + id;
-        String spec = conf.getString(keyPrefix + ".var");
-        if (spec != null) {
-          VarSpec vs = VarSpec.createVarSpec(spec);
-          if (vs != null) {
-            double min = conf.getDouble(keyPrefix + ".min", Double.MIN_VALUE);
-            double max = conf.getDouble(keyPrefix + ".max", Double.MAX_VALUE);
-            check = new VarCheck(vs, min, max);
-          }
-        }
-        if (check == null) {
-          throw new JPFConfigException("illegal variable range check specification for " + id);
-        }
-        varChecks[i] = check;
-      }
-    }
-  }
+	String error; // where we store errorCond details
 
-  @Override
-  public void instructionExecuted (VM vm, ThreadInfo ti, Instruction nextInsn, Instruction executedInsn){
-    this.vm = vm;
-    ((JVMInstruction)executedInsn).accept(visitor);
-  }
+	public NumericValueChecker(Config conf) {
+		visitor = new Visitor();
 
-  @Override
-  public boolean check(Search search, VM vm) {
-    return (error == null);
-  }
+		createFieldChecks(conf);
+		createVarChecks(conf);
+	}
 
-  @Override
-  public void reset () {
-    error = null;
-  }
+	private void createFieldChecks(Config conf) {
+		String[] checkIds = conf.getCompactTrimmedStringArray("range.fields");
+		if (checkIds.length > 0) {
+			fieldChecks = new FieldCheck[checkIds.length];
 
-  @Override
-  public String getErrorMessage(){
-    return error;
-  }
+			for (int i = 0; i < checkIds.length; i++) {
+				String id = checkIds[i];
+				FieldCheck check = null;
+				String keyPrefix = "range." + id;
+				String spec = conf.getString(keyPrefix + ".field");
+				if (spec != null) {
+					FieldSpec fs = FieldSpec.createFieldSpec(spec);
+					if (fs != null) {
+						double min = conf.getDouble(keyPrefix + ".min",
+								Double.MIN_VALUE);
+						double max = conf.getDouble(keyPrefix + ".max",
+								Double.MAX_VALUE);
+						check = new FieldCheck(fs, min, max);
+					}
+				}
+				if (check == null) {
+					throw new JPFConfigException(
+							"illegal field range check specification for " + id);
+				}
+				fieldChecks[i] = check;
+			}
+		}
+	}
+
+	private void createVarChecks(Config conf) {
+		String[] checkIds = conf.getCompactTrimmedStringArray("range.vars");
+		if (checkIds.length > 0) {
+			varChecks = new VarCheck[checkIds.length];
+
+			for (int i = 0; i < checkIds.length; i++) {
+				String id = checkIds[i];
+				VarCheck check = null;
+				String keyPrefix = "range." + id;
+				String spec = conf.getString(keyPrefix + ".var");
+				if (spec != null) {
+					VarSpec vs = VarSpec.createVarSpec(spec);
+					if (vs != null) {
+						double min = conf.getDouble(keyPrefix + ".min",
+								Double.MIN_VALUE);
+						double max = conf.getDouble(keyPrefix + ".max",
+								Double.MAX_VALUE);
+						check = new VarCheck(vs, min, max);
+					}
+				}
+				if (check == null) {
+					throw new JPFConfigException(
+							"illegal variable range check specification for "
+									+ id);
+				}
+				varChecks[i] = check;
+			}
+		}
+	}
+
+	@Override
+	public void instructionExecuted(VM vm, ThreadInfo ti, Instruction nextInsn,
+			Instruction executedInsn) {
+		this.vm = vm;
+		((JVMInstruction) executedInsn).accept(visitor);
+	}
+
+	@Override
+	public boolean check(Search search, VM vm) {
+		return (error == null);
+	}
+
+	@Override
+	public void reset() {
+		error = null;
+	}
+
+	@Override
+	public String getErrorMessage() {
+		return error;
+	}
 }

@@ -22,62 +22,69 @@ package gov.nasa.jpf.vm;
 import gov.nasa.jpf.util.SparseObjVector;
 
 /**
- * a SharedObjectPolicy that uses search global ThreadInfoSets, i.e.
- * we remember thread access of all previously executed paths.
+ * a SharedObjectPolicy that uses search global ThreadInfoSets, i.e. we remember
+ * thread access of all previously executed paths.
  * 
  * For instances, we use the object reference value to retrieve cached values
  * For static fields, we just use the corresponding class object reference
  * 
- * Note that this policy requires search global object ids (SGOID), i.e. only works
- * with Heap implementations providing SGOIDs
+ * Note that this policy requires search global object ids (SGOID), i.e. only
+ * works with Heap implementations providing SGOIDs
  */
 public class GlobalTrackingPolicy extends SharedObjectPolicy {
 
-  // our global ThreadInfoSet cache
-  protected SparseObjVector<ThreadInfoSet> globalCache = new SparseObjVector<ThreadInfoSet>(1024);
-  
-  protected ThreadInfoSet getRegisteredSet (int key, ThreadInfo allocThread) {
-    ThreadInfoSet tis = globalCache.get(key);
-    if (tis == null) {
-      tis = new TidSet(allocThread);
-      globalCache.set(key, tis);
-    }
-    
-    return tis;    
-  }
-  
-  @Override
-  public ThreadInfoSet getThreadInfoSet(ThreadInfo allocThread, DynamicElementInfo ei) {
-    return getRegisteredSet( ei.getObjectRef(), allocThread);
-  }
+	// our global ThreadInfoSet cache
+	protected SparseObjVector<ThreadInfoSet> globalCache = new SparseObjVector<ThreadInfoSet>(
+			1024);
 
-  @Override
-  public ThreadInfoSet getThreadInfoSet(ThreadInfo allocThread, StaticElementInfo ei) {
-    int clsObjRef = ei.getClassObjectRef();
-    if (clsObjRef == MJIEnv.NULL) { // startup class, we don't have a class object yet
-      // note that we don't have to store this in our globalCache since we can never
-      // backtrack to a point where the startup classes were not initialized yet.
-      // note also that we still can't use a single PersistentTidSet instance for this since
-      // startup class references can change individually
-      return new TidSet(allocThread); 
-    } else {
-      return getRegisteredSet( ei.getClassObjectRef(), allocThread);
-    }
-  }
+	protected ThreadInfoSet getRegisteredSet(int key, ThreadInfo allocThread) {
+		ThreadInfoSet tis = globalCache.get(key);
+		if (tis == null) {
+			tis = new TidSet(allocThread);
+			globalCache.set(key, tis);
+		}
 
-  @Override
-  public boolean isShared (ThreadInfo ti, ElementInfo ei, ThreadInfoSet set) {
-    return set.hasMultipleLiveThreads();
-  }
+		return tis;
+	}
 
-  @Override
-  public Memento<ThreadInfoSet> getMemento(ThreadInfoSet set) {
-    return set.getMemento();
-  }
+	@Override
+	public ThreadInfoSet getThreadInfoSet(ThreadInfo allocThread,
+			DynamicElementInfo ei) {
+		return getRegisteredSet(ei.getObjectRef(), allocThread);
+	}
 
-  @Override
-  public void cleanupThreadTermination(ThreadInfo ti) {
-    // nothing
-  }
+	@Override
+	public ThreadInfoSet getThreadInfoSet(ThreadInfo allocThread,
+			StaticElementInfo ei) {
+		int clsObjRef = ei.getClassObjectRef();
+		if (clsObjRef == MJIEnv.NULL) { // startup class, we don't have a class
+										// object yet
+			// note that we don't have to store this in our globalCache since we
+			// can never
+			// backtrack to a point where the startup classes were not
+			// initialized yet.
+			// note also that we still can't use a single PersistentTidSet
+			// instance for this since
+			// startup class references can change individually
+			return new TidSet(allocThread);
+		} else {
+			return getRegisteredSet(ei.getClassObjectRef(), allocThread);
+		}
+	}
+
+	@Override
+	public boolean isShared(ThreadInfo ti, ElementInfo ei, ThreadInfoSet set) {
+		return set.hasMultipleLiveThreads();
+	}
+
+	@Override
+	public Memento<ThreadInfoSet> getMemento(ThreadInfoSet set) {
+		return set.getMemento();
+	}
+
+	@Override
+	public void cleanupThreadTermination(ThreadInfo ti) {
+		// nothing
+	}
 
 }

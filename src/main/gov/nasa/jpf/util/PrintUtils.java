@@ -25,51 +25,68 @@ import java.io.PrintStream;
 
 public class PrintUtils {
 
-  public static void printChar (PrintStream ps, char c){
-    switch (c) {
-    case '\n': ps.print("\\n"); break;
-    case '\r': ps.print("\\r"); break;
-    case '\t': ps.print("\\t"); break;
-    case '\b': ps.print("\\b"); break;
-    case '\f': ps.print("\\f"); break;
-    case '\'': ps.print("\\'"); break;
-    case '\"': ps.print("\\\""); break;
-    case '\\': ps.print("\\"); break;
-    default: ps.print(c);
-    }
-  }
-  
-  public static void printCharLiteral (PrintStream ps, char c){
-    ps.print('\'');
-    printChar(ps, c);
-    ps.print('\'');
-  }
-  
-  public static void printStringLiteral (PrintStream ps, char[] data, int max){
-    int i;
-    if (max < 0){
-      max = data.length;
-    }
-    
-    ps.print('"');
-    for (i=0; i<max; i++){
-      printChar(ps, data[i]);
-    }
-    
-    if (i< data.length){
-      ps.print("...");
-    }
-    
-    ps.print('"');
-  }
-  
-  // this is mostly here so that we use the same convention
-  public static void printReference (PrintStream ps, int ref){
-    if (ref == MJIEnv.NULL){
-      ps.print("null");
-    } else {
-      ps.print('@');
-      ps.printf("%x", ref);
-    }
-  }
+	public static void printChar(PrintStream ps, char c) {
+		switch (c) {
+		case '\n':
+			ps.print("\\n");
+			break;
+		case '\r':
+			ps.print("\\r");
+			break;
+		case '\t':
+			ps.print("\\t");
+			break;
+		case '\b':
+			ps.print("\\b");
+			break;
+		case '\f':
+			ps.print("\\f");
+			break;
+		case '\'':
+			ps.print("\\'");
+			break;
+		case '\"':
+			ps.print("\\\"");
+			break;
+		case '\\':
+			ps.print("\\");
+			break;
+		default:
+			ps.print(c);
+		}
+	}
+
+	public static void printCharLiteral(PrintStream ps, char c) {
+		ps.print('\'');
+		printChar(ps, c);
+		ps.print('\'');
+	}
+
+	public static void printStringLiteral(PrintStream ps, char[] data, int max) {
+		int i;
+		if (max < 0) {
+			max = data.length;
+		}
+
+		ps.print('"');
+		for (i = 0; i < max; i++) {
+			printChar(ps, data[i]);
+		}
+
+		if (i < data.length) {
+			ps.print("...");
+		}
+
+		ps.print('"');
+	}
+
+	// this is mostly here so that we use the same convention
+	public static void printReference(PrintStream ps, int ref) {
+		if (ref == MJIEnv.NULL) {
+			ps.print("null");
+		} else {
+			ps.print('@');
+			ps.printf("%x", ref);
+		}
+	}
 }

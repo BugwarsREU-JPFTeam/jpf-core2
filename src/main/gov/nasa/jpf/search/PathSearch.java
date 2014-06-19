@@ -21,70 +21,73 @@ package gov.nasa.jpf.search;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.vm.VM;
 
-
 /**
- * PathSearch is not really a Search object, just a simple 'forward'
- * driver for the VM that loops until there is no next instruction or
- * a property doesn't hold
+ * PathSearch is not really a Search object, just a simple 'forward' driver for
+ * the VM that loops until there is no next instruction or a property doesn't
+ * hold
  * 
  */
 public class PathSearch extends Search {
-	
-  public PathSearch (Config config, VM vm) {
-    super(config,vm);    
-  }
-  
-  public boolean requestBacktrack () {
-    doBacktrack = true;
 
-    return true;
-  }
+	public PathSearch(Config config, VM vm) {
+		super(config, vm);
+	}
 
-  public void search () {
-    depth++;
+	@Override
+	public boolean requestBacktrack() {
+		doBacktrack = true;
 
-    if (hasPropertyTermination()) {
-      return;
-    }
+		return true;
+	}
 
-    notifySearchStarted();
+	@Override
+	public void search() {
+		depth++;
 
-    while (true) {
-      while (doBacktrack) { // might be set by StateListeners
+		if (hasPropertyTermination()) {
+			return;
+		}
 
-        if (depth > 0) {
-          vm.backtrack();
-          depth--;
+		notifySearchStarted();
 
-          notifyStateBacktracked();
-        }
+		while (true) {
+			while (doBacktrack) { // might be set by StateListeners
 
-        doBacktrack = false;
-      }
+				if (depth > 0) {
+					vm.backtrack();
+					depth--;
 
-      forward();
-      // isVisitedState is never true, because we don't really search, just replay
-      notifyStateAdvanced();
+					notifyStateBacktracked();
+				}
 
-      if (currentError != null){
-        notifyPropertyViolated();
+				doBacktrack = false;
+			}
 
-        if (hasPropertyTermination()) {
-          break;
-        }
-      }
+			forward();
+			// isVisitedState is never true, because we don't really search,
+			// just replay
+			notifyStateAdvanced();
 
-      if (isEndState()) {
-        break;
-      }
+			if (currentError != null) {
+				notifyPropertyViolated();
 
-      depth++;
-    }
+				if (hasPropertyTermination()) {
+					break;
+				}
+			}
 
-    notifySearchFinished();
-  }
+			if (isEndState()) {
+				break;
+			}
 
-  public boolean supportsBacktrack () {
-    return true;
-  }
+			depth++;
+		}
+
+		notifySearchFinished();
+	}
+
+	@Override
+	public boolean supportsBacktrack() {
+		return true;
+	}
 }

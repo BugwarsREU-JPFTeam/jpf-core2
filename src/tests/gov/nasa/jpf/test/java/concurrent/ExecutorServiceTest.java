@@ -26,27 +26,27 @@ import java.util.concurrent.Executors;
 import org.junit.Test;
 
 /**
- * basic test for java.util.concurrent.ExecutorService
- * (but it really is a stress test for sun.misc.Unsafe.park() and
- * Thread.interrupt())
+ * basic test for java.util.concurrent.ExecutorService (but it really is a
+ * stress test for sun.misc.Unsafe.park() and Thread.interrupt())
  */
 public class ExecutorServiceTest extends TestJPF {
 
-  //--- the test methods
-  @Test
-  public void testShutdown() {
-    if (verifyNoPropertyViolation()) {
-      ExecutorService pool = Executors.newFixedThreadPool(1);
+	// --- the test methods
+	@Test
+	public void testShutdown() {
+		if (verifyNoPropertyViolation()) {
+			ExecutorService pool = Executors.newFixedThreadPool(1);
 
-      pool.execute(new Runnable() {
+			pool.execute(new Runnable() {
 
-        public void run() {
-          System.out.println("run");
+				@Override
+				public void run() {
+					System.out.println("run");
 
-        }
-      });
+				}
+			});
 
-      pool.shutdown();
-    }
-  }
+			pool.shutdown();
+		}
+	}
 }

@@ -24,55 +24,55 @@ import gov.nasa.jpf.vm.LocalVarInfo;
 import gov.nasa.jpf.vm.MethodInfo;
 
 /**
- * utility class to specify local variables in JPF options
- * example:
- *
- *  x.y.MyClass.foo(int,double):x
+ * utility class to specify local variables in JPF options example:
  * 
- * Note: this is not derived from FeatureSpec, it only used a MethodSpec for delegation
- *
+ * x.y.MyClass.foo(int,double):x
+ * 
+ * Note: this is not derived from FeatureSpec, it only used a MethodSpec for
+ * delegation
+ * 
  * <2do> we don't deal with scopes or types yet
  */
-public class VarSpec  {
+public class VarSpec {
 
-  static JPFLogger logger = JPF.getLogger("gov.nasa.jpf.util");
+	static JPFLogger logger = JPF.getLogger("gov.nasa.jpf.util");
 
-  String varName;
-  MethodSpec mthSpec;
+	String varName;
+	MethodSpec mthSpec;
 
-  public static VarSpec createVarSpec(String spec) {
-    int idx = spec.indexOf(':');
+	public static VarSpec createVarSpec(String spec) {
+		int idx = spec.indexOf(':');
 
-    if (idx > 0) {
-      String ms = spec.substring(0, idx).trim();
-      String vs = spec.substring(idx+1).trim();
+		if (idx > 0) {
+			String ms = spec.substring(0, idx).trim();
+			String vs = spec.substring(idx + 1).trim();
 
-      MethodSpec mspec = MethodSpec.createMethodSpec(ms);
-      if (mspec != null){
-        return new VarSpec(vs, mspec);
-      }
-    }
+			MethodSpec mspec = MethodSpec.createMethodSpec(ms);
+			if (mspec != null) {
+				return new VarSpec(vs, mspec);
+			}
+		}
 
-    logger.warning("illegal variable spec ", spec);
-    return null;
-  }
+		logger.warning("illegal variable spec ", spec);
+		return null;
+	}
 
-  public VarSpec (String varName, MethodSpec mthSpec){
-    this.varName = varName;
-    this.mthSpec = mthSpec;
-  }
+	public VarSpec(String varName, MethodSpec mthSpec) {
+		this.varName = varName;
+		this.mthSpec = mthSpec;
+	}
 
-  public LocalVarInfo getMatchingLocalVarInfo (MethodInfo mi, int pc, int slotIdx){
+	public LocalVarInfo getMatchingLocalVarInfo(MethodInfo mi, int pc,
+			int slotIdx) {
 
-    if (mthSpec.matches(mi)){
-      LocalVarInfo lvar = mi.getLocalVar(slotIdx, pc);
-      if (lvar != null && lvar.getName().equals(varName)){
-        return lvar;
-      }
-    }
+		if (mthSpec.matches(mi)) {
+			LocalVarInfo lvar = mi.getLocalVar(slotIdx, pc);
+			if (lvar != null && lvar.getName().equals(varName)) {
+				return lvar;
+			}
+		}
 
-    return null;
-  }
-
+		return null;
+	}
 
 }

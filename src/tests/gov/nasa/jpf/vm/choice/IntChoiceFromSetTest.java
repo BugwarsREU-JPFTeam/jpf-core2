@@ -30,41 +30,41 @@ import org.junit.Test;
  */
 public class IntChoiceFromSetTest extends TestJPF {
 
-  private void testSetContents(ChoiceGenerator<Integer> cg) {
-    cg.advance();
-    assertTrue (cg.hasMoreChoices());
-    assertEquals ((int)cg.getNextChoice(), 1);
-    cg.advance();
-    assertTrue (cg.hasMoreChoices());
-    assertEquals ((int)cg.getNextChoice(), 2);
-    cg.advance();
-    assertTrue (cg.hasMoreChoices());
-    assertEquals ((int)cg.getNextChoice(), 3);
-    cg.advance();
-    assertFalse (cg.hasMoreChoices());
-    assertEquals ((int)cg.getNextChoice(), 4);
-  }
+	private void testSetContents(ChoiceGenerator<Integer> cg) {
+		cg.advance();
+		assertTrue(cg.hasMoreChoices());
+		assertEquals((int) cg.getNextChoice(), 1);
+		cg.advance();
+		assertTrue(cg.hasMoreChoices());
+		assertEquals((int) cg.getNextChoice(), 2);
+		cg.advance();
+		assertTrue(cg.hasMoreChoices());
+		assertEquals((int) cg.getNextChoice(), 3);
+		cg.advance();
+		assertFalse(cg.hasMoreChoices());
+		assertEquals((int) cg.getNextChoice(), 4);
+	}
 
-  @Test
-  public void testSetWithOutDuplicates() {
-    IntChoiceFromSet cg = new IntChoiceFromSet("test", 1, 2, 3, 4);
-    testSetContents(cg);
-  }
+	@Test
+	public void testSetWithOutDuplicates() {
+		IntChoiceFromSet cg = new IntChoiceFromSet("test", 1, 2, 3, 4);
+		testSetContents(cg);
+	}
 
-  @Test
-  public void testSetWithDuplicates() {
-    IntChoiceFromSet cg = new IntChoiceFromSet("test1", 1, 2, 3, 4, 4, 4);
-    testSetContents(cg);
-  }
+	@Test
+	public void testSetWithDuplicates() {
+		IntChoiceFromSet cg = new IntChoiceFromSet("test1", 1, 2, 3, 4, 4, 4);
+		testSetContents(cg);
+	}
 
-  @Test
-  public void testSetWithDuplicates2() {
-    IntChoiceFromSet cg = new IntChoiceFromSet("test2", 1, 2, 1, 2, 1, 2);
-    cg.advance();
-    assertTrue (cg.hasMoreChoices());
-    assertEquals ((int)cg.getNextChoice(), 1);
-    cg.advance();
-    assertFalse (cg.hasMoreChoices());
-    assertEquals ((int)cg.getNextChoice(), 2);
-  }
+	@Test
+	public void testSetWithDuplicates2() {
+		IntChoiceFromSet cg = new IntChoiceFromSet("test2", 1, 2, 1, 2, 1, 2);
+		cg.advance();
+		assertTrue(cg.hasMoreChoices());
+		assertEquals((int) cg.getNextChoice(), 1);
+		cg.advance();
+		assertFalse(cg.hasMoreChoices());
+		assertEquals((int) cg.getNextChoice(), 2);
+	}
 }

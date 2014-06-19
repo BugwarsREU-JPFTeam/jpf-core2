@@ -19,45 +19,44 @@
 package gov.nasa.jpf.util;
 
 /**
- * object to compute complex hash values that can be accumulated and
- * delegated (to aggregates etc.)
- * used to obtain hashcodes for states
+ * object to compute complex hash values that can be accumulated and delegated
+ * (to aggregates etc.) used to obtain hashcodes for states
  */
 public class HashData {
-  private static final int poly = 0x88888EEF;
-  private int m = -1;
+	private static final int poly = 0x88888EEF;
+	private int m = -1;
 
-  public void reset() {
-    m = -1;
-  }
-  
-  public int getValue () {
-    return (m >>> 4) ^ (m & 15);
-  }
+	public void reset() {
+		m = -1;
+	}
 
-  public void add (int value) {
-    if (m < 0) {
-      m += m;
-      m ^= poly;
-    } else {
-      m += m;
-    }
+	public int getValue() {
+		return (m >>> 4) ^ (m & 15);
+	}
 
-    m ^= value;
-  }
+	public void add(int value) {
+		if (m < 0) {
+			m += m;
+			m ^= poly;
+		} else {
+			m += m;
+		}
 
-  public void add (long value){
-    add((int)(value ^ (value >>> 32)));
-  }
+		m ^= value;
+	}
 
-  public void add (Object o) {
-    if (o != null) {
-      add(o.hashCode());
-    }
-  }
-  
-  public void add (boolean b) {
-    // a clear case of '42', but that's the "official" boolean hashing
-    add(b ? 1231 : 1237);
-  }
+	public void add(long value) {
+		add((int) (value ^ (value >>> 32)));
+	}
+
+	public void add(Object o) {
+		if (o != null) {
+			add(o.hashCode());
+		}
+	}
+
+	public void add(boolean b) {
+		// a clear case of '42', but that's the "official" boolean hashing
+		add(b ? 1231 : 1237);
+	}
 }

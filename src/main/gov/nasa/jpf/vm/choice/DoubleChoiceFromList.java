@@ -23,63 +23,69 @@ import gov.nasa.jpf.JPFException;
 import gov.nasa.jpf.vm.DoubleChoiceGenerator;
 
 /**
- * simple DoubleChoiceGenerator that takes it's values from a single
- * property "values" (comma or blank separated list)
+ * simple DoubleChoiceGenerator that takes it's values from a single property
+ * "values" (comma or blank separated list)
  * 
  */
-public class DoubleChoiceFromList extends NumberChoiceFromList<Double> implements DoubleChoiceGenerator {
+public class DoubleChoiceFromList extends NumberChoiceFromList<Double>
+		implements DoubleChoiceGenerator {
 
-  protected Double[] createValueArray(int len) {
-    return new Double[len];
-  }
+	@Override
+	protected Double[] createValueArray(int len) {
+		return new Double[len];
+	}
 
-  protected Double getDefaultValue() {
-    return 0.0;
-  }
+	@Override
+	protected Double getDefaultValue() {
+		return 0.0;
+	}
 
-  public Class<Double> getChoiceType() {
-    return Double.class;
-  }
+	@Override
+	public Class<Double> getChoiceType() {
+		return Double.class;
+	}
 
-  protected Double parseLiteral(String literal, int sign) {
-    double val = Double.parseDouble(literal);
-    return new Double(val * sign);
-  }
+	@Override
+	protected Double parseLiteral(String literal, int sign) {
+		double val = Double.parseDouble(literal);
+		return new Double(val * sign);
+	}
 
-  protected Double newValue(Number num, int sign) {
-    return new Double(num.intValue() * sign);
-  }
+	@Override
+	protected Double newValue(Number num, int sign) {
+		return new Double(num.intValue() * sign);
+	}
 
-  /**
-   * super constructor for subclasses that want to configure themselves
-   * 
-   * @param id
-   *          name used in choice config
-   */
-  protected DoubleChoiceFromList(String id) {
-    super(id);
-  }
+	/**
+	 * super constructor for subclasses that want to configure themselves
+	 * 
+	 * @param id
+	 *            name used in choice config
+	 */
+	protected DoubleChoiceFromList(String id) {
+		super(id);
+	}
 
-  protected DoubleChoiceFromList(String id, Double[] vals) {
-    super(id, vals);
-  }
+	protected DoubleChoiceFromList(String id, Double[] vals) {
+		super(id, vals);
+	}
 
-  public DoubleChoiceFromList(Config conf, String id) {
-    super(conf, id);
-  }
+	public DoubleChoiceFromList(Config conf, String id) {
+		super(conf, id);
+	}
 
-  public DoubleChoiceFromList(String id, double... val) {
-    super(id);
+	public DoubleChoiceFromList(String id, double... val) {
+		super(id);
 
-    if (val != null) {
-      values = new Double[val.length];
-      for (int i = 0; i < val.length; i++) {
-        values[i] = val[i]; // enable use of cached Double values
-      }
-    } else {
-      throw new JPFException("empty set for DoubleChoiceFromList");
-    }
+		if (val != null) {
+			values = new Double[val.length];
+			for (int i = 0; i < val.length; i++) {
+				values[i] = val[i]; // enable use of cached Double values
+			}
+		} else {
+			throw new JPFException("empty set for DoubleChoiceFromList");
+		}
 
-    count = -1;
-  }
+		count = -1;
+	}
 }

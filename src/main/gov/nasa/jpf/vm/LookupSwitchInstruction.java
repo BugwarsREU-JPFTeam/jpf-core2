@@ -23,5 +23,5 @@ package gov.nasa.jpf.vm;
  */
 public interface LookupSwitchInstruction {
 
-  void setTarget(int index, int match, int targetPc);
+	void setTarget(int index, int match, int targetPc);
 }

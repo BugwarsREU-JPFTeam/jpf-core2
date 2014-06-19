@@ -19,35 +19,33 @@
 
 package gov.nasa.jpf.vm;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 /**
- * abstract class that represents the source of a classfile, such
- * as (root) directories and jars
+ * abstract class that represents the source of a classfile, such as (root)
+ * directories and jars
  */
 public abstract class ClassFileContainer {
-  protected String name;
-  protected String url;
+	protected String name;
+	protected String url;
 
-  protected ClassFileContainer(String name, String url) {
-    this.name = name;
-    this.url = url;
-  }
+	protected ClassFileContainer(String name, String url) {
+		this.name = name;
+		this.url = url;
+	}
 
-  public String getName() {
-    return name;
-  }
+	public String getName() {
+		return name;
+	}
 
-  public String getURL() {
-    return url;
-  }
+	public String getURL() {
+		return url;
+	}
 
-  public abstract String getClassURL (String clsName);
+	public abstract String getClassURL(String clsName);
 
-  protected static void error(String msg) throws ClassParseException {
-    throw new ClassParseException(msg);
-  }
+	protected static void error(String msg) throws ClassParseException {
+		throw new ClassParseException(msg);
+	}
 
-  public abstract ClassFileMatch getMatch (String clsName) throws ClassParseException;
+	public abstract ClassFileMatch getMatch(String clsName)
+			throws ClassParseException;
 }

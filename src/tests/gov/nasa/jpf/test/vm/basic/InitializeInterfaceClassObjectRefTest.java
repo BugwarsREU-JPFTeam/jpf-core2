@@ -30,26 +30,28 @@ import org.junit.Test;
  * properly.  The old VM.registerStartupClass code wasn't initializing the
  * class object of the interfaces.
  */
-public class InitializeInterfaceClassObjectRefTest extends TestJPF implements InitializeInterfaceClassObjectRefTestInterface
-{
-   @Test
-   public void test()
-   {
-      if (verifyUnhandledExceptionDetails(RuntimeException.class.getName(), "This test throws an expected exception.", "+log.finest+=,gov.nasa.jpf.vm.ClassInfo"))
-      {
-         // Throw an exception to avoid backtracking.  Backtracking will wipe out the class object ref.
-         throw new RuntimeException("This test throws an expected exception.");
-      }
-      else
-      {
-         ClassInfo ci = ClassLoaderInfo.getCurrentResolvedClassInfo( InitializeInterfaceClassObjectRefTestInterface.class.getName());
-         
-         if (ci.getClassObjectRef() < 0)
-            throw new AssertionError("ci.getClassObjectRef() < 0 : " + ci.getClassObjectRef());
-      }
-   }
+public class InitializeInterfaceClassObjectRefTest extends TestJPF implements
+		InitializeInterfaceClassObjectRefTestInterface {
+	@Test
+	public void test() {
+		if (verifyUnhandledExceptionDetails(RuntimeException.class.getName(),
+				"This test throws an expected exception.",
+				"+log.finest+=,gov.nasa.jpf.vm.ClassInfo")) {
+			// Throw an exception to avoid backtracking. Backtracking will wipe
+			// out the class object ref.
+			throw new RuntimeException(
+					"This test throws an expected exception.");
+		} else {
+			ClassInfo ci = ClassLoaderInfo
+					.getCurrentResolvedClassInfo(InitializeInterfaceClassObjectRefTestInterface.class
+							.getName());
+
+			if (ci.getClassObjectRef() < 0)
+				throw new AssertionError("ci.getClassObjectRef() < 0 : "
+						+ ci.getClassObjectRef());
+		}
+	}
 }
 
-interface InitializeInterfaceClassObjectRefTestInterface
-{
+interface InitializeInterfaceClassObjectRefTestInterface {
 }

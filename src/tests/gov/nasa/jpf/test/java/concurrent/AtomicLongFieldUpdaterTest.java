@@ -30,47 +30,47 @@ import org.junit.Test;
  */
 public class AtomicLongFieldUpdaterTest extends TestJPF {
 
-  static {
-    Verify.setProperties("cg.enumerate_cas=true");
-  }
-  long value;
+	static {
+		Verify.setProperties("cg.enumerate_cas=true");
+	}
+	long value;
 
-  @Test
-  public void testField() {
-    if (verifyNoPropertyViolation("+cg.enumerate_cas=true")) {
-      AtomicLongFieldUpdater<AtomicLongFieldUpdaterTest> upd =
-              AtomicLongFieldUpdater.newUpdater(AtomicLongFieldUpdaterTest.class, "value");
+	@Test
+	public void testField() {
+		if (verifyNoPropertyViolation("+cg.enumerate_cas=true")) {
+			AtomicLongFieldUpdater<AtomicLongFieldUpdaterTest> upd = AtomicLongFieldUpdater
+					.newUpdater(AtomicLongFieldUpdaterTest.class, "value");
 
-      final long v1 = 723489234098734534L;
-      final long v2 = 256092348679304843L;
-      final long nogo = 823468902346907854L;
-      value = v1;
+			final long v1 = 723489234098734534L;
+			final long v2 = 256092348679304843L;
+			final long nogo = 823468902346907854L;
+			value = v1;
 
-      assert upd.compareAndSet(this, v1, v2);
-      assert value == v2;
+			assert upd.compareAndSet(this, v1, v2);
+			assert value == v2;
 
-      assert !upd.compareAndSet(this, v1, nogo);
-      assert value == v2;
+			assert !upd.compareAndSet(this, v1, nogo);
+			assert value == v2;
 
-      assert value == upd.get(this);
+			assert value == upd.get(this);
 
-      assert v2 == upd.getAndSet(this, v1);
-      assert value == v1;
+			assert v2 == upd.getAndSet(this, v1);
+			assert value == v1;
 
-      upd.set(this, v2);
-      assert value == v2;
+			upd.set(this, v2);
+			assert value == v2;
 
-      upd.lazySet(this, v1);
-      assert value == v1;
+			upd.lazySet(this, v1);
+			assert value == v1;
 
-      assert upd.weakCompareAndSet(this, v1, v2);
-      assert value == v2;
+			assert upd.weakCompareAndSet(this, v1, v2);
+			assert value == v2;
 
-      assert !upd.weakCompareAndSet(this, v1, nogo);
-      assert value == v2;
+			assert !upd.weakCompareAndSet(this, v1, nogo);
+			assert value == v2;
 
-      assert v2 == upd.getAndAdd(this, 5);
-      assert v2 + 5 == value;
-    }
-  }
+			assert v2 == upd.getAndAdd(this, 5);
+			assert v2 + 5 == value;
+		}
+	}
 }

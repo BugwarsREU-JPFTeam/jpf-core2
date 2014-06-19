@@ -21,20 +21,20 @@ package gov.nasa.jpf.vm;
 /**
  * interface that encapsulates the mechanism to obtain values for
  * 
- *   System.getCurrentTimeMillis()
- *   System.nanoTime()
+ * System.getCurrentTimeMillis() System.nanoTime()
  * 
  * calls. Implementors should guarantee the invariant that time values are
- * strictly increasing along any given path, but don't have to backtrack
- * time values in order to achieve uniform time increments along all paths.
+ * strictly increasing along any given path, but don't have to backtrack time
+ * values in order to achieve uniform time increments along all paths.
  * 
- * Note that implementations have to avoid creating state leaks, i.e.
- * the respective time value storage should not contribute to the state space
- * hashing. If it has to be backtrackable, it either has to be stored on the 
+ * Note that implementations have to avoid creating state leaks, i.e. the
+ * respective time value storage should not contribute to the state space
+ * hashing. If it has to be backtrackable, it either has to be stored on the
  * native side, or marked as @FilterField
  */
 public interface TimeModel {
-  
-  public long currentTimeMillis();
-  public long nanoTime();
+
+	public long currentTimeMillis();
+
+	public long nanoTime();
 }

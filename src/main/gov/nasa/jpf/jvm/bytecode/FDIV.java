@@ -24,30 +24,31 @@ import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.Types;
 
-
 /**
- * divide float
- * ..., value1, value2 => ..., result
+ * divide float ..., value1, value2 => ..., result
  */
 public class FDIV extends JVMInstruction {
 
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    float v1 = frame.popFloat();
-    float v2 = frame.popFloat();
-    
-    float r = v2 / v1;
-    frame.push(Types.floatToInt(r), false);
+		float v1 = frame.popFloat();
+		float v2 = frame.popFloat();
 
-    return getNext(ti);
-  }
+		float r = v2 / v1;
+		frame.push(Types.floatToInt(r), false);
 
-  public int getByteCode () {
-    return 0x6E;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		return getNext(ti);
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0x6E;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

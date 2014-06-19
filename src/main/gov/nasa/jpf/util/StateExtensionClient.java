@@ -23,12 +23,14 @@ import gov.nasa.jpf.JPF;
 /**
  * generic interface for state extensions that have to be backtracked/restored
  */
-public interface StateExtensionClient <T> {
-  
-  // these are the automatic SearchListener callbacks from the corresponding StateExtensionListener
-  T getStateExtension();
-  void restore (T stateExtension);
+public interface StateExtensionClient<T> {
 
-  // this needs to be called somewhere from the app
-  void registerListener (JPF jpf);
+	// these are the automatic SearchListener callbacks from the corresponding
+	// StateExtensionListener
+	T getStateExtension();
+
+	void restore(T stateExtension);
+
+	// this needs to be called somewhere from the app
+	void registerListener(JPF jpf);
 }

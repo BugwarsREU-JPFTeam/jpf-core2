@@ -18,18 +18,16 @@
 //
 package gov.nasa.jpf.vm;
 
-
-
 public interface StateRestorer<Saved> {
-  void attach(VM vm);
-  
-  /**
-   * get saved version of current KernelState. 
-   */
-  Saved getRestorableData();
-  
-  /**
-   * restore from saved KernelState.
-   */
-  void restore(Saved data);
+	void attach(VM vm);
+
+	/**
+	 * get saved version of current KernelState.
+	 */
+	Saved getRestorableData();
+
+	/**
+	 * restore from saved KernelState.
+	 */
+	void restore(Saved data);
 }

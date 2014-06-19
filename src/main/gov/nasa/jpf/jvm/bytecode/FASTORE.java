@@ -21,32 +21,33 @@ package gov.nasa.jpf.jvm.bytecode;
 import gov.nasa.jpf.vm.ArrayIndexOutOfBoundsExecutiveException;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.StackFrame;
-import gov.nasa.jpf.vm.ThreadInfo;
-
 
 /**
- * Store into float array
- * ..., arrayref, index, value => ...
+ * Store into float array ..., arrayref, index, value => ...
  */
 public class FASTORE extends ArrayStoreInstruction {
 
-  float value;
+	float value;
 
-  protected void popValue(StackFrame frame){
-    value = Float.intBitsToFloat(frame.pop());
-  }
+	@Override
+	protected void popValue(StackFrame frame) {
+		value = Float.intBitsToFloat(frame.pop());
+	}
 
-  protected void setField (ElementInfo ei, int index) throws ArrayIndexOutOfBoundsExecutiveException {
-    ei.checkArrayBounds(index);
-    ei.setFloatElement(index, value);
-  }
+	@Override
+	protected void setField(ElementInfo ei, int index)
+			throws ArrayIndexOutOfBoundsExecutiveException {
+		ei.checkArrayBounds(index);
+		ei.setFloatElement(index, value);
+	}
 
+	@Override
+	public int getByteCode() {
+		return 0x51;
+	}
 
-  public int getByteCode () {
-    return 0x51;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

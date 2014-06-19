@@ -19,7 +19,6 @@
 package gov.nasa.jpf.jvm.bytecode;
 
 import gov.nasa.jpf.vm.ClassInfo;
-import gov.nasa.jpf.vm.ClassLoaderInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.Instruction;
@@ -32,149 +31,156 @@ import gov.nasa.jpf.vm.ThreadInfo;
  */
 public abstract class StaticFieldInstruction extends FieldInstruction {
 
-  protected StaticFieldInstruction(){}
+	protected StaticFieldInstruction() {
+	}
 
-  protected StaticFieldInstruction(String fieldName, String clsDescriptor, String fieldDescriptor){
-    super(fieldName, clsDescriptor, fieldDescriptor);
-  }
+	protected StaticFieldInstruction(String fieldName, String clsDescriptor,
+			String fieldDescriptor) {
+		super(fieldName, clsDescriptor, fieldDescriptor);
+	}
 
-  /**
-   * on-demand initialize the ClassInfo and FieldInfo fields. Note that
-   * classinfo might not correspond with the static className, but can be one of
-   * the super classes. Rather than checking for this on each subsequent access,
-   * we get the right one that declares the field here
-   */
-  protected void initialize() {
-    ClassInfo ciRef = mi.getClassInfo().resolveReferencedClass(className);
-    
-    FieldInfo f = ciRef.getStaticField(fname);
-    ClassInfo ciField = f.getClassInfo();
-    if (!ciField.isRegistered()){
-      // classLoaded listeners might change/remove this field
-      ciField.registerClass(ThreadInfo.getCurrentThread());
-      f = ciField.getStaticField(fname);
-    }
-    
-    fi = f;
-  }
+	/**
+	 * on-demand initialize the ClassInfo and FieldInfo fields. Note that
+	 * classinfo might not correspond with the static className, but can be one
+	 * of the super classes. Rather than checking for this on each subsequent
+	 * access, we get the right one that declares the field here
+	 */
+	protected void initialize() {
+		ClassInfo ciRef = mi.getClassInfo().resolveReferencedClass(className);
 
-  public ClassInfo getClassInfo() {
-    if (fi == null) {
-      initialize();
-    }
-    return fi.getClassInfo();
-  }
+		FieldInfo f = ciRef.getStaticField(fname);
+		ClassInfo ciField = f.getClassInfo();
+		if (!ciField.isRegistered()) {
+			// classLoaded listeners might change/remove this field
+			ciField.registerClass(ThreadInfo.getCurrentThread());
+			f = ciField.getStaticField(fname);
+		}
 
-  public FieldInfo getFieldInfo() {
-    if (fi == null) {
-      initialize();
-    }
-    return fi;
-  }
+		fi = f;
+	}
 
-  /**
-   *  that's invariant, as opposed to InstanceFieldInstruction, so it's
-   *  not really a peek
-   */
-  public ElementInfo peekElementInfo (ThreadInfo ti) {
-    return getLastElementInfo();
-  }
+	public ClassInfo getClassInfo() {
+		if (fi == null) {
+			initialize();
+		}
+		return fi.getClassInfo();
+	}
 
-  public StaticElementInfo getLastElementInfo() {
-    return getFieldInfo().getClassInfo().getStaticElementInfo();
-  }
+	@Override
+	public FieldInfo getFieldInfo() {
+		if (fi == null) {
+			initialize();
+		}
+		return fi;
+	}
 
-  // this can be different than ciField - the field might be in one of its
-  // superclasses
-  public ClassInfo getLastClassInfo(){
-    return getFieldInfo().getClassInfo();
-  }
+	/**
+	 * that's invariant, as opposed to InstanceFieldInstruction, so it's not
+	 * really a peek
+	 */
+	@Override
+	public ElementInfo peekElementInfo(ThreadInfo ti) {
+		return getLastElementInfo();
+	}
 
-  public String getLastClassName() {
-    return getLastClassInfo().getName();
-  }
+	@Override
+	public StaticElementInfo getLastElementInfo() {
+		return getFieldInfo().getClassInfo().getStaticElementInfo();
+	}
 
-  protected boolean isNewPorFieldBoundary (ThreadInfo ti) {
-    return !ti.isFirstStepInsn() && ti.usePorFieldBoundaries() && isSchedulingRelevant(ti);
-  }
+	// this can be different than ciField - the field might be in one of its
+	// superclasses
+	public ClassInfo getLastClassInfo() {
+		return getFieldInfo().getClassInfo();
+	}
 
-  @Override
-  protected boolean isSkippedFinalField (ElementInfo ei) {
-    if (fi.isFinal()){
-      // NOTE - we only encounter this for references, other static finals
-      // will be inlined by the compiler    
-      if (skipFinals || skipStaticFinals) {
-        return true;
-      }
-    }
-    
-    return false;
-  }
-  
-  protected boolean isSchedulingRelevant (ThreadInfo ti) {
-    
-    //--- configured override
-    FieldInfo fi = getFieldInfo();
-    if (fi.neverBreak()) {
-      // this should filter out the bulk in most real apps (library code)
-      return false;
-    } else if (fi.breakShared()){
-      return true;
-    }
+	public String getLastClassName() {
+		return getLastClassInfo().getName();
+	}
 
-    //--- field owner properties
-    ElementInfo ei = fi.getClassInfo().getStaticElementInfo();
-    if (ei.isImmutable() || isSkippedFinalField(ei)) {
-      return false;
-    }
-    
-    if (!ei.isShared()) {
-      return false;
-    }
+	protected boolean isNewPorFieldBoundary(ThreadInfo ti) {
+		return !ti.isFirstStepInsn() && ti.usePorFieldBoundaries()
+				&& isSchedulingRelevant(ti);
+	}
 
-    if (!ti.hasOtherRunnables()) { // single threaded
-      return false;
-    }
-    
-    //--- special code patterns
-    if (isMonitorEnterPrologue()) {
-      // if this is a GET followed by a MONITOR_ENTER then we just break on the monitor
-      return false;
-    }
-    if (mi.isClinit() && (fi.getClassInfo() == mi.getClassInfo())) {
-      // clinits are all synchronized, so they don't count
-      return false;
-    }
+	@Override
+	protected boolean isSkippedFinalField(ElementInfo ei) {
+		if (fi.isFinal()) {
+			// NOTE - we only encounter this for references, other static finals
+			// will be inlined by the compiler
+			if (skipFinals || skipStaticFinals) {
+				return true;
+			}
+		}
 
-    if (ti.usePorSyncDetection()) {
-      if (isLockProtected(ti, ei)) {
-        return false;
-      }      
-    }
+		return false;
+	}
 
-    return true;
-  }
+	protected boolean isSchedulingRelevant(ThreadInfo ti) {
 
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		// --- configured override
+		FieldInfo fi = getFieldInfo();
+		if (fi.neverBreak()) {
+			// this should filter out the bulk in most real apps (library code)
+			return false;
+		} else if (fi.breakShared()) {
+			return true;
+		}
 
-  @Override
-  public Instruction typeSafeClone(MethodInfo mi) {
-    StaticFieldInstruction clone = null;
+		// --- field owner properties
+		ElementInfo ei = fi.getClassInfo().getStaticElementInfo();
+		if (ei.isImmutable() || isSkippedFinalField(ei)) {
+			return false;
+		}
 
-    try {
-      clone = (StaticFieldInstruction) super.clone();
+		if (!ei.isShared()) {
+			return false;
+		}
 
-      // reset the method that this insn belongs to
-      clone.mi = mi;
-      clone.fi = null; // ClassInfo is going to be different
-      
-    } catch (CloneNotSupportedException e) {
-      e.printStackTrace();
-    }
+		if (!ti.hasOtherRunnables()) { // single threaded
+			return false;
+		}
 
-    return clone;
-  }
+		// --- special code patterns
+		if (isMonitorEnterPrologue()) {
+			// if this is a GET followed by a MONITOR_ENTER then we just break
+			// on the monitor
+			return false;
+		}
+		if (mi.isClinit() && (fi.getClassInfo() == mi.getClassInfo())) {
+			// clinits are all synchronized, so they don't count
+			return false;
+		}
+
+		if (ti.usePorSyncDetection()) {
+			if (isLockProtected(ti, ei)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
+
+	@Override
+	public Instruction typeSafeClone(MethodInfo mi) {
+		StaticFieldInstruction clone = null;
+
+		try {
+			clone = (StaticFieldInstruction) super.clone();
+
+			// reset the method that this insn belongs to
+			clone.mi = mi;
+			clone.fi = null; // ClassInfo is going to be different
+
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+		}
+
+		return clone;
+	}
 }
-

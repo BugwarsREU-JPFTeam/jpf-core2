@@ -20,73 +20,74 @@ package gov.nasa.jpf.jvm.bytecode;
 
 import gov.nasa.jpf.JPFException;
 import gov.nasa.jpf.vm.Instruction;
-import gov.nasa.jpf.vm.KernelState;
 import gov.nasa.jpf.vm.StackFrame;
-import gov.nasa.jpf.vm.SystemState;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Access jump table by index and jump
- *   ..., index  => ...
+ * Access jump table by index and jump ..., index => ...
  */
-public class TABLESWITCH extends SwitchInstruction implements gov.nasa.jpf.vm.TableSwitchInstruction {
+public class TABLESWITCH extends SwitchInstruction implements
+		gov.nasa.jpf.vm.TableSwitchInstruction {
 
-  int min, max;
+	int min, max;
 
-  public TABLESWITCH(int defaultTarget, int min, int max){
-    super(defaultTarget, (max - min +1));
-    this.min = min;
-    this.max = max;
-  }
-  
-  public int getMin(){
-	  return min;
-  }
-  
-  public int getMax(){
-	  return max;
-  }
+	public TABLESWITCH(int defaultTarget, int min, int max) {
+		super(defaultTarget, (max - min + 1));
+		this.min = min;
+		this.max = max;
+	}
 
-  public void setTarget (int value, int target){
-    int i = value-min;
+	public int getMin() {
+		return min;
+	}
 
-    if (i>=0 && i<targets.length){
-      targets[i] = target;
-    } else {
-      throw new JPFException("illegal tableswitch target: " + value);
-    }
-  }
+	public int getMax() {
+		return max;
+	}
 
-  protected Instruction executeConditional (ThreadInfo ti){
-    StackFrame frame = ti.getModifiableTopFrame();
+	@Override
+	public void setTarget(int value, int target) {
+		int i = value - min;
 
-    int value = frame.pop();
-    int i = value-min;
-    int pc;
+		if (i >= 0 && i < targets.length) {
+			targets[i] = target;
+		} else {
+			throw new JPFException("illegal tableswitch target: " + value);
+		}
+	}
 
-    if (i>=0 && i<targets.length){
-      lastIdx = i;
-      pc = targets[i];
-    } else {
-      lastIdx = -1;
-      pc = target;
-    }
+	@Override
+	protected Instruction executeConditional(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    // <2do> this is BAD - we should compute the target insns just once
-    return mi.getInstructionAt(pc);
-  }
+		int value = frame.pop();
+		int i = value - min;
+		int pc;
 
+		if (i >= 0 && i < targets.length) {
+			lastIdx = i;
+			pc = targets[i];
+		} else {
+			lastIdx = -1;
+			pc = target;
+		}
 
-  public int getLength() {
-    return 13 + 2*(matches.length); // <2do> NOT RIGHT: padding!!
-  }
-  
-  public int getByteCode () {
-    return 0xAA;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		// <2do> this is BAD - we should compute the target insns just once
+		return mi.getInstructionAt(pc);
+	}
+
+	@Override
+	public int getLength() {
+		return 13 + 2 * (matches.length); // <2do> NOT RIGHT: padding!!
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0xAA;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

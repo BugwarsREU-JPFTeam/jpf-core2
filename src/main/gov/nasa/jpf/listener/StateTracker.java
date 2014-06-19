@@ -30,94 +30,99 @@ import java.io.PrintWriter;
  */
 public class StateTracker extends ListenerAdapter {
 
-  private final PrintWriter out;
-  private final int logPeriod;
-  volatile private String operation;
-  volatile private String detail;
-  volatile private int depth;
-  volatile private int id;
+	private final PrintWriter out;
+	private final int logPeriod;
+	volatile private String operation;
+	volatile private String detail;
+	volatile private int depth;
+	volatile private int id;
 
-  public StateTracker (Config conf, JPF jpf) {
-    out = new PrintWriter(System.out, true);
-    logPeriod = conf.getInt("jpf.state_tracker.log_period", 0);
-    Runnable task = new Runnable() {public void run() {logger();}};
-    Thread thread = new Thread(task);
-    thread.setDaemon(true);
-    thread.setName("StateTracker Logger");
-    thread.start();
-  }
+	public StateTracker(Config conf, JPF jpf) {
+		out = new PrintWriter(System.out, true);
+		logPeriod = conf.getInt("jpf.state_tracker.log_period", 0);
+		Runnable task = new Runnable() {
+			@Override
+			public void run() {
+				logger();
+			}
+		};
+		Thread thread = new Thread(task);
+		thread.setDaemon(true);
+		thread.setName("StateTracker Logger");
+		thread.start();
+	}
 
-  private void logger() {
-    StringBuilder buffer = new StringBuilder();
+	private void logger() {
+		StringBuilder buffer = new StringBuilder();
 
-    buffer.append("----------------------------------- [");
-    int len = buffer.length();
+		buffer.append("----------------------------------- [");
+		int len = buffer.length();
 
-    while (true) {
-      try {
-        Thread.sleep(logPeriod);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
+		while (true) {
+			try {
+				Thread.sleep(logPeriod);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 
-      buffer.append(depth);
-      buffer.append(']');
-      buffer.append(operation);
-      buffer.append(": ");
-      buffer.append(id);
+			buffer.append(depth);
+			buffer.append(']');
+			buffer.append(operation);
+			buffer.append(": ");
+			buffer.append(id);
 
-      if (detail != null) {
-        buffer.append(' ');
-        buffer.append(detail);
-      }
+			if (detail != null) {
+				buffer.append(' ');
+				buffer.append(detail);
+			}
 
-      out.println(buffer.toString());
+			out.println(buffer.toString());
 
-      buffer.setLength(len);
-    }
-  }
+			buffer.setLength(len);
+		}
+	}
 
-  @Override
-  public void stateRestored(Search search) {
-    id = search.getStateId();
-    depth = search.getDepth();
-    operation = "restored";
-    detail = null;
-  }
+	@Override
+	public void stateRestored(Search search) {
+		id = search.getStateId();
+		depth = search.getDepth();
+		operation = "restored";
+		detail = null;
+	}
 
-  //--- the ones we are interested in
-  @Override
-  public void searchStarted(Search search) {
-    out.println("----------------------------------- search started");
-  }
+	// --- the ones we are interested in
+	@Override
+	public void searchStarted(Search search) {
+		out.println("----------------------------------- search started");
+	}
 
-  @Override
-  public void stateAdvanced(Search search) {
-    id = search.getStateId();
-    depth = search.getDepth();
-    operation = "forward";
-    if (search.isNewState()) {
-      detail = "new";
-    } else {
-      detail = "visited";
-    }
+	@Override
+	public void stateAdvanced(Search search) {
+		id = search.getStateId();
+		depth = search.getDepth();
+		operation = "forward";
+		if (search.isNewState()) {
+			detail = "new";
+		} else {
+			detail = "visited";
+		}
 
-    if (search.isEndState()) {
-      detail += " end";
-    }
-  }
+		if (search.isEndState()) {
+			detail += " end";
+		}
+	}
 
-  @Override
-  public void stateBacktracked(Search search) {
-    id = search.getStateId();
-    depth = search.getDepth();
-    operation = "backtrack";
-    detail = null;
-  }
+	@Override
+	public void stateBacktracked(Search search) {
+		id = search.getStateId();
+		depth = search.getDepth();
+		operation = "backtrack";
+		detail = null;
+	}
 
-  @Override
-  public void searchFinished(Search search) {
-    out.println("----------------------------------- search finished");
-  }
+	@Override
+	public void searchFinished(Search search) {
+		out.println("----------------------------------- search finished");
+	}
 
 }

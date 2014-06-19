@@ -20,55 +20,61 @@ package gov.nasa.jpf.vm;
 
 import gov.nasa.jpf.JPFException;
 
-
-
 /**
  * type, name, modifier info of float fields
  */
 public class FloatFieldInfo extends SingleSlotFieldInfo {
-  float init;
+	float init;
 
-  public FloatFieldInfo (String name, int modifiers) {
-    super(name, "F", modifiers);
-  }
+	public FloatFieldInfo(String name, int modifiers) {
+		super(name, "F", modifiers);
+	}
 
-  public void setConstantValue(Object constValue){
-    if (constValue instanceof Float){
-      cv = constValue;
-      init = (Float)constValue;
+	@Override
+	public void setConstantValue(Object constValue) {
+		if (constValue instanceof Float) {
+			cv = constValue;
+			init = (Float) constValue;
 
-    } else {
-      throw new JPFException("illegal float ConstValue=" + constValue);
-    }
-  }
+		} else {
+			throw new JPFException("illegal float ConstValue=" + constValue);
+		}
+	}
 
-  public void initialize (ElementInfo ei, ThreadInfo ti) {
-    ei.getFields().setFloatValue(storageOffset, init);
-  }
+	@Override
+	public void initialize(ElementInfo ei, ThreadInfo ti) {
+		ei.getFields().setFloatValue(storageOffset, init);
+	}
 
-  public Class<? extends ChoiceGenerator<?>> getChoiceGeneratorType() {
-    return FloatChoiceGenerator.class;
-  }
+	@Override
+	public Class<? extends ChoiceGenerator<?>> getChoiceGeneratorType() {
+		return FloatChoiceGenerator.class;
+	}
 
-  public String valueToString (Fields f) {
-    float v = f.getFloatValue(storageOffset);
-    return Float.toString(v);
-  }
+	@Override
+	public String valueToString(Fields f) {
+		float v = f.getFloatValue(storageOffset);
+		return Float.toString(v);
+	}
 
-  public Object getValueObject (Fields f){
-    float v = f.getFloatValue(storageOffset);
-    return new Float(v);
-  }
+	@Override
+	public Object getValueObject(Fields f) {
+		float v = f.getFloatValue(storageOffset);
+		return new Float(v);
+	}
 
-  public boolean isFloatField(){
-    return true;
-  }
+	@Override
+	public boolean isFloatField() {
+		return true;
+	}
 
-  public boolean isNumericField(){
-    return true;
-  }
+	@Override
+	public boolean isNumericField() {
+		return true;
+	}
 
-  public boolean isFloatingPointField(){
-    return true;
-  }
+	@Override
+	public boolean isFloatingPointField() {
+		return true;
+	}
 }

@@ -26,92 +26,99 @@ import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
 /**
- * Set field in object
- * ..., objectref, value => ...
+ * Set field in object ..., objectref, value => ...
  */
-public class PUTFIELD extends InstanceFieldInstruction implements StoreInstruction {
+public class PUTFIELD extends InstanceFieldInstruction implements
+		StoreInstruction {
 
-  public PUTFIELD() {}
+	public PUTFIELD() {
+	}
 
-  public PUTFIELD(String fieldName, String clsDescriptor, String fieldDescriptor){
-    super(fieldName, clsDescriptor, fieldDescriptor);
-  }
-  
-  @Override
-  protected void popOperands1 (StackFrame frame) {
-    frame.pop(2); // .. objref, val => ..
-  }
-  
-  @Override
-  protected void popOperands2 (StackFrame frame) {
-    frame.pop(3); // .. objref, highVal,lowVal => ..
-  }
-    
-  @Override
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getTopFrame();
-    int objRef = frame.peek( size);
-    lastThis = objRef;
-    
-    if (!ti.isFirstStepInsn()) { // top half
+	public PUTFIELD(String fieldName, String clsDescriptor,
+			String fieldDescriptor) {
+		super(fieldName, clsDescriptor, fieldDescriptor);
+	}
 
-      // if this produces an NPE, force the error w/o further ado
-      if (objRef == MJIEnv.NULL) {
-        return ti.createAndThrowException("java.lang.NullPointerException",
-                                   "referencing field '" + fname + "' on null object");
-      }
-      
-      ElementInfo ei = ti.getModifiableElementInfoWithUpdatedSharedness(objRef);
-      FieldInfo fi = getFieldInfo();
-      if (fi == null) {
-        return ti.createAndThrowException("java.lang.NoSuchFieldError", 
-            "no field " + fname + " in " + ei);
-      }
+	@Override
+	protected void popOperands1(StackFrame frame) {
+		frame.pop(2); // .. objref, val => ..
+	}
 
-      // check if this breaks the current transition
-      // note this will also set the shared attribute of the field owner
-      if (isNewPorFieldBoundary(ti, fi, objRef)) {
-        if (createAndSetSharedFieldAccessCG(ei, ti)) {
-          return this;
-        }
-      }
-      
-      return put( ti, frame, ei);
-      
-    } else { // re-execution
-      // no need to redo the exception checks, we already had them in the top half
-      ElementInfo ei = ti.getElementInfo(objRef);
+	@Override
+	protected void popOperands2(StackFrame frame) {
+		frame.pop(3); // .. objref, highVal,lowVal => ..
+	}
 
-      return put( ti, frame, ei);      // this might create an exposure CG and cause another re-execution
-    }
-  }
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getTopFrame();
+		int objRef = frame.peek(size);
+		lastThis = objRef;
 
-  public ElementInfo peekElementInfo (ThreadInfo ti) {
-    FieldInfo fi = getFieldInfo();
-    int storageSize = fi.getStorageSize();
-    int objRef = ti.getTopFrame().peek( (storageSize == 1) ? 1 : 2);
-    ElementInfo ei = ti.getElementInfo( objRef);
+		if (!ti.isFirstStepInsn()) { // top half
 
-    return ei;
-  }
+			// if this produces an NPE, force the error w/o further ado
+			if (objRef == MJIEnv.NULL) {
+				return ti.createAndThrowException(
+						"java.lang.NullPointerException", "referencing field '"
+								+ fname + "' on null object");
+			}
 
+			ElementInfo ei = ti
+					.getModifiableElementInfoWithUpdatedSharedness(objRef);
+			FieldInfo fi = getFieldInfo();
+			if (fi == null) {
+				return ti.createAndThrowException("java.lang.NoSuchFieldError",
+						"no field " + fname + " in " + ei);
+			}
 
-  public int getLength() {
-    return 3; // opcode, index1, index2
-  }
+			// check if this breaks the current transition
+			// note this will also set the shared attribute of the field owner
+			if (isNewPorFieldBoundary(ti, fi, objRef)) {
+				if (createAndSetSharedFieldAccessCG(ei, ti)) {
+					return this;
+				}
+			}
 
-  public int getByteCode () {
-    return 0xB5;
-  }
+			return put(ti, frame, ei);
 
-  public boolean isRead() {
-    return false;
-  }
+		} else { // re-execution
+			// no need to redo the exception checks, we already had them in the
+			// top half
+			ElementInfo ei = ti.getElementInfo(objRef);
 
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+			return put(ti, frame, ei); // this might create an exposure CG and
+										// cause another re-execution
+		}
+	}
+
+	@Override
+	public ElementInfo peekElementInfo(ThreadInfo ti) {
+		FieldInfo fi = getFieldInfo();
+		int storageSize = fi.getStorageSize();
+		int objRef = ti.getTopFrame().peek((storageSize == 1) ? 1 : 2);
+		ElementInfo ei = ti.getElementInfo(objRef);
+
+		return ei;
+	}
+
+	@Override
+	public int getLength() {
+		return 3; // opcode, index1, index2
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0xB5;
+	}
+
+	@Override
+	public boolean isRead() {
+		return false;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }
-
-
-

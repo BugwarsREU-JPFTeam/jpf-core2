@@ -19,16 +19,16 @@
 package gov.nasa.jpf.search;
 
 public class SearchState {
-  
-  Search search;
-  int depth;
 
-  SearchState (Search search) {
-    this.search = search;
-    depth = search.depth;
-  }
+	Search search;
+	int depth;
 
-  public int getSearchDepth () {
-    return depth;
-  }
+	SearchState(Search search) {
+		this.search = search;
+		depth = search.depth;
+	}
+
+	public int getSearchDepth() {
+		return depth;
+	}
 }

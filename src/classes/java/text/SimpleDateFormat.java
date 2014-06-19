@@ -30,58 +30,62 @@ import java.util.TimeZone;
  */
 public class SimpleDateFormat extends DateFormat {
 
-  // see DecimalFormat comments why we use explicit init0()'s
+	// see DecimalFormat comments why we use explicit init0()'s
 
-  private native void init0();
-  private native void init0(String pattern);
-  private native void init0(int timeStyle, int dateStyle);
+	private native void init0();
 
-  public SimpleDateFormat () {
-    init0();
-    initializeCalendar();
-  }
+	private native void init0(String pattern);
 
-  public SimpleDateFormat (String pattern) {
-    if(pattern == null) {
-      throw new NullPointerException();
-    }
-    init0(pattern);
-    initializeCalendar();
-  }
+	private native void init0(int timeStyle, int dateStyle);
 
-  public SimpleDateFormat (String pattern, Locale locale) {
-    // <2do> bluntly ignoring locale for now
-    this(pattern);
-  }
+	public SimpleDateFormat() {
+		init0();
+		initializeCalendar();
+	}
 
-  SimpleDateFormat (int timeStyle, int dateStyle, Locale locale){
-    init0(timeStyle, dateStyle);
-    initializeCalendar();
-  }
+	public SimpleDateFormat(String pattern) {
+		if (pattern == null) {
+			throw new NullPointerException();
+		}
+		init0(pattern);
+		initializeCalendar();
+	}
 
-  // unfortunately we can't override the DateFormat.format(String) because
-  // it is final, and hence the compiler can do a INVOKE_SPECIAL
-  native String format0 (long dateTime);
+	public SimpleDateFormat(String pattern, Locale locale) {
+		// <2do> bluntly ignoring locale for now
+		this(pattern);
+	}
 
-  public StringBuffer format (Date date, StringBuffer sb, FieldPosition pos) {
-    String s = format0(date.getTime());
-    sb.append(s);
+	SimpleDateFormat(int timeStyle, int dateStyle, Locale locale) {
+		init0(timeStyle, dateStyle);
+		initializeCalendar();
+	}
 
-    // we don't do FieldPositions yet
+	// unfortunately we can't override the DateFormat.format(String) because
+	// it is final, and hence the compiler can do a INVOKE_SPECIAL
+	native String format0(long dateTime);
 
-    return sb;
-  }
+	@Override
+	public StringBuffer format(Date date, StringBuffer sb, FieldPosition pos) {
+		String s = format0(date.getTime());
+		sb.append(s);
 
+		// we don't do FieldPositions yet
 
-  public Date parse (String arg0, ParsePosition arg1) {
-    // TODO Auto-generated method stub
-    return null;
-  }
+		return sb;
+	}
 
-  private void initializeCalendar() {
-    if (calendar == null) {
-        calendar = Calendar.getInstance(TimeZone.getDefault(), Locale.getDefault());
-    }
-  }
+	@Override
+	public Date parse(String arg0, ParsePosition arg1) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	private void initializeCalendar() {
+		if (calendar == null) {
+			calendar = Calendar.getInstance(TimeZone.getDefault(),
+					Locale.getDefault());
+		}
+	}
 
 }

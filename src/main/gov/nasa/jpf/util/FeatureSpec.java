@@ -27,126 +27,129 @@ import gov.nasa.jpf.vm.ClassInfo;
  */
 public abstract class FeatureSpec {
 
-  static JPFLogger logger = JPF.getLogger("gov.nasa.jpf.util");
+	static JPFLogger logger = JPF.getLogger("gov.nasa.jpf.util");
 
-  static class ParseData {
-    boolean matchInverted;
-    boolean matchSuperTypes;
-    String typeSpec;
-    String nameSpec;
-  }
+	static class ParseData {
+		boolean matchInverted;
+		boolean matchSuperTypes;
+		String typeSpec;
+		String nameSpec;
+	}
 
-  protected static final char SUB = '+';
-  protected static final char INVERTED = '!';
+	protected static final char SUB = '+';
+	protected static final char INVERTED = '!';
 
+	protected String src;
 
-  protected String src;
+	// those can be wildcard expressions
+	protected StringMatcher clsSpec;
+	protected StringMatcher nameSpec;
 
-  // those can be wildcard expressions
-  protected StringMatcher  clsSpec;
-  protected StringMatcher  nameSpec;
+	protected boolean matchInverted; // matches everything that does NOT conform
+										// to the specs
+	protected boolean matchSuperTypes; // matches supertypes of the specified
+										// one
 
-  protected boolean matchInverted;   // matches everything that does NOT conform to the specs
-  protected boolean matchSuperTypes; // matches supertypes of the specified one
+	protected static String parseInversion(String s, ParseData d) {
+		if (s.length() > 0) {
+			if (s.charAt(0) == INVERTED) {
+				d.matchInverted = true;
+				s = s.substring(1).trim();
+			}
+		}
+		return s;
+	}
 
+	protected static String parseType(String s, ParseData d) {
+		d.typeSpec = s;
+		return s;
+	}
 
-  protected static String parseInversion (String s, ParseData d){
-    if (s.length() > 0){
-      if (s.charAt(0) == INVERTED){
-        d.matchInverted = true;
-        s = s.substring(1).trim();
-      }
-    }
-    return s;
-  }
+	protected static String parseTypeAndName(String s, ParseData d) {
+		int i = s.lastIndexOf('.'); // beginning of name
+		if (i >= 0) {
+			if (i == 0) {
+				d.typeSpec = "*";
+			} else {
+				d.typeSpec = s.substring(0, i);
+			}
 
-  protected static String parseType (String s, ParseData d){
-    d.typeSpec = s;
-    return s;
-  }
-  
-  protected static String parseTypeAndName (String s, ParseData d){
-    int i = s.lastIndexOf('.'); // beginning of name
-    if (i >= 0){
-      if (i==0){
-        d.typeSpec = "*";
-      } else {
-        d.typeSpec = s.substring(0, i);
-      }
+			d.nameSpec = s.substring(i + 1);
+			if (d.nameSpec.length() == 0) {
+				d.nameSpec = "*";
+			}
 
-      d.nameSpec = s.substring(i+1);
-      if (d.nameSpec.length() == 0){
-        d.nameSpec = "*";
-      }
+		} else { // no name, all fields
+			if (s.length() == 0) {
+				d.typeSpec = "*";
+			} else {
+				d.typeSpec = s;
+			}
+			d.nameSpec = "*";
+		}
 
-    } else { // no name, all fields
-      if (s.length() == 0){
-        d.typeSpec = "*";
-      } else {
-        d.typeSpec = s;
-      }
-      d.nameSpec = "*";
-    }
+		return s;
+	}
 
-    return s;
-  }
+	protected FeatureSpec(String rawSpec, String cls, String name,
+			boolean inverted) {
+		src = rawSpec;
+		matchInverted = inverted;
 
-  protected FeatureSpec (String rawSpec, String cls, String name, boolean inverted){
-    src = rawSpec;
-    matchInverted = inverted;
+		int l = cls.length() - 1;
+		if (cls.charAt(l) == SUB) {
+			cls = cls.substring(0, l);
+			matchSuperTypes = true;
+		}
 
-    int l = cls.length()-1;
-    if (cls.charAt(l) == SUB){
-      cls = cls.substring(0, l);
-      matchSuperTypes = true;
-    }
+		clsSpec = new StringMatcher(cls);
 
-    clsSpec = new StringMatcher(cls);
-    
-    if (name != null){
-      nameSpec = new StringMatcher(name);
-    }
-  }
+		if (name != null) {
+			nameSpec = new StringMatcher(name);
+		}
+	}
 
-  public String getSource() {
-    return src;
-  }
+	public String getSource() {
+		return src;
+	}
 
-  public StringMatcher getClassSpec() {
-    return clsSpec;
-  }
+	public StringMatcher getClassSpec() {
+		return clsSpec;
+	}
 
-  public StringMatcher getNameSpec() {
-    return nameSpec;
-  }
+	public StringMatcher getNameSpec() {
+		return nameSpec;
+	}
 
-  public boolean matchSuperTypes() {
-    return matchSuperTypes;
-  }
+	public boolean matchSuperTypes() {
+		return matchSuperTypes;
+	}
 
-  public boolean isMatchingType(ClassInfo ci){
-    if (clsSpec.matches(ci.getName())){  // also takes care of '*'
-      return true;
-    }
+	public boolean isMatchingType(ClassInfo ci) {
+		if (clsSpec.matches(ci.getName())) { // also takes care of '*'
+			return true;
+		}
 
-    if (matchSuperTypes){
-      // check all superclasses
-      for (ClassInfo sci = ci.getSuperClass(); sci != null; sci = sci.getSuperClass()){
-        if (clsSpec.matches(sci.getName())){
-          return true;
-        }
-      }
-    }
+		if (matchSuperTypes) {
+			// check all superclasses
+			for (ClassInfo sci = ci.getSuperClass(); sci != null; sci = sci
+					.getSuperClass()) {
+				if (clsSpec.matches(sci.getName())) {
+					return true;
+				}
+			}
+		}
 
-    // check interfaces (regardless of 'override' - interfaces make no sense otherwise
-    for (String ifcName : ci.getAllInterfaces()) {
-      if (clsSpec.matches(ifcName)) {
-        return true;
-      }
-    }
+		// check interfaces (regardless of 'override' - interfaces make no sense
+		// otherwise
+		for (String ifcName : ci.getAllInterfaces()) {
+			if (clsSpec.matches(ifcName)) {
+				return true;
+			}
+		}
 
-    return false;
-  }
+		return false;
+	}
 
-  public abstract boolean matches (Object feature);
+	public abstract boolean matches(Object feature);
 }

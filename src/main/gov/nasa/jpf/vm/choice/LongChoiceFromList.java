@@ -22,59 +22,65 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPFException;
 import gov.nasa.jpf.vm.LongChoiceGenerator;
 
-public class LongChoiceFromList extends NumberChoiceFromList<Long> implements LongChoiceGenerator {
+public class LongChoiceFromList extends NumberChoiceFromList<Long> implements
+		LongChoiceGenerator {
 
-  protected Long[] createValueArray(int len) {
-    return new Long[len];
-  }
+	@Override
+	protected Long[] createValueArray(int len) {
+		return new Long[len];
+	}
 
-  protected Long getDefaultValue() {
-    return 0L;
-  }
+	@Override
+	protected Long getDefaultValue() {
+		return 0L;
+	}
 
-  public Class<Long> getChoiceType() {
-    return Long.class;
-  }
+	@Override
+	public Class<Long> getChoiceType() {
+		return Long.class;
+	}
 
-  protected Long parseLiteral(String literal, int sign) {
-    long val = Long.parseLong(literal);
-    return new Long(val * sign);
-  }
+	@Override
+	protected Long parseLiteral(String literal, int sign) {
+		long val = Long.parseLong(literal);
+		return new Long(val * sign);
+	}
 
-  protected Long newValue(Number num, int sign) {
-    return new Long(num.longValue() * sign);
-  }
+	@Override
+	protected Long newValue(Number num, int sign) {
+		return new Long(num.longValue() * sign);
+	}
 
-  /**
-   * super constructor for subclasses that want to configure themselves
-   * 
-   * @param id
-   *          name used in choice config
-   */
-  protected LongChoiceFromList(String id) {
-    super(id);
-  }
+	/**
+	 * super constructor for subclasses that want to configure themselves
+	 * 
+	 * @param id
+	 *            name used in choice config
+	 */
+	protected LongChoiceFromList(String id) {
+		super(id);
+	}
 
-  protected LongChoiceFromList(String id, Long[] vals) {
-    super(id, vals);
-  }
+	protected LongChoiceFromList(String id, Long[] vals) {
+		super(id, vals);
+	}
 
-  public LongChoiceFromList(Config conf, String id) {
-    super(conf, id);
-  }
+	public LongChoiceFromList(Config conf, String id) {
+		super(conf, id);
+	}
 
-  public LongChoiceFromList(String id, long... val) {
-    super(id);
+	public LongChoiceFromList(String id, long... val) {
+		super(id);
 
-    if (val != null) {
-      values = new Long[val.length];
-      for (int i = 0; i < val.length; i++) {
-        values[i] = val[i]; // enable use of cached Integer values
-      }
-    } else {
-      throw new JPFException("empty set for LongChoiceFromList");
-    }
+		if (val != null) {
+			values = new Long[val.length];
+			for (int i = 0; i < val.length; i++) {
+				values[i] = val[i]; // enable use of cached Integer values
+			}
+		} else {
+			throw new JPFException("empty set for LongChoiceFromList");
+		}
 
-    count = -1;
-  }
+		count = -1;
+	}
 }

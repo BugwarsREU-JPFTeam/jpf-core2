@@ -23,29 +23,30 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Add int
- * ..., value1, value2  =>..., result
+ * Add int ..., value1, value2 =>..., result
  */
 public class IADD extends JVMInstruction {
 
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
-    
-    int v1 = frame.pop();
-    int v2 = frame.pop();
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    frame.push(v1 + v2);
+		int v1 = frame.pop();
+		int v2 = frame.pop();
 
-    return getNext(ti);
-  }
+		frame.push(v1 + v2);
 
-  public int getByteCode () {
-    return 0x60;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		return getNext(ti);
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0x60;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

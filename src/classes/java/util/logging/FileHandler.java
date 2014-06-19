@@ -19,7 +19,6 @@ package java.util.logging;
 // DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE.
 //
 
-
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -27,12 +26,12 @@ import java.io.IOException;
  * simple stub to avoid execptions when using basic logging
  */
 public class FileHandler extends StreamHandler {
-  public FileHandler() throws IOException {
-    this("log.log");
-  }
+	public FileHandler() throws IOException {
+		this("log.log");
+	}
 
-  public FileHandler(String pattern) throws IOException {
-    super();
-    setOutputStream(new FileOutputStream(pattern));
-  }
+	public FileHandler(String pattern) throws IOException {
+		super();
+		setOutputStream(new FileOutputStream(pattern));
+	}
 }

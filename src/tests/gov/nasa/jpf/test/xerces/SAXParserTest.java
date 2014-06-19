@@ -32,33 +32,33 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * regression test for parsing xml files with Apache xerces
- * The data files are shamelessly lifted from Checkstyle 5.3, to use some
- * real input data
+ * regression test for parsing xml files with Apache xerces The data files are
+ * shamelessly lifted from Checkstyle 5.3, to use some real input data
  */
 public class SAXParserTest extends TestJPF {
 
-  @Test
-  public void testSimpleParse() throws ParserConfigurationException, SAXException, IOException  {
+	@Test
+	public void testSimpleParse() throws ParserConfigurationException,
+			SAXException, IOException {
 
-    if (verifyNoPropertyViolation(
-            "+http.connection=http://*.dtd -- gov.nasa.jpf.CachedROHttpConnection",
-            "+http.cache_dir=src/tests/gov/nasa/jpf/test/xerces",
-            "+log.info=http")){
-      String pathName = "src/tests/gov/nasa/jpf/test/xerces/sun_checks.xml";
+		if (verifyNoPropertyViolation(
+				"+http.connection=http://*.dtd -- gov.nasa.jpf.CachedROHttpConnection",
+				"+http.cache_dir=src/tests/gov/nasa/jpf/test/xerces",
+				"+log.info=http")) {
+			String pathName = "src/tests/gov/nasa/jpf/test/xerces/sun_checks.xml";
 
-      DefaultHandler handler = new DefaultHandler();
+			DefaultHandler handler = new DefaultHandler();
 
-      XMLReader mParser;
-      SAXParserFactory factory = SAXParserFactory.newInstance();
-      factory.setValidating(true);
-      factory.setNamespaceAware(true);
-      mParser = factory.newSAXParser().getXMLReader();
-      mParser.setContentHandler(handler);
-      mParser.setEntityResolver(handler);
-      mParser.setErrorHandler(handler);
+			XMLReader mParser;
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			factory.setValidating(true);
+			factory.setNamespaceAware(true);
+			mParser = factory.newSAXParser().getXMLReader();
+			mParser.setContentHandler(handler);
+			mParser.setEntityResolver(handler);
+			mParser.setErrorHandler(handler);
 
-      mParser.parse(pathName);
-    }
-  }
+			mParser.parse(pathName);
+		}
+	}
 }

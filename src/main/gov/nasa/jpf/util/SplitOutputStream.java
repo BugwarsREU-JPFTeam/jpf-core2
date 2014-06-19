@@ -22,68 +22,69 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
 
-public class SplitOutputStream extends OutputStream
-{
-   private final OutputStream m_sinks[];
-   
-   public SplitOutputStream(OutputStream ... sinks)
-   {
-      int i;
-      
-      if (sinks.length <= 0)
-         throw new IllegalArgumentException("sinks.length <= 0 : " + sinks.length);
-      
-      for (i = sinks.length; --i >= 0; )
-         if (sinks[i] == null)
-            throw new NullPointerException("sinks[i] == null : " + i);
-      
-      m_sinks = Arrays.copyOf(sinks, sinks.length);
-   }
+public class SplitOutputStream extends OutputStream {
+	private final OutputStream m_sinks[];
 
-   public void write(int data) throws IOException
-   {
-      int i;
-      
-      for (i = m_sinks.length; --i >= 0; )
-         m_sinks[i].write(data);
-   }
+	public SplitOutputStream(OutputStream... sinks) {
+		int i;
 
-   public void write(byte buffer[], int offset, int length) throws IOException
-   {
-      int i;
-      
-      if (buffer == null)
-         throw new NullPointerException("buffer == null");
+		if (sinks.length <= 0)
+			throw new IllegalArgumentException("sinks.length <= 0 : "
+					+ sinks.length);
 
-      if (offset < 0)
-         throw new IndexOutOfBoundsException("offset < 0 : " + offset);
+		for (i = sinks.length; --i >= 0;)
+			if (sinks[i] == null)
+				throw new NullPointerException("sinks[i] == null : " + i);
 
-      if (length < 0)
-         throw new IndexOutOfBoundsException("length < 0 : " + length);
+		m_sinks = Arrays.copyOf(sinks, sinks.length);
+	}
 
-      if (offset + length > buffer.length)
-         throw new IndexOutOfBoundsException("offset + length > buffer.length : " + offset + " + " + length + " > " + buffer.length);
+	@Override
+	public void write(int data) throws IOException {
+		int i;
 
-      if (length == 0)
-         return;
+		for (i = m_sinks.length; --i >= 0;)
+			m_sinks[i].write(data);
+	}
 
-      for (i = m_sinks.length; --i >= 0; )
-         m_sinks[i].write(buffer, offset, length);
-   }
+	@Override
+	public void write(byte buffer[], int offset, int length) throws IOException {
+		int i;
 
-   public void flush() throws IOException
-   {
-      int i;
+		if (buffer == null)
+			throw new NullPointerException("buffer == null");
 
-      for (i = m_sinks.length; --i >= 0; )
-         m_sinks[i].flush();
-   }
+		if (offset < 0)
+			throw new IndexOutOfBoundsException("offset < 0 : " + offset);
 
-   public void close() throws IOException
-   {
-      int i;
+		if (length < 0)
+			throw new IndexOutOfBoundsException("length < 0 : " + length);
 
-      for (i = m_sinks.length; --i >= 0; )
-         m_sinks[i].close();
-   }
+		if (offset + length > buffer.length)
+			throw new IndexOutOfBoundsException(
+					"offset + length > buffer.length : " + offset + " + "
+							+ length + " > " + buffer.length);
+
+		if (length == 0)
+			return;
+
+		for (i = m_sinks.length; --i >= 0;)
+			m_sinks[i].write(buffer, offset, length);
+	}
+
+	@Override
+	public void flush() throws IOException {
+		int i;
+
+		for (i = m_sinks.length; --i >= 0;)
+			m_sinks[i].flush();
+	}
+
+	@Override
+	public void close() throws IOException {
+		int i;
+
+		for (i = m_sinks.length; --i >= 0;)
+			m_sinks[i].close();
+	}
 }

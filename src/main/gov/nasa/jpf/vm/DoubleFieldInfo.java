@@ -20,60 +20,66 @@ package gov.nasa.jpf.vm;
 
 import gov.nasa.jpf.JPFException;
 
-
-
 /**
  * type, name and attribute information for 'double' fields
  */
 public class DoubleFieldInfo extends DoubleSlotFieldInfo {
-  double init;
+	double init;
 
-  public DoubleFieldInfo (String name, int modifiers) {
-    super(name, "D", modifiers);
-  }
+	public DoubleFieldInfo(String name, int modifiers) {
+		super(name, "D", modifiers);
+	}
 
-  public void setConstantValue(Object constValue){
-    if (constValue instanceof Double){
-      cv = constValue;
-      init = ((Double)constValue).doubleValue();
+	@Override
+	public void setConstantValue(Object constValue) {
+		if (constValue instanceof Double) {
+			cv = constValue;
+			init = ((Double) constValue).doubleValue();
 
-    } else {
-      throw new JPFException("illegal boolean ConstValue=" + constValue);
-    }
-  }
+		} else {
+			throw new JPFException("illegal boolean ConstValue=" + constValue);
+		}
+	}
 
+	@Override
+	public void initialize(ElementInfo ei, ThreadInfo ti) {
+		ei.getFields().setDoubleValue(storageOffset, init);
+	}
 
-  public void initialize (ElementInfo ei, ThreadInfo ti) {
-    ei.getFields().setDoubleValue(storageOffset, init);
-  }
+	@Override
+	public Class<? extends ChoiceGenerator<?>> getChoiceGeneratorType() {
+		return DoubleChoiceGenerator.class;
+	}
 
-  public Class<? extends ChoiceGenerator<?>> getChoiceGeneratorType() {
-    return DoubleChoiceGenerator.class;
-  }
+	@Override
+	public int getStorageSize() {
+		return 2;
+	}
 
-  public int getStorageSize () {
-    return 2;
-  }
+	@Override
+	public String valueToString(Fields f) {
+		double d = f.getDoubleValue(storageOffset);
+		return Double.toString(d);
+	}
 
-  public String valueToString (Fields f) {
-    double d = f.getDoubleValue(storageOffset);
-    return Double.toString(d);
-  }
+	@Override
+	public Object getValueObject(Fields f) {
+		double d = f.getDoubleValue(storageOffset);
+		return new Double(d);
+	}
 
-  public Object getValueObject (Fields f){
-    double d = f.getDoubleValue(storageOffset);
-    return new Double(d);
-  }
+	@Override
+	public boolean isDoubleField() {
+		return true;
+	}
 
-  public boolean isDoubleField(){
-    return true;
-  }
+	@Override
+	public boolean isNumericField() {
+		return true;
+	}
 
-  public boolean isNumericField(){
-    return true;
-  }
-
-  public boolean isFloatingPointField(){
-    return true;
-  }
+	@Override
+	public boolean isFloatingPointField() {
+		return true;
+	}
 }

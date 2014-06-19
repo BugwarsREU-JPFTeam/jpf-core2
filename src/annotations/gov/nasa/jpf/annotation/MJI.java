@@ -24,7 +24,7 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * @author Nastaran Shafiei <nastaran.shafiei@gmail.com>
  * 
- * An annotation used to specify native peer methods
+ *         An annotation used to specify native peer methods
  */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MJI {

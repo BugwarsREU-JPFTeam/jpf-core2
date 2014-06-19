@@ -19,10 +19,10 @@
 package gov.nasa.jpf.util;
 
 /**
- * little helper interface to facilitate resetting classes and objects
- * between JPF runs, mostly to avoid memory leaks
+ * little helper interface to facilitate resetting classes and objects between
+ * JPF runs, mostly to avoid memory leaks
  */
 public interface RunListener {
 
-  void reset (RunRegistry reg);
+	void reset(RunRegistry reg);
 }

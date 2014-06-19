@@ -20,12 +20,11 @@ package gov.nasa.jpf.util;
 
 import java.io.PrintWriter;
 
-
 /**
  * Printable is mainly used to avoid having to create potentially huge
- * String(via StringBuilders or Writers) which are just used to be
- * written to std streams
+ * String(via StringBuilders or Writers) which are just used to be written to
+ * std streams
  */
 public interface Printable {
-  void printOn (PrintWriter ps);
+	void printOn(PrintWriter ps);
 }

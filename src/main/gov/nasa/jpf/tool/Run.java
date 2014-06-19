@@ -28,62 +28,63 @@ import java.lang.reflect.Modifier;
  */
 public class Run {
 
-  protected static void error (String msg){
-    System.err.print("error: ");
-    System.err.println(msg);
-    System.exit(1);
-  }
+	protected static void error(String msg) {
+		System.err.print("error: ");
+		System.err.println(msg);
+		System.exit(1);
+	}
 
-  // filter out leading '+' arguments (Config initialization)
-  protected static String[] removeConfigArgs(String[]args){
-    int i;
-    for (i=0; i<args.length; i++){
-      String a = args[i];
-      if (a != null && a.length() > 0 && a.charAt(0) != '+'){
-        break;
-      }
-    }
+	// filter out leading '+' arguments (Config initialization)
+	protected static String[] removeConfigArgs(String[] args) {
+		int i;
+		for (i = 0; i < args.length; i++) {
+			String a = args[i];
+			if (a != null && a.length() > 0 && a.charAt(0) != '+') {
+				break;
+			}
+		}
 
-    String[] newArgs = new String[args.length - i];
-    System.arraycopy(args,i,newArgs,0,newArgs.length);
+		String[] newArgs = new String[args.length - i];
+		System.arraycopy(args, i, newArgs, 0, newArgs.length);
 
-    return newArgs;
-  }
+		return newArgs;
+	}
 
-  protected static String checkClassName (String cls){
-    if (cls == null || cls.isEmpty()){
-      return null;
-    }
+	protected static String checkClassName(String cls) {
+		if (cls == null || cls.isEmpty()) {
+			return null;
+		}
 
-    if (cls.charAt(0) == '.'){
-      cls = "gov.nasa.jpf" + cls;
-    }
+		if (cls.charAt(0) == '.') {
+			cls = "gov.nasa.jpf" + cls;
+		}
 
-    return cls;
-  }
+		return cls;
+	}
 
-  protected static boolean call( Class<?> cls, String mthName, Object[] args) throws InvocationTargetException {
-    try {
-      Class<?>[] argTypes = new Class<?>[args.length];
-      for (int i=0; i<args.length; i++){
-        argTypes[i] = args[i].getClass();
-      }
+	protected static boolean call(Class<?> cls, String mthName, Object[] args)
+			throws InvocationTargetException {
+		try {
+			Class<?>[] argTypes = new Class<?>[args.length];
+			for (int i = 0; i < args.length; i++) {
+				argTypes[i] = args[i].getClass();
+			}
 
-      Method m = cls.getMethod(mthName, argTypes);
+			Method m = cls.getMethod(mthName, argTypes);
 
-      int modifiers = m.getModifiers();
-      if (Modifier.isStatic(modifiers) && Modifier.isPublic(modifiers)){
-        m.invoke(null, args);
-        return true;
-      }
+			int modifiers = m.getModifiers();
+			if (Modifier.isStatic(modifiers) && Modifier.isPublic(modifiers)) {
+				m.invoke(null, args);
+				return true;
+			}
 
-    } catch (NoSuchMethodException nsmx){
-      return false;
-    } catch (IllegalAccessException iax){
-      return false;
-    }
+		} catch (NoSuchMethodException nsmx) {
+			return false;
+		} catch (IllegalAccessException iax) {
+			return false;
+		}
 
-    return false;
-  }
+		return false;
+	}
 
 }

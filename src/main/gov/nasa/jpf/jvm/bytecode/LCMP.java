@@ -23,44 +23,42 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Compare long
- * ..., value1, value2 => ..., result
+ * Compare long ..., value1, value2 => ..., result
  */
 public class LCMP extends JVMInstruction {
 
-  @Override
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
-    
-    long v1 = frame.popLong();
-    long v2 = frame.popLong();
-    
-    int condVal = conditionValue( v1, v2);
-    
-    frame.push(condVal);
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    return getNext(ti);
-  }
-  
-  protected int conditionValue(long v1, long v2) {
-      if (v1 == v2) {
-        return 0;
-      } else if (v2 > v1) {
-        return 1;
-      } else {
-        return -1;
-      }
-  }
+		long v1 = frame.popLong();
+		long v2 = frame.popLong();
 
-  @Override
-  public int getByteCode () {
-    return 0x94;
-  }
-  
-  @Override
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		int condVal = conditionValue(v1, v2);
+
+		frame.push(condVal);
+
+		return getNext(ti);
+	}
+
+	protected int conditionValue(long v1, long v2) {
+		if (v1 == v2) {
+			return 0;
+		} else if (v2 > v1) {
+			return 1;
+		} else {
+			return -1;
+		}
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0x94;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

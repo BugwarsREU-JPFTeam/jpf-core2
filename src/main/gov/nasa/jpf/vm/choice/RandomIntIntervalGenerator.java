@@ -27,113 +27,120 @@ import gov.nasa.jpf.vm.IntChoiceGenerator;
 import java.util.Random;
 
 /**
- * a IntChoiceGenerator that randomly chooses a configured number
- * of values from a specified range
- * this is usually configured through app properties
+ * a IntChoiceGenerator that randomly chooses a configured number of values from
+ * a specified range this is usually configured through app properties
  * 
  * <2do> this is too redundant to RandomOrderIntCG - replace
  */
-public class RandomIntIntervalGenerator extends ChoiceGeneratorBase<Integer> implements IntChoiceGenerator {
+public class RandomIntIntervalGenerator extends ChoiceGeneratorBase<Integer>
+		implements IntChoiceGenerator {
 
-  protected int min, max; // both inclusive
-  protected int nChoices;
-  protected long seed;
+	protected int min, max; // both inclusive
+	protected int nChoices;
+	protected long seed;
 
-  protected Random random;
-  protected int range;
+	protected Random random;
+	protected int range;
 
-  protected int next;
-  protected int count = 0;
+	protected int next;
+	protected int count = 0;
 
-  public RandomIntIntervalGenerator (String id, int min, int max, int nChoices){
-    this(id, min,max,nChoices,0L);
-  }
-
-  public RandomIntIntervalGenerator (String id, int min, int max, int nChoices, long seed){
-    super(id);
-
-    this.min = min;
-    this.max = max;
-    this.nChoices = nChoices;
-    this.seed = seed;
-
-    range = max - min;
-    random = new Random(seed);
-  }
-
-  public RandomIntIntervalGenerator(Config conf, String id) {
-    super(id);
-
-    min = conf.getInt(id + ".min");
-    max = conf.getInt(id + ".max");
-    nChoices = conf.getInt(id + ".n", 1);
-    seed = conf.getLong(id + ".seed", 1);
-
-    range = max - min;
-    random = new Random(seed);
-  }
-
-
-  public void reset () {
-    random = new Random(seed);
-    count = 0;
-
-    isDone = false;
-  }
-
-	public boolean hasMoreChoices() {
-    return !isDone && (count < nChoices);
+	public RandomIntIntervalGenerator(String id, int min, int max, int nChoices) {
+		this(id, min, max, nChoices, 0L);
 	}
 
-  public void advance (){
-    if (count < nChoices){
-      count++;
-      next = random.nextInt(range) + min;
-    }
-  }
+	public RandomIntIntervalGenerator(String id, int min, int max,
+			int nChoices, long seed) {
+		super(id);
 
-  public Integer getNextChoice () {
-    return new Integer(next);
-  }
+		this.min = min;
+		this.max = max;
+		this.nChoices = nChoices;
+		this.seed = seed;
 
-  public int getTotalNumberOfChoices () {
-    return nChoices;
-  }
+		range = max - min;
+		random = new Random(seed);
+	}
 
-  public int getProcessedNumberOfChoices () {
-    return count;
-  }
+	public RandomIntIntervalGenerator(Config conf, String id) {
+		super(id);
 
-  public String toString () {
-    StringBuilder sb = new StringBuilder(getClass().getName());
-    if (id == null) {
-      sb.append('[');
-    } else {
-      sb.append("[id=\"");
-      sb.append(id);
-      sb.append("\",");
-    }
-    sb.append(min);
-    sb.append("..");
-    sb.append(max);
-    sb.append(",n=");
-    sb.append(nChoices);
-    sb.append(",cur=");
-    sb.append(getNextChoice());
-    sb.append(",count=");
-    sb.append(count);
-    sb.append(']');
-    return sb.toString();
-  }
+		min = conf.getInt(id + ".min");
+		max = conf.getInt(id + ".max");
+		nChoices = conf.getInt(id + ".n", 1);
+		seed = conf.getLong(id + ".seed", 1);
 
-  @Override
-  public Class<Integer> getChoiceType() {
-    return Integer.class;
-  }
+		range = max - min;
+		random = new Random(seed);
+	}
 
-  @Override
-  public ChoiceGenerator<Integer> randomize() {
-    return this;
-  }
+	@Override
+	public void reset() {
+		random = new Random(seed);
+		count = 0;
+
+		isDone = false;
+	}
+
+	@Override
+	public boolean hasMoreChoices() {
+		return !isDone && (count < nChoices);
+	}
+
+	@Override
+	public void advance() {
+		if (count < nChoices) {
+			count++;
+			next = random.nextInt(range) + min;
+		}
+	}
+
+	@Override
+	public Integer getNextChoice() {
+		return new Integer(next);
+	}
+
+	@Override
+	public int getTotalNumberOfChoices() {
+		return nChoices;
+	}
+
+	@Override
+	public int getProcessedNumberOfChoices() {
+		return count;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder(getClass().getName());
+		if (id == null) {
+			sb.append('[');
+		} else {
+			sb.append("[id=\"");
+			sb.append(id);
+			sb.append("\",");
+		}
+		sb.append(min);
+		sb.append("..");
+		sb.append(max);
+		sb.append(",n=");
+		sb.append(nChoices);
+		sb.append(",cur=");
+		sb.append(getNextChoice());
+		sb.append(",count=");
+		sb.append(count);
+		sb.append(']');
+		return sb.toString();
+	}
+
+	@Override
+	public Class<Integer> getChoiceType() {
+		return Integer.class;
+	}
+
+	@Override
+	public ChoiceGenerator<Integer> randomize() {
+		return this;
+	}
 
 }

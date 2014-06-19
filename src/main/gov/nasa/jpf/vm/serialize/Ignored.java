@@ -19,10 +19,10 @@
 package gov.nasa.jpf.vm.serialize;
 
 /**
- * tag attribute to ignore elements (classes, objects, fields) from
- * state matching
+ * tag attribute to ignore elements (classes, objects, fields) from state
+ * matching
  */
 public class Ignored {
-  
-  public static final Ignored IGNORED = new Ignored();
+
+	public static final Ignored IGNORED = new Ignored();
 }

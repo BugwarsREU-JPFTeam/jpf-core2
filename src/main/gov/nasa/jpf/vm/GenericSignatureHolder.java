@@ -24,7 +24,7 @@ package gov.nasa.jpf.vm;
  */
 public interface GenericSignatureHolder {
 
-  void setGenericSignature(String signature);
+	void setGenericSignature(String signature);
 
-  String getGenericSignature();
+	String getGenericSignature();
 }

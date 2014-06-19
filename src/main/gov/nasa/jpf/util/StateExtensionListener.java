@@ -24,50 +24,50 @@ import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.SystemState;
 
 /**
- * generic listener that keeps track of state extensions, using
- * state ids as index values into a dynamic array of T objects
+ * generic listener that keeps track of state extensions, using state ids as
+ * index values into a dynamic array of T objects
  * 
- * the purpose of this utility class is to make state extensions
- * backtrackable, so that clients don't have to care about this
+ * the purpose of this utility class is to make state extensions backtrackable,
+ * so that clients don't have to care about this
  */
-public class StateExtensionListener <T> extends ListenerAdapter {
-  StateExtensionClient<T> client;
-  DynamicObjectArray<T> states;
+public class StateExtensionListener<T> extends ListenerAdapter {
+	StateExtensionClient<T> client;
+	DynamicObjectArray<T> states;
 
-  public StateExtensionListener (StateExtensionClient<T> cli) {
-    client = cli;
-    states = new DynamicObjectArray<T>();
+	public StateExtensionListener(StateExtensionClient<T> cli) {
+		client = cli;
+		states = new DynamicObjectArray<T>();
 
-    // set initial state
-    T se = client.getStateExtension();
-    states.set(0, se);
-  }
+		// set initial state
+		T se = client.getStateExtension();
+		states.set(0, se);
+	}
 
-  @Override
-  public void stateAdvanced (Search search) {
-    int idx = search.getStateId()+1;
- 
-    T se = client.getStateExtension();
-    states.set(idx, se);
-  }
+	@Override
+	public void stateAdvanced(Search search) {
+		int idx = search.getStateId() + 1;
 
-  @Override
-  public void stateBacktracked (Search search) {
-    int idx = search.getStateId()+1;
+		T se = client.getStateExtension();
+		states.set(idx, se);
+	}
 
-    T se = states.get(idx);
-    client.restore(se);
-  }
+	@Override
+	public void stateBacktracked(Search search) {
+		int idx = search.getStateId() + 1;
 
-  @Override
-  public void stateRestored (Search search) {
-    int idx = search.getStateId()+1;
- 
-    T se = states.get(idx);
-    client.restore(se);
+		T se = states.get(idx);
+		client.restore(se);
+	}
 
-    SystemState ss = search.getVM().getSystemState();
-    ChoiceGenerator<?> cgNext = ss.getNextChoiceGenerator();
-    cgNext.reset();
-  }
+	@Override
+	public void stateRestored(Search search) {
+		int idx = search.getStateId() + 1;
+
+		T se = states.get(idx);
+		client.restore(se);
+
+		SystemState ss = search.getVM().getSystemState();
+		ChoiceGenerator<?> cgNext = ss.getNextChoiceGenerator();
+		cgNext.reset();
+	}
 }

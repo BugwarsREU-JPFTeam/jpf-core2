@@ -21,47 +21,45 @@ package gov.nasa.jpf.util;
 import gov.nasa.jpf.vm.ClassInfo;
 
 /**
- * wildcard supporting type specification to be used for JPF configuration.
- * This supports supertype spec ('+') and inversion ('-')
- * Examples:
- *   "x.y.Foo" : class x.y.Foo
- *   "+x.y.Foo" : everything that is an instance of x.y.Foo
- *   "x.y.*" : every class that starts with "x.y."
- *   "!x.y.*" : everything that does not start with "x.y."
+ * wildcard supporting type specification to be used for JPF configuration. This
+ * supports supertype spec ('+') and inversion ('-') Examples: "x.y.Foo" : class
+ * x.y.Foo "+x.y.Foo" : everything that is an instance of x.y.Foo "x.y.*" :
+ * every class that starts with "x.y." "!x.y.*" : everything that does not start
+ * with "x.y."
  */
 public class TypeSpec extends FeatureSpec {
-  
-  
-  public static TypeSpec createTypeSpec (String s){
-    ParseData d = new ParseData();
 
-    s = s.trim();
-    String src = s; // keep the original spec around
+	public static TypeSpec createTypeSpec(String s) {
+		ParseData d = new ParseData();
 
-    s = parseInversion(s,d);
-    parseType(s,d);
-    
-    try {
-      return new TypeSpec(src, d.typeSpec, d.matchInverted);
-    } catch (IllegalArgumentException iax){
-      return null;
-    }
-  }
-  
-  protected TypeSpec (String rawSpec, String cls, boolean inverted){
-    super(rawSpec,cls,null,inverted);
-  }
-  
-  public boolean matches (Object o){
-    if (o instanceof ClassInfo){
-      return matches( (ClassInfo) o);
-    } else {
-      return false;
-    }
-  }
-  
-  public boolean matches (ClassInfo ci){
-    return isMatchingType(ci);
-  }
-  
+		s = s.trim();
+		String src = s; // keep the original spec around
+
+		s = parseInversion(s, d);
+		parseType(s, d);
+
+		try {
+			return new TypeSpec(src, d.typeSpec, d.matchInverted);
+		} catch (IllegalArgumentException iax) {
+			return null;
+		}
+	}
+
+	protected TypeSpec(String rawSpec, String cls, boolean inverted) {
+		super(rawSpec, cls, null, inverted);
+	}
+
+	@Override
+	public boolean matches(Object o) {
+		if (o instanceof ClassInfo) {
+			return matches((ClassInfo) o);
+		} else {
+			return false;
+		}
+	}
+
+	public boolean matches(ClassInfo ci) {
+		return isMatchingType(ci);
+	}
+
 }

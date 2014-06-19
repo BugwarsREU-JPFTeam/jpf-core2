@@ -20,30 +20,30 @@ package gov.nasa.jpf.jvm.bytecode;
 
 import gov.nasa.jpf.vm.StackFrame;
 
-
 /**
- * Branch if int comparison succeeds
- * ..., value1, value2 => ...
+ * Branch if int comparison succeeds ..., value1, value2 => ...
  */
 public class IF_ICMPGE extends IfInstruction {
 
-  public IF_ICMPGE(int targetPc) {
-    super(targetPc);
-  }
+	public IF_ICMPGE(int targetPc) {
+		super(targetPc);
+	}
 
+	@Override
+	public boolean popConditionValue(StackFrame frame) {
+		int v1 = frame.pop();
+		int v2 = frame.pop();
 
-  public boolean popConditionValue (StackFrame frame) {
-    int v1 = frame.pop();
-    int v2 = frame.pop();
+		return (v1 <= v2);
+	}
 
-    return (v1 <= v2);
-  }
+	@Override
+	public int getByteCode() {
+		return 0xA2;
+	}
 
-  public int getByteCode () {
-    return 0xA2;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

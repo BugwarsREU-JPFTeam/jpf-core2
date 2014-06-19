@@ -21,35 +21,37 @@ package gov.nasa.jpf.jvm.bytecode;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Return long from method
- * ..., value => [empty]
+ * Return long from method ..., value => [empty]
  */
 public class LRETURN extends LongReturn {
 
-  public long getReturnValue () {
-    return ret;
-  }
+	public long getReturnValue() {
+		return ret;
+	}
 
-  public Object getReturnValue(ThreadInfo ti) {
-    if (!isCompleted(ti)) { // we have to pull it from the operand stack
-      StackFrame frame = ti.getTopFrame();      
-      ret = frame.peekLong();
-    }
+	@Override
+	public Object getReturnValue(ThreadInfo ti) {
+		if (!isCompleted(ti)) { // we have to pull it from the operand stack
+			StackFrame frame = ti.getTopFrame();
+			ret = frame.peekLong();
+		}
 
-    return new Long(ret);
-  }
+		return new Long(ret);
+	}
 
-  public int getByteCode () {
-    return 0xAD;
-  }
+	@Override
+	public int getByteCode() {
+		return 0xAD;
+	}
 
-  public String toString() {
-    return "lreturn " + mi.getFullName();
-  }
+	@Override
+	public String toString() {
+		return "lreturn " + mi.getFullName();
+	}
 
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

@@ -27,108 +27,113 @@ import gov.nasa.jpf.vm.LoadOnJPFRequired;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Get static fieldInfo from class
- * ..., => ..., value 
+ * Get static fieldInfo from class ..., => ..., value
  */
 public class GETSTATIC extends StaticFieldInstruction {
 
-  public GETSTATIC(String fieldName, String clsDescriptor, String fieldDescriptor){
-    super(fieldName, clsDescriptor, fieldDescriptor);
-  }
+	public GETSTATIC(String fieldName, String clsDescriptor,
+			String fieldDescriptor) {
+		super(fieldName, clsDescriptor, fieldDescriptor);
+	}
 
-  @Override
-  protected void popOperands1 (StackFrame frame) {
-    // nothing to pop
-  }
-  
-  @Override
-  protected void popOperands2 (StackFrame frame) {
-    // nothing to pop
-  }
+	@Override
+	protected void popOperands1(StackFrame frame) {
+		// nothing to pop
+	}
 
-  @Override
-  public Instruction execute (ThreadInfo ti) {
-    ClassInfo ciField;
-    FieldInfo fieldInfo;
-    
-    try {
-      fieldInfo = getFieldInfo();
-    } catch(LoadOnJPFRequired lre) {
-      return ti.getPC();
-    }
-    
-    if (fieldInfo == null) {
-      return ti.createAndThrowException("java.lang.NoSuchFieldError",
-          (className + '.' + fname));
-    }
+	@Override
+	protected void popOperands2(StackFrame frame) {
+		// nothing to pop
+	}
 
-    // this can be actually different (can be a base)
-    ciField = fieldInfo.getClassInfo();
-    
-    if (!mi.isClinit(ciField) && ciField.pushRequiredClinits(ti)) {
-      // note - this returns the next insn in the topmost clinit that just got pushed
-      return ti.getPC();
-    }
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		ClassInfo ciField;
+		FieldInfo fieldInfo;
 
-    ElementInfo ei = ciField.getStaticElementInfo();
-    ei = ei.getInstanceWithUpdatedSharedness(ti);
+		try {
+			fieldInfo = getFieldInfo();
+		} catch (LoadOnJPFRequired lre) {
+			return ti.getPC();
+		}
 
-    if (ei == null){
-      throw new JPFException("attempt to access field: " + fname + " of uninitialized class: " + ciField.getName());
-    }
+		if (fieldInfo == null) {
+			return ti.createAndThrowException("java.lang.NoSuchFieldError",
+					(className + '.' + fname));
+		}
 
-    if (isNewPorFieldBoundary(ti)) {
-      if (createAndSetSharedFieldAccessCG( ei, ti)) {
-        return this;
-      }
-    }
-   
-    Object attr = ei.getFieldAttr(fieldInfo);
-    StackFrame frame = ti.getModifiableTopFrame();
+		// this can be actually different (can be a base)
+		ciField = fieldInfo.getClassInfo();
 
-    if (size == 1) {
-      int ival = ei.get1SlotField(fieldInfo);
-      lastValue = ival;
+		if (!mi.isClinit(ciField) && ciField.pushRequiredClinits(ti)) {
+			// note - this returns the next insn in the topmost clinit that just
+			// got pushed
+			return ti.getPC();
+		}
 
-      if (fieldInfo.isReference()) {
-        frame.pushRef(ival);
-      } else {
-        frame.push(ival);
-      }
-      
-      if (attr != null) {
-        frame.setOperandAttr(attr);
-      }
+		ElementInfo ei = ciField.getStaticElementInfo();
+		ei = ei.getInstanceWithUpdatedSharedness(ti);
 
-    } else {
-      long lval = ei.get2SlotField(fieldInfo);
-      lastValue = lval;
-      
-      frame.pushLong(lval);
-      
-      if (attr != null) {
-        frame.setLongOperandAttr(attr);
-      }
-    }
-        
-    return getNext(ti);
-  }
-  
-  public int getLength() {
-    return 3; // opcode, index1, index2
-  }
-  
-  public int getByteCode () {
-    return 0xB2;
-  }
+		if (ei == null) {
+			throw new JPFException("attempt to access field: " + fname
+					+ " of uninitialized class: " + ciField.getName());
+		}
 
-  public boolean isRead() {
-    return true;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		if (isNewPorFieldBoundary(ti)) {
+			if (createAndSetSharedFieldAccessCG(ei, ti)) {
+				return this;
+			}
+		}
+
+		Object attr = ei.getFieldAttr(fieldInfo);
+		StackFrame frame = ti.getModifiableTopFrame();
+
+		if (size == 1) {
+			int ival = ei.get1SlotField(fieldInfo);
+			lastValue = ival;
+
+			if (fieldInfo.isReference()) {
+				frame.pushRef(ival);
+			} else {
+				frame.push(ival);
+			}
+
+			if (attr != null) {
+				frame.setOperandAttr(attr);
+			}
+
+		} else {
+			long lval = ei.get2SlotField(fieldInfo);
+			lastValue = lval;
+
+			frame.pushLong(lval);
+
+			if (attr != null) {
+				frame.setLongOperandAttr(attr);
+			}
+		}
+
+		return getNext(ti);
+	}
+
+	@Override
+	public int getLength() {
+		return 3; // opcode, index1, index2
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0xB2;
+	}
+
+	@Override
+	public boolean isRead() {
+		return true;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

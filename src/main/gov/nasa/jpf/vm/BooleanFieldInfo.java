@@ -26,38 +26,43 @@ import gov.nasa.jpf.JPFException;
  */
 public class BooleanFieldInfo extends SingleSlotFieldInfo {
 
-  boolean init=false;
+	boolean init = false;
 
-  public BooleanFieldInfo (String name, int modifiers) {
-     super(name, "Z", modifiers);
-  }
+	public BooleanFieldInfo(String name, int modifiers) {
+		super(name, "Z", modifiers);
+	}
 
-  public void setConstantValue(Object constValue){
-    if (constValue instanceof Integer){
-      cv = constValue;
-      init = ((Integer)constValue).intValue() == 1;
-      
-    } else {
-      throw new JPFException("illegal boolean ConstValue=" + constValue);
-    }
-  }
+	@Override
+	public void setConstantValue(Object constValue) {
+		if (constValue instanceof Integer) {
+			cv = constValue;
+			init = ((Integer) constValue).intValue() == 1;
 
-  public void initialize (ElementInfo ei, ThreadInfo ti) {
-    ei.getFields().setBooleanValue(storageOffset, init);
-  }
+		} else {
+			throw new JPFException("illegal boolean ConstValue=" + constValue);
+		}
+	}
 
-  public boolean isBooleanField() {
-    return true;
-  }
+	@Override
+	public void initialize(ElementInfo ei, ThreadInfo ti) {
+		ei.getFields().setBooleanValue(storageOffset, init);
+	}
 
-  public Object getValueObject (Fields f){
-    int i = f.getIntValue(storageOffset);
-    return new Boolean(i != 0);
-  }
+	@Override
+	public boolean isBooleanField() {
+		return true;
+	}
 
-  public String valueToString (Fields f) {
-    boolean b = f.getBooleanValue(storageOffset);
-    return Boolean.toString(b);
-  }
+	@Override
+	public Object getValueObject(Fields f) {
+		int i = f.getIntValue(storageOffset);
+		return new Boolean(i != 0);
+	}
+
+	@Override
+	public String valueToString(Fields f) {
+		boolean b = f.getBooleanValue(storageOffset);
+		return Boolean.toString(b);
+	}
 
 }

@@ -25,24 +25,21 @@ import java.util.ArrayList;
 
 import org.junit.Test;
 
-public class OutOfMemoryErrorTest extends TestJPF
-{
-   @Test
-   public void outOfMemoryErrorFails()
-   {
-      ArrayList<byte[]> hold;
-      byte hog[];
-      
-      if (verifyPropertyViolation(new TypeRef("gov.nasa.jpf.vm.NoOutOfMemoryErrorProperty")))
-      {
-         hold = new ArrayList<byte[]>();
-         
-         while (true)
-         {
-            hog = new byte[1024 * 1024 * 1024];
-            
-            hold.add(hog);
-         }
-      }
-   }
+public class OutOfMemoryErrorTest extends TestJPF {
+	@Test
+	public void outOfMemoryErrorFails() {
+		ArrayList<byte[]> hold;
+		byte hog[];
+
+		if (verifyPropertyViolation(new TypeRef(
+				"gov.nasa.jpf.vm.NoOutOfMemoryErrorProperty"))) {
+			hold = new ArrayList<byte[]>();
+
+			while (true) {
+				hog = new byte[1024 * 1024 * 1024];
+
+				hold.add(hog);
+			}
+		}
+	}
 }

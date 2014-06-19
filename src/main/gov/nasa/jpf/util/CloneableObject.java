@@ -19,9 +19,9 @@
 package gov.nasa.jpf.util;
 
 /**
- * the standard java.lang.Cloneable is just a type tag without methods, so
- * we can't use it to enforce public access of clone()
+ * the standard java.lang.Cloneable is just a type tag without methods, so we
+ * can't use it to enforce public access of clone()
  */
 public interface CloneableObject {
-  Object clone();
+	Object clone();
 }

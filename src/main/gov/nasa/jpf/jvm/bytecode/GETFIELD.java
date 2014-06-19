@@ -25,105 +25,109 @@ import gov.nasa.jpf.vm.MJIEnv;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Fetch field from object
- * ..., objectref => ..., value
+ * Fetch field from object ..., objectref => ..., value
  */
 public class GETFIELD extends InstanceFieldInstruction {
 
-  public GETFIELD (String fieldName, String classType, String fieldDescriptor){
-    super(fieldName, classType, fieldDescriptor);
-  }
+	public GETFIELD(String fieldName, String classType, String fieldDescriptor) {
+		super(fieldName, classType, fieldDescriptor);
+	}
 
-  @Override
-  protected void popOperands1 (StackFrame frame) {
-    frame.pop(); // .. val => ..
-  }
-  
-  @Override
-  protected void popOperands2 (StackFrame frame) {
-    frame.pop(2);  // .. highVal, lowVal => ..
-  }
-  
-  @Override
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
-    
-    int objRef = frame.peek(); // don't pop yet, we might re-enter
-    lastThis = objRef;
-    if (objRef == MJIEnv.NULL) {
-      return ti.createAndThrowException("java.lang.NullPointerException",
-                                        "referencing field '" + fname + "' on null object");
-    }
+	@Override
+	protected void popOperands1(StackFrame frame) {
+		frame.pop(); // .. val => ..
+	}
 
-    ElementInfo ei = ti.getElementInfoWithUpdatedSharedness(objRef);
+	@Override
+	protected void popOperands2(StackFrame frame) {
+		frame.pop(2); // .. highVal, lowVal => ..
+	}
 
-    FieldInfo fi = getFieldInfo();
-    if (fi == null) {
-      return ti.createAndThrowException("java.lang.NoSuchFieldError",
-                                        "referencing field '" + fname + "' in " + ei);
-    }
-    
-    // check if this breaks the current transition
-    if (isNewPorFieldBoundary(ti, fi, objRef)) {
-      if (createAndSetSharedFieldAccessCG( ei, ti)) {
-        return this;
-      }
-    }
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    frame.pop(); // Ok, now we can remove the object ref from the stack
-    Object attr = ei.getFieldAttr(fi);
+		int objRef = frame.peek(); // don't pop yet, we might re-enter
+		lastThis = objRef;
+		if (objRef == MJIEnv.NULL) {
+			return ti.createAndThrowException("java.lang.NullPointerException",
+					"referencing field '" + fname + "' on null object");
+		}
 
-    // We could encapsulate the push in ElementInfo, but not the GET, so we keep it at a similiar level
-    if (fi.getStorageSize() == 1) { // 1 slotter
-      int ival = ei.get1SlotField(fi);
-      lastValue = ival;
-      
-      if (fi.isReference()){
-        frame.pushRef(ival);
-        
-      } else {
-        frame.push(ival);
-      }
-      
-      if (attr != null) {
-        frame.setOperandAttr(attr);
-      }
+		ElementInfo ei = ti.getElementInfoWithUpdatedSharedness(objRef);
 
-    } else {  // 2 slotter
-      long lval = ei.get2SlotField(fi);
-      lastValue = lval;
+		FieldInfo fi = getFieldInfo();
+		if (fi == null) {
+			return ti.createAndThrowException("java.lang.NoSuchFieldError",
+					"referencing field '" + fname + "' in " + ei);
+		}
 
-      frame.pushLong( lval);
-      if (attr != null) {
-        frame.setLongOperandAttr(attr);
-      }
-    }
+		// check if this breaks the current transition
+		if (isNewPorFieldBoundary(ti, fi, objRef)) {
+			if (createAndSetSharedFieldAccessCG(ei, ti)) {
+				return this;
+			}
+		}
 
-    return getNext(ti);
-  }
+		frame.pop(); // Ok, now we can remove the object ref from the stack
+		Object attr = ei.getFieldAttr(fi);
 
-  public ElementInfo peekElementInfo (ThreadInfo ti) {
-    StackFrame frame = ti.getTopFrame();
-    int objRef = frame.peek();
-    ElementInfo ei = ti.getElementInfo(objRef);
-    return ei;
-  }
+		// We could encapsulate the push in ElementInfo, but not the GET, so we
+		// keep it at a similiar level
+		if (fi.getStorageSize() == 1) { // 1 slotter
+			int ival = ei.get1SlotField(fi);
+			lastValue = ival;
 
-  public int getLength() {
-    return 3; // opcode, index1, index2
-  }
+			if (fi.isReference()) {
+				frame.pushRef(ival);
 
-  public int getByteCode () {
-    return 0xB4;
-  }
+			} else {
+				frame.push(ival);
+			}
 
-  public boolean isRead() {
-    return true;
-  }
+			if (attr != null) {
+				frame.setOperandAttr(attr);
+			}
 
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		} else { // 2 slotter
+			long lval = ei.get2SlotField(fi);
+			lastValue = lval;
+
+			frame.pushLong(lval);
+			if (attr != null) {
+				frame.setLongOperandAttr(attr);
+			}
+		}
+
+		return getNext(ti);
+	}
+
+	@Override
+	public ElementInfo peekElementInfo(ThreadInfo ti) {
+		StackFrame frame = ti.getTopFrame();
+		int objRef = frame.peek();
+		ElementInfo ei = ti.getElementInfo(objRef);
+		return ei;
+	}
+
+	@Override
+	public int getLength() {
+		return 3; // opcode, index1, index2
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0xB4;
+	}
+
+	@Override
+	public boolean isRead() {
+		return true;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

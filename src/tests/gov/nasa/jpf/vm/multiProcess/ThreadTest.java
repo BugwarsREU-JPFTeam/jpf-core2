@@ -34,87 +34,95 @@ import org.junit.Test;
  * @author Nastaran Shafiei <nastaran.shafiei@gmail.com>
  */
 public class ThreadTest extends TestMultiProcessJPF {
-  private native void keepThread(Thread thd, int prcId);
+	private native void keepThread(Thread thd, int prcId);
 
-  // To make sure that each process has its own main thread 
-  @Test
-  public void mainThreadsIdTest() {
-    if(!isJPFRun()) {
-      JPF_gov_nasa_jpf_vm_multiProcess_ThreadTest.resetPrcIds();
-    }
+	// To make sure that each process has its own main thread
+	@Test
+	public void mainThreadsIdTest() {
+		if (!isJPFRun()) {
+			JPF_gov_nasa_jpf_vm_multiProcess_ThreadTest.resetPrcIds();
+		}
 
-    if (mpVerifyNoPropertyViolation(2)) {
-      int prcId = getProcessId();
-      keepThread(Thread.currentThread(), prcId);
-    }
+		if (mpVerifyNoPropertyViolation(2)) {
+			int prcId = getProcessId();
+			keepThread(Thread.currentThread(), prcId);
+		}
 
-    if(!isJPFRun()) {
-      List<ThreadInfo> threads = JPF_gov_nasa_jpf_vm_multiProcess_ThreadTest.getThreads();
-      assertEquals(threads.size(), 2);
-      assertTrue(threads.get(0)!=threads.get(1));
-    }
-  }
+		if (!isJPFRun()) {
+			List<ThreadInfo> threads = JPF_gov_nasa_jpf_vm_multiProcess_ThreadTest
+					.getThreads();
+			assertEquals(threads.size(), 2);
+			assertTrue(threads.get(0) != threads.get(1));
+		}
+	}
 
-  private native void addToThreads(Thread thd);
+	private native void addToThreads(Thread thd);
 
-  public class TestThread extends Thread {
-    public void run() {
-      addToThreads(this);
-    }
-  }
+	public class TestThread extends Thread {
+		@Override
+		public void run() {
+			addToThreads(this);
+		}
+	}
 
-  // To make sure that the total number of threads created does not exceed 4
-  // where each processes includes two threads
-  @Test
-  public void numOfThreadsTest() {
-    if(!isJPFRun()) {
-      JPF_gov_nasa_jpf_vm_multiProcess_ThreadTest.resetThreads();
-    }
- 
-    if (mpVerifyNoPropertyViolation(2)) {
-      TestThread thd = new TestThread();
-      thd.start();
+	// To make sure that the total number of threads created does not exceed 4
+	// where each processes includes two threads
+	@Test
+	public void numOfThreadsTest() {
+		if (!isJPFRun()) {
+			JPF_gov_nasa_jpf_vm_multiProcess_ThreadTest.resetThreads();
+		}
 
-      addToThreads(Thread.currentThread());
-    }
+		if (mpVerifyNoPropertyViolation(2)) {
+			TestThread thd = new TestThread();
+			thd.start();
 
-    if(!isJPFRun()) {
-      assertEquals(JPF_gov_nasa_jpf_vm_multiProcess_ThreadTest.getThreadIds().size(), 4);
-    }
-  }
+			addToThreads(Thread.currentThread());
+		}
 
-  public static class InterleaveCheckListener extends ListenerAdapter {
-    static int numOfCG = 0;
+		if (!isJPFRun()) {
+			assertEquals(JPF_gov_nasa_jpf_vm_multiProcess_ThreadTest
+					.getThreadIds().size(), 4);
+		}
+	}
 
-    @Override
-    public void choiceGeneratorProcessed (VM vm, ChoiceGenerator<?> newCG) {
-      String id = newCG.getId();
+	public static class InterleaveCheckListener extends ListenerAdapter {
+		static int numOfCG = 0;
 
-      if(!id.equals("<root>") && !id.equals(SchedulerFactory.THREAD_TERMINATE)) {
-        fail("Threads from two different processes should only interleave at the " +
-          "thread termination point!");
-      }
+		@Override
+		public void choiceGeneratorProcessed(VM vm, ChoiceGenerator<?> newCG) {
+			String id = newCG.getId();
 
-      numOfCG++;
-    }
-  }
+			if (!id.equals("<root>")
+					&& !id.equals(SchedulerFactory.THREAD_TERMINATE)) {
+				fail("Threads from two different processes should only interleave at the "
+						+ "thread termination point!");
+			}
 
-  private static int counter = 0;
+			numOfCG++;
+		}
+	}
 
-  // To make sure that the only point that threads from two processes interleave 
-  // is the thread termination point & number of choice generators does not 
-  // exceed 3
-  @Test
-  public void threadInterleavingTest() {
-    if (mpVerifyNoPropertyViolation(2, "+listener=gov.nasa.jpf.vm.multiProcess.ThreadTest$InterleaveCheckListener",
-            "+vm.max_transition_length=MAX")) {
-      // InterleaveCheck listener makes sure that transition is not broken at the 
-      // static field access
-      counter = 0;
-    }
+	private static int counter = 0;
 
-    if(!isJPFRun()) {
-      assertEquals(InterleaveCheckListener.numOfCG, 3);
-    }
-  }
+	// To make sure that the only point that threads from two processes
+	// interleave
+	// is the thread termination point & number of choice generators does not
+	// exceed 3
+	@Test
+	public void threadInterleavingTest() {
+		if (mpVerifyNoPropertyViolation(
+				2,
+				"+listener=gov.nasa.jpf.vm.multiProcess.ThreadTest$InterleaveCheckListener",
+				"+vm.max_transition_length=MAX")) {
+			// InterleaveCheck listener makes sure that transition is not broken
+			// at the
+			// static field access
+			counter = 0;
+		}
+
+		if (!isJPFRun()) {
+			assertEquals(InterleaveCheckListener.numOfCG, 3);
+		}
+	}
 }

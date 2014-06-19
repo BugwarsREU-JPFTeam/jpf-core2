@@ -23,39 +23,46 @@ import gov.nasa.jpf.annotation.MJI;
 import sun.misc.Hashing;
 
 /**
- * simple forwarding sun.misc.Hashing peer to speed up execution and shorten traces
+ * simple forwarding sun.misc.Hashing peer to speed up execution and shorten
+ * traces
  */
 public class JPF_sun_misc_Hashing extends NativePeer {
-    
-  @MJI 
-  public int murmur3_32__I_3BII__I (MJIEnv env, int clsRef, int seed, int dataRef, int offset, int len){
-    byte[] data = env.getByteArrayObject(dataRef);
-    return Hashing.murmur3_32(seed, data, offset, len);
-  }
-  
-  @MJI 
-  public int murmur3_32__I_3CII__I (MJIEnv env, int clsRef, int seed, int dataRef, int offset, int len){
-    char[] data = env.getCharArrayObject(dataRef);
-    return Hashing.murmur3_32(seed, data, offset, len);
-  }
-  
-  @MJI 
-  public int murmur3_32__I_3III__I (MJIEnv env, int clsRef, int seed, int dataRef, int offset, int len){
-    int[] data = env.getIntArrayObject(dataRef);
-    return Hashing.murmur3_32(seed, data, offset, len);
-  }
 
-  @MJI
-  public int stringHash32__Ljava_lang_String_2__I (MJIEnv env, int clsRef, int sRef){
-    String s = env.getStringObject(sRef);
-    return Hashing.stringHash32(s);
-  }
-  
-  @MJI
-  public int randomHashSeed__Ljava_lang_Object_2__I (MJIEnv env, int clsRef, int objRef){
-    // <2do> since the original implementation uses things like System.currentTimeMillis()
-    // we have to model this to make it reproducible between JPF runs
-    return Hashing.randomHashSeed( Integer.valueOf(objRef));
-  }
+	@MJI
+	public int murmur3_32__I_3BII__I(MJIEnv env, int clsRef, int seed,
+			int dataRef, int offset, int len) {
+		byte[] data = env.getByteArrayObject(dataRef);
+		return Hashing.murmur3_32(seed, data, offset, len);
+	}
+
+	@MJI
+	public int murmur3_32__I_3CII__I(MJIEnv env, int clsRef, int seed,
+			int dataRef, int offset, int len) {
+		char[] data = env.getCharArrayObject(dataRef);
+		return Hashing.murmur3_32(seed, data, offset, len);
+	}
+
+	@MJI
+	public int murmur3_32__I_3III__I(MJIEnv env, int clsRef, int seed,
+			int dataRef, int offset, int len) {
+		int[] data = env.getIntArrayObject(dataRef);
+		return Hashing.murmur3_32(seed, data, offset, len);
+	}
+
+	@MJI
+	public int stringHash32__Ljava_lang_String_2__I(MJIEnv env, int clsRef,
+			int sRef) {
+		String s = env.getStringObject(sRef);
+		return Hashing.stringHash32(s);
+	}
+
+	@MJI
+	public int randomHashSeed__Ljava_lang_Object_2__I(MJIEnv env, int clsRef,
+			int objRef) {
+		// <2do> since the original implementation uses things like
+		// System.currentTimeMillis()
+		// we have to model this to make it reproducible between JPF runs
+		return Hashing.randomHashSeed(Integer.valueOf(objRef));
+	}
 
 }

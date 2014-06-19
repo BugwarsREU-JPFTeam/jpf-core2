@@ -24,39 +24,43 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.ThreadInfo;
 
 /**
- * this is an artificial instruction that is automatically prepended to
- * a run()/main() method call.
+ * this is an artificial instruction that is automatically prepended to a
+ * run()/main() method call.
  * 
- * The main purpose is to have a special instruction marking the beginning
- * of a new thread execution which does not cause CGs or is otherwise subject
- * to execution semantics that change the program state.
+ * The main purpose is to have a special instruction marking the beginning of a
+ * new thread execution which does not cause CGs or is otherwise subject to
+ * execution semantics that change the program state.
  * 
  * For instance, without it we would have to add a new ThreadInfo state to
- * determine if the first instruction within this thread was re-executed or
- * just happens to be the first transition we execute within this thread
+ * determine if the first instruction within this thread was re-executed or just
+ * happens to be the first transition we execute within this thread
  * 
  */
 public class RUNSTART extends JVMInstruction {
 
-  public RUNSTART () {
-  }
+	public RUNSTART() {
+	}
 
-  public Instruction execute (ThreadInfo ti) {
-    // nothing here, we could have used a NOP
-    return getNext(ti);
-  }
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		// nothing here, we could have used a NOP
+		return getNext(ti);
+	}
 
-  public static final int OPCODE = 257;
+	public static final int OPCODE = 257;
 
-  public int getByteCode () {
-    return OPCODE;
-  }
+	@Override
+	public int getByteCode() {
+		return OPCODE;
+	}
 
-  public boolean isExtendedInstruction() {
-    return true;
-  }
+	@Override
+	public boolean isExtendedInstruction() {
+		return true;
+	}
 
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

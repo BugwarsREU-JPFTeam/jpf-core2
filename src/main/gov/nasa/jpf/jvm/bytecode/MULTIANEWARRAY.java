@@ -29,100 +29,106 @@ import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.Types;
 
-
 /**
- * Create new multidimensional array
- * ..., count1, [count2, ...] => ..., arrayref
+ * Create new multidimensional array ..., count1, [count2, ...] => ..., arrayref
  */
 public class MULTIANEWARRAY extends JVMInstruction {
-  protected String type;
-  
-  protected int dimensions;
-  protected int[] arrayLengths;
+	protected String type;
 
-  public MULTIANEWARRAY (String typeName, int dimensions){
-    this.type = Types.getClassNameFromTypeName(typeName);
-    this.dimensions = dimensions;
-  }
+	protected int dimensions;
+	protected int[] arrayLengths;
 
-  public static int allocateArray (Heap heap, String type, int[] dim, ThreadInfo ti, int d) {
-    int l = dim[d];
-    ElementInfo eiArray = heap.newArray(type.substring(d + 1), l, ti);
+	public MULTIANEWARRAY(String typeName, int dimensions) {
+		this.type = Types.getClassNameFromTypeName(typeName);
+		this.dimensions = dimensions;
+	}
 
-    if (dim.length > (d + 1)) {
-      for (int i = 0; i < l; i++) {
-        eiArray.setReferenceElement(i, allocateArray(heap, type, dim, ti, d + 1));
-      }
-    }
+	public static int allocateArray(Heap heap, String type, int[] dim,
+			ThreadInfo ti, int d) {
+		int l = dim[d];
+		ElementInfo eiArray = heap.newArray(type.substring(d + 1), l, ti);
 
-    return eiArray.getObjectRef();
-  }
+		if (dim.length > (d + 1)) {
+			for (int i = 0; i < l; i++) {
+				eiArray.setReferenceElement(i,
+						allocateArray(heap, type, dim, ti, d + 1));
+			}
+		}
 
-  public Instruction execute (ThreadInfo ti) {
-    String compType = Types.getComponentTerminal(type);
+		return eiArray.getObjectRef();
+	}
 
-    // resolve the component class first
-    if(Types.isReferenceSignature(type)) {
-      try {
-        ti.resolveReferencedClass(compType);
-      } catch(LoadOnJPFRequired lre) {
-        return ti.getPC();
-      }
-    }
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		String compType = Types.getComponentTerminal(type);
 
-    arrayLengths = new int[dimensions];
-    StackFrame frame = ti.getModifiableTopFrame();
+		// resolve the component class first
+		if (Types.isReferenceSignature(type)) {
+			try {
+				ti.resolveReferencedClass(compType);
+			} catch (LoadOnJPFRequired lre) {
+				return ti.getPC();
+			}
+		}
 
-    for (int i = dimensions - 1; i >= 0; i--) {
-      arrayLengths[i] = frame.pop();
-    }
+		arrayLengths = new int[dimensions];
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    // there is no clinit for array classes, but we still have  to create a class object
-    // since its a builtin class, we also don't have to bother with NoClassDefFoundErrors
-    ClassInfo ci = ClassLoaderInfo.getCurrentResolvedClassInfo(type);
-    if (!ci.isRegistered()) {
-      ci.registerClass(ti);
-      ci.setInitialized();
-    }
-    
-    int arrayRef = allocateArray(ti.getHeap(), type, arrayLengths, ti, 0);
+		for (int i = dimensions - 1; i >= 0; i--) {
+			arrayLengths[i] = frame.pop();
+		}
 
-    // put the result (the array reference) on the stack
-    frame.pushRef(arrayRef);
+		// there is no clinit for array classes, but we still have to create a
+		// class object
+		// since its a builtin class, we also don't have to bother with
+		// NoClassDefFoundErrors
+		ClassInfo ci = ClassLoaderInfo.getCurrentResolvedClassInfo(type);
+		if (!ci.isRegistered()) {
+			ci.registerClass(ti);
+			ci.setInitialized();
+		}
 
-    return getNext(ti);
-  }
+		int arrayRef = allocateArray(ti.getHeap(), type, arrayLengths, ti, 0);
 
-  public int getLength() {
-    return 4; // opcode, index1, index2, dimensions
-  }
-  
-  public int getByteCode () {
-    return 0xC5;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		// put the result (the array reference) on the stack
+		frame.pushRef(arrayRef);
 
-  public String getType(){
-    return type;
-  }
-  
-  public int getDimensions() {
-    return dimensions;
-  }
-  
-  public int getArrayLength (int dimension){
-    if (dimension < dimensions && arrayLengths != null){
-      return arrayLengths[dimension];
-    } else {
-      return -1;
-    }
-  }
-  
-  @Override
-  public void cleanupTransients(){
-    arrayLengths= null;
-  }
+		return getNext(ti);
+	}
+
+	@Override
+	public int getLength() {
+		return 4; // opcode, index1, index2, dimensions
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0xC5;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public int getDimensions() {
+		return dimensions;
+	}
+
+	public int getArrayLength(int dimension) {
+		if (dimension < dimensions && arrayLengths != null) {
+			return arrayLengths[dimension];
+		} else {
+			return -1;
+		}
+	}
+
+	@Override
+	public void cleanupTransients() {
+		arrayLengths = null;
+	}
 }

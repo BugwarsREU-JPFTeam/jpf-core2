@@ -19,10 +19,11 @@
 package gov.nasa.jpf.vm;
 
 /**
- * factory interface for creating concrete FieldLockInfo objects, which
- * are configurable class sets (that might encapsulate heuristics)
+ * factory interface for creating concrete FieldLockInfo objects, which are
+ * configurable class sets (that might encapsulate heuristics)
  */
 public interface FieldLockInfoFactory {
 
-  FieldLockInfo createFieldLockInfo (ThreadInfo ti, ElementInfo ei, FieldInfo fi);
+	FieldLockInfo createFieldLockInfo(ThreadInfo ti, ElementInfo ei,
+			FieldInfo fi);
 }

@@ -21,29 +21,38 @@ package java.lang.reflect;
 import java.lang.annotation.Annotation;
 
 public class AccessibleObject {
-  boolean isAccessible = true;
+	boolean isAccessible = true;
 
-  public void setAccessible (boolean flag)  throws SecurityException {
-    isAccessible = flag;
-  }
-  
-  public static void setAccessible (AccessibleObject[] accessibles, boolean flag) throws SecurityException {
-    for (int i=0; i<accessibles.length; i++) {
-      accessibles[i].isAccessible = flag;
-    }
-  }
-  
-  public boolean isAccessible() {
-    return isAccessible;
-  }
-    
-  public native <T extends Annotation> T getAnnotation (Class<T> cls); // <2do> Implement in JPF_java_lang_reflect_Constructor
+	public void setAccessible(boolean flag) throws SecurityException {
+		isAccessible = flag;
+	}
 
-  public boolean isAnnotationPresent (Class<? extends Annotation> cls) {
-    return getAnnotation(cls) != null;
-  }
+	public static void setAccessible(AccessibleObject[] accessibles,
+			boolean flag) throws SecurityException {
+		for (int i = 0; i < accessibles.length; i++) {
+			accessibles[i].isAccessible = flag;
+		}
+	}
 
-  public native Annotation[] getAnnotations(); // <2do> Implement in JPF_java_lang_reflect_Constructor
+	public boolean isAccessible() {
+		return isAccessible;
+	}
 
-  public native Annotation[] getDeclaredAnnotations(); // <2do> Implement in JPF_java_lang_reflect_Method, JPF_java_lang_reflect_Class and JPF_java_lang_reflect_Constructor
+	public native <T extends Annotation> T getAnnotation(Class<T> cls); // <2do>
+																		// Implement
+																		// in
+																		// JPF_java_lang_reflect_Constructor
+
+	public boolean isAnnotationPresent(Class<? extends Annotation> cls) {
+		return getAnnotation(cls) != null;
+	}
+
+	public native Annotation[] getAnnotations(); // <2do> Implement in
+													// JPF_java_lang_reflect_Constructor
+
+	public native Annotation[] getDeclaredAnnotations(); // <2do> Implement in
+															// JPF_java_lang_reflect_Method,
+															// JPF_java_lang_reflect_Class
+															// and
+															// JPF_java_lang_reflect_Constructor
 }

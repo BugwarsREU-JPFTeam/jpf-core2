@@ -23,21 +23,21 @@ import gov.nasa.jpf.vm.VM;
 
 import java.util.Random;
 
-
 /**
  * heuristic state prioritizer that returns random priority values
  */
 public class RandomHeuristic extends SimplePriorityHeuristic {
 
-  protected Random random;
+	protected Random random;
 
-  public RandomHeuristic (Config config, VM vm) {
-    super(config,vm);
-    
-    random = new Random( config.getInt("choice.seed", 42));
-  }
+	public RandomHeuristic(Config config, VM vm) {
+		super(config, vm);
 
-  protected int computeHeuristicValue () {
-    return java.lang.Math.abs(random.nextInt());
-  }
+		random = new Random(config.getInt("choice.seed", 42));
+	}
+
+	@Override
+	protected int computeHeuristicValue() {
+		return java.lang.Math.abs(random.nextInt());
+	}
 }

@@ -25,17 +25,17 @@ import gov.nasa.jpf.vm.ClosedMemento;
  */
 public class MutableIntegerRestorer implements ClosedMemento {
 
-  MutableInteger restoree;
-  int value;
-  
-  public MutableIntegerRestorer (MutableInteger restoree){
-    assert restoree != null : "restored object can't be null";
-    this.restoree = restoree;
-    this.value = restoree.intValue();
-  }
-  
-  @Override
-  public void restore (){
-    restoree.set(value);
-  }
+	MutableInteger restoree;
+	int value;
+
+	public MutableIntegerRestorer(MutableInteger restoree) {
+		assert restoree != null : "restored object can't be null";
+		this.restoree = restoree;
+		this.value = restoree.intValue();
+	}
+
+	@Override
+	public void restore() {
+		restoree.set(value);
+	}
 }

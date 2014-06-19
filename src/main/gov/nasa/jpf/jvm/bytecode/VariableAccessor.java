@@ -22,6 +22,5 @@ package gov.nasa.jpf.jvm.bytecode;
  * abstraction for instrauctions that access local variables
  */
 public interface VariableAccessor {
-  String getVariableId();
+	String getVariableId();
 }
-

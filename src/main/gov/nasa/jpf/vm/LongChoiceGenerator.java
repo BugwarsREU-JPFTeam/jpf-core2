@@ -19,12 +19,9 @@
 
 package gov.nasa.jpf.vm;
 
-
-
 /**
- * ChoiceGenerator for Long values - this is only an interface so that
- * we can use it for type checks of implementors that use their own
- * generic hierarchy
+ * ChoiceGenerator for Long values - this is only an interface so that we can
+ * use it for type checks of implementors that use their own generic hierarchy
  */
 public interface LongChoiceGenerator extends ChoiceGenerator<Long> {
 }

@@ -22,21 +22,23 @@ import gov.nasa.jpf.GenericProperty;
 import gov.nasa.jpf.search.Search;
 
 /**
- * A property class so that gov.nasa.jpf.JPF can add an error to the 
+ * A property class so that gov.nasa.jpf.JPF can add an error to the
  * gov.nasa.jpf.search.Search object when JPF catches an OutOfMemoryError.
  */
 public class NoOutOfMemoryErrorProperty extends GenericProperty {
 
-  private boolean m_triggered = true;
-  
-  public NoOutOfMemoryErrorProperty() {
-  }
-  
-  public void reset() {
-    m_triggered = false;
-  }
-  
-  public boolean check(Search search, VM vm) {
-    return(m_triggered);
-  }
+	private boolean m_triggered = true;
+
+	public NoOutOfMemoryErrorProperty() {
+	}
+
+	@Override
+	public void reset() {
+		m_triggered = false;
+	}
+
+	@Override
+	public boolean check(Search search, VM vm) {
+		return (m_triggered);
+	}
 }

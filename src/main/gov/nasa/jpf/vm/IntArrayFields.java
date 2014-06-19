@@ -23,86 +23,95 @@ import gov.nasa.jpf.util.HashData;
 import gov.nasa.jpf.util.IntVector;
 
 import java.io.PrintStream;
-import java.io.PrintWriter;
 
 /**
  * element values for int[] objects
  */
 public class IntArrayFields extends ArrayFields {
 
-  int[] values;
+	int[] values;
 
-  public IntArrayFields (int length) {
-    values = new int[length];
-  }
+	public IntArrayFields(int length) {
+		values = new int[length];
+	}
 
-  public int[] asIntArray() {
-    return values;
-  }
+	@Override
+	public int[] asIntArray() {
+		return values;
+	}
 
-  protected void printValue(PrintStream ps, int idx){
-    ps.print(values[idx]);
-  }
-  
-  public Object getValues(){
-    return values;
-  }
+	@Override
+	protected void printValue(PrintStream ps, int idx) {
+		ps.print(values[idx]);
+	}
 
-  public int arrayLength() {
-    return values.length;
-  }
+	@Override
+	public Object getValues() {
+		return values;
+	}
 
-  public int getHeapSize() {  // in bytes
-    return values.length * 4;
-  }
+	@Override
+	public int arrayLength() {
+		return values.length;
+	}
 
-  public void appendTo (IntVector v) {
-    v.append(values);
-  }
+	@Override
+	public int getHeapSize() { // in bytes
+		return values.length * 4;
+	}
 
-  public IntArrayFields clone(){
-    IntArrayFields f = (IntArrayFields)cloneFields();
-    f.values = values.clone();
-    return f;
-  }
+	@Override
+	public void appendTo(IntVector v) {
+		v.append(values);
+	}
 
-  public boolean equals (Object o) {
-    if (o instanceof IntArrayFields) {
-      IntArrayFields other = (IntArrayFields)o;
+	@Override
+	public IntArrayFields clone() {
+		IntArrayFields f = (IntArrayFields) cloneFields();
+		f.values = values.clone();
+		return f;
+	}
 
-      int[] v = values;
-      int[] vOther = other.values;
-      if (v.length != vOther.length) {
-        return false;
-      }
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof IntArrayFields) {
+			IntArrayFields other = (IntArrayFields) o;
 
-      for (int i=0; i<v.length; i++) {
-        if (v[i] != vOther[i]) {
-          return false;
-        }
-      }
+			int[] v = values;
+			int[] vOther = other.values;
+			if (v.length != vOther.length) {
+				return false;
+			}
 
-      return compareAttrs(other);
+			for (int i = 0; i < v.length; i++) {
+				if (v[i] != vOther[i]) {
+					return false;
+				}
+			}
 
-    } else {
-      return false;
-    }
-  }
+			return compareAttrs(other);
 
-  public void setIntValue (int pos, int newValue) {
-    values[pos] = newValue;
-  }
+		} else {
+			return false;
+		}
+	}
 
-  public int getIntValue (int pos) {
-    return values[pos];
-  }
+	@Override
+	public void setIntValue(int pos, int newValue) {
+		values[pos] = newValue;
+	}
 
+	@Override
+	public int getIntValue(int pos) {
+		return values[pos];
+	}
 
-  public void hash(HashData hd) {
-    int[] v = values;
-    for (int i=0; i < v.length; i++) {
-      hd.add(v[i]);
-    }
-  }
+	@Override
+	public void hash(HashData hd) {
+		int[] v = values;
+		for (int i = 0; i < v.length; i++) {
+			hd.add(v[i]);
+		}
+	}
 
 }

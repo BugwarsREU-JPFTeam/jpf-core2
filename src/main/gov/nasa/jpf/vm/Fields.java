@@ -23,328 +23,338 @@ import gov.nasa.jpf.util.IntVector;
 import gov.nasa.jpf.util.Misc;
 import gov.nasa.jpf.util.ObjectList;
 
-
 /**
  * Represents the variable, hash-collapsed pooled data associated with an object
- * that is related to the object values (as opposed to synchronization ->Monitor).
- * Contains the values of the fields, not their descriptors.  Descriptors are represented
- * by gov.nasa.jpf.vm.FieldInfo objects, which are stored in the ClassInfo structure.
- *
+ * that is related to the object values (as opposed to synchronization
+ * ->Monitor). Contains the values of the fields, not their descriptors.
+ * Descriptors are represented by gov.nasa.jpf.vm.FieldInfo objects, which are
+ * stored in the ClassInfo structure.
+ * 
  * @see gov.nasa.jpf.vm.FieldInfo
  * @see gov.nasa.jpf.vm.Monitor
  */
 public abstract class Fields implements Cloneable {
 
-  /**
-   * we use this to store arbitrary field attributes (like symbolic values),
-   * but only pushClinit this on demand
-   */
-  protected Object[] fieldAttrs;
+	/**
+	 * we use this to store arbitrary field attributes (like symbolic values),
+	 * but only pushClinit this on demand
+	 */
+	protected Object[] fieldAttrs;
 
-  /**
-   * attribute attached to the object as a whole
-   */
-  protected Object objectAttr;
+	/**
+	 * attribute attached to the object as a whole
+	 */
+	protected Object objectAttr;
 
+	protected Fields() {
+	}
 
-  protected Fields() {}
+	public boolean hasFieldAttr() {
+		return fieldAttrs != null;
+	}
 
-  public boolean hasFieldAttr() {
-    return fieldAttrs != null;
-  }
+	public boolean hasFieldAttr(Class<?> attrType) {
+		Object[] fa = fieldAttrs;
+		if (fa != null) {
+			for (int i = 0; i < fa.length; i++) {
+				Object a = fa[i];
+				if (a != null && ObjectList.containsType(a, attrType)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 
-  public boolean hasFieldAttr (Class<?> attrType){    
-    Object[] fa = fieldAttrs;
-    if (fa != null){
-      for (int i=0; i<fa.length; i++){
-        Object a = fa[i];
-        if (a != null && ObjectList.containsType(a, attrType)){
-          return true;
-        }
-      }
-    }
-    return false;
-  }
+	/**
+	 * this returns all of them - use either if you know there will be only one
+	 * attribute at a time, or check/process result with ObjectList
+	 */
+	public Object getFieldAttr(int fieldOrElementIndex) {
+		if (fieldAttrs != null) {
+			return fieldAttrs[fieldOrElementIndex];
+		}
+		return null;
+	}
 
+	/**
+	 * this replaces all of them - use only if you know - there will be only one
+	 * attribute at a time - you obtained the value you set by a previous
+	 * getXAttr() - you constructed a multi value list with
+	 * ObjectList.createList()
+	 */
+	public void setFieldAttr(int nFieldsOrElements, int fieldOrElementIndex,
+			Object attr) {
+		if (fieldAttrs == null) {
+			if (attr == null) {
+				return; // no need to waste an array object for storing null
+			}
+			fieldAttrs = new Object[nFieldsOrElements];
+		}
+		fieldAttrs[fieldOrElementIndex] = attr;
+	}
 
-  /**
-   * this returns all of them - use either if you know there will be only
-   * one attribute at a time, or check/process result with ObjectList
-   */
-  public Object getFieldAttr(int fieldOrElementIndex){
-    if (fieldAttrs != null){
-      return fieldAttrs[fieldOrElementIndex];
-    }
-    return null;
-  }
+	public void addFieldAttr(int nFieldsOrElements, int fieldOrElementIndex,
+			Object attr) {
+		if (attr != null) {
+			if (fieldAttrs == null) {
+				fieldAttrs = new Object[nFieldsOrElements];
+			}
+			fieldAttrs[fieldOrElementIndex] = ObjectList.add(
+					fieldAttrs[fieldOrElementIndex], attr);
+		}
+	}
 
-  /**
-   * this replaces all of them - use only if you know 
-   *  - there will be only one attribute at a time
-   *  - you obtained the value you set by a previous getXAttr()
-   *  - you constructed a multi value list with ObjectList.createList()
-   */
-  public void setFieldAttr (int nFieldsOrElements, int fieldOrElementIndex, Object attr){
-    if (fieldAttrs == null){
-      if (attr == null){
-        return; // no need to waste an array object for storing null
-      }
-      fieldAttrs = new Object[nFieldsOrElements];
-    }
-    fieldAttrs[fieldOrElementIndex] = attr;
-  }
-  
-  public void addFieldAttr (int nFieldsOrElements, int fieldOrElementIndex, Object attr){
-    if (attr != null){
-      if (fieldAttrs == null) {
-        fieldAttrs = new Object[nFieldsOrElements];
-      }
-      fieldAttrs[fieldOrElementIndex] = ObjectList.add(fieldAttrs[fieldOrElementIndex], attr);
-    }
-  }
-  
-  public void removeFieldAttr (int fieldOrElementIndex, Object attr){
-    if (fieldAttrs != null){
-     fieldAttrs[fieldOrElementIndex] = ObjectList.remove(fieldAttrs[fieldOrElementIndex], attr);
-    }
-  }
-  
-  public void replaceFieldAttr (int fieldOrElementIndex, Object oldAttr, Object newAttr){
-    if (fieldAttrs != null){
-     fieldAttrs[fieldOrElementIndex] = ObjectList.replace(fieldAttrs[fieldOrElementIndex], oldAttr, newAttr);
-    }
-  }
-  
-  public boolean hasFieldAttr (int fieldOrElementIndex, Class<?> type){
-    if (fieldAttrs != null){
-     return ObjectList.containsType(fieldAttrs[fieldOrElementIndex], type);
-    }
-    return false;
-  }
+	public void removeFieldAttr(int fieldOrElementIndex, Object attr) {
+		if (fieldAttrs != null) {
+			fieldAttrs[fieldOrElementIndex] = ObjectList.remove(
+					fieldAttrs[fieldOrElementIndex], attr);
+		}
+	}
 
-  /**
-   * this only returns the first attr of this type, there can be more
-   * if you don't use client private types or the provided type is too general
-   */
-  public <T> T getFieldAttr (int fieldOrElementIndex, Class<T> type){
-    if (fieldAttrs != null){
-     return ObjectList.getFirst(fieldAttrs[fieldOrElementIndex], type);
-    }
-    return null;    
-  }
-  
-  public <T> T getNextFieldAttr (int fieldOrElementIndex, Class<T> type, Object prev){
-    if (fieldAttrs != null){
-     return ObjectList.getNext(fieldAttrs[fieldOrElementIndex], type, prev);
-    }
-    return null;    
-  }
-  
-  public ObjectList.Iterator fieldAttrIterator(int fieldOrElementIndex){
-    Object a = (fieldAttrs != null) ? fieldAttrs[fieldOrElementIndex] : null;
-    return ObjectList.iterator(a);
-  }
-  
-  public <T> ObjectList.TypedIterator<T> fieldAttrIterator(int fieldOrElementIndex, Class<T> type){
-    Object a = (fieldAttrs != null) ? fieldAttrs[fieldOrElementIndex] : null;
-    return ObjectList.typedIterator(a, type);
-  }
-  
+	public void replaceFieldAttr(int fieldOrElementIndex, Object oldAttr,
+			Object newAttr) {
+		if (fieldAttrs != null) {
+			fieldAttrs[fieldOrElementIndex] = ObjectList.replace(
+					fieldAttrs[fieldOrElementIndex], oldAttr, newAttr);
+		}
+	}
 
-  //--- object attributes
-  public boolean hasObjectAttr () {
-    return (objectAttr != null);
-  }
+	public boolean hasFieldAttr(int fieldOrElementIndex, Class<?> type) {
+		if (fieldAttrs != null) {
+			return ObjectList.containsType(fieldAttrs[fieldOrElementIndex],
+					type);
+		}
+		return false;
+	}
 
-  public boolean hasObjectAttr (Class<?> attrType){
-    return ObjectList.containsType(objectAttr, attrType);
-  }
+	/**
+	 * this only returns the first attr of this type, there can be more if you
+	 * don't use client private types or the provided type is too general
+	 */
+	public <T> T getFieldAttr(int fieldOrElementIndex, Class<T> type) {
+		if (fieldAttrs != null) {
+			return ObjectList.getFirst(fieldAttrs[fieldOrElementIndex], type);
+		}
+		return null;
+	}
 
-  /**
-   * this returns all of them - use either if you know there will be only
-   * one attribute at a time, or check/process result with ObjectList
-   */
-  public Object getObjectAttr(){
-    return objectAttr;
-  }
+	public <T> T getNextFieldAttr(int fieldOrElementIndex, Class<T> type,
+			Object prev) {
+		if (fieldAttrs != null) {
+			return ObjectList.getNext(fieldAttrs[fieldOrElementIndex], type,
+					prev);
+		}
+		return null;
+	}
 
-  /**
-   * this replaces all of them - use only if you know 
-   *  - there will be only one attribute at a time
-   *  - you obtained the value you set by a previous getXAttr()
-   *  - you constructed a multi value list with ObjectList.createList()
-   */
-  public void setObjectAttr (Object attr){
-    objectAttr = attr;    
-  }
+	public ObjectList.Iterator fieldAttrIterator(int fieldOrElementIndex) {
+		Object a = (fieldAttrs != null) ? fieldAttrs[fieldOrElementIndex]
+				: null;
+		return ObjectList.iterator(a);
+	}
 
-  public void addObjectAttr (Object attr){
-    objectAttr = ObjectList.add(objectAttr, attr);
-  }
+	public <T> ObjectList.TypedIterator<T> fieldAttrIterator(
+			int fieldOrElementIndex, Class<T> type) {
+		Object a = (fieldAttrs != null) ? fieldAttrs[fieldOrElementIndex]
+				: null;
+		return ObjectList.typedIterator(a, type);
+	}
 
-  public void removeObjectAttr (Object attr){
-    objectAttr = ObjectList.remove(objectAttr, attr);
-  }
+	// --- object attributes
+	public boolean hasObjectAttr() {
+		return (objectAttr != null);
+	}
 
-  public void replaceObjectAttr (Object oldAttr, Object newAttr){
-    objectAttr = ObjectList.replace(objectAttr, oldAttr, newAttr);
-  }
+	public boolean hasObjectAttr(Class<?> attrType) {
+		return ObjectList.containsType(objectAttr, attrType);
+	}
 
-  /**
-   * this only returns the first attr of this type, there can be more
-   * if you don't use client private types or the provided type is too general
-   */
-  public <T> T getObjectAttr (Class<T> attrType) {
-    return ObjectList.getFirst(objectAttr, attrType);
-  }
+	/**
+	 * this returns all of them - use either if you know there will be only one
+	 * attribute at a time, or check/process result with ObjectList
+	 */
+	public Object getObjectAttr() {
+		return objectAttr;
+	}
 
-  public <T> T getNextObjectAttr (Class<T> attrType, Object prev) {
-    return ObjectList.getNext(objectAttr, attrType, prev);
-  }
+	/**
+	 * this replaces all of them - use only if you know - there will be only one
+	 * attribute at a time - you obtained the value you set by a previous
+	 * getXAttr() - you constructed a multi value list with
+	 * ObjectList.createList()
+	 */
+	public void setObjectAttr(Object attr) {
+		objectAttr = attr;
+	}
 
-  public ObjectList.Iterator objectAttrIterator(){
-    return ObjectList.iterator(objectAttr);
-  }
-  
-  public <T> ObjectList.TypedIterator<T> objectAttrIterator(Class<T> attrType){
-    return ObjectList.typedIterator(objectAttr, attrType);
-  }
+	public void addObjectAttr(Object attr) {
+		objectAttr = ObjectList.add(objectAttr, attr);
+	}
 
+	public void removeObjectAttr(Object attr) {
+		objectAttr = ObjectList.remove(objectAttr, attr);
+	}
 
-  public abstract int[] asFieldSlots();
+	public void replaceObjectAttr(Object oldAttr, Object newAttr) {
+		objectAttr = ObjectList.replace(objectAttr, oldAttr, newAttr);
+	}
 
-  /**
-   * give an approximation of the heap size in bytes - we assume fields are word
-   * aligned, hence the number of values*4 should be good. Note that this is
-   * overridden by ArrayFields (arrays would be packed)
-   */
-  public abstract int getHeapSize ();
+	/**
+	 * this only returns the first attr of this type, there can be more if you
+	 * don't use client private types or the provided type is too general
+	 */
+	public <T> T getObjectAttr(Class<T> attrType) {
+		return ObjectList.getFirst(objectAttr, attrType);
+	}
 
+	public <T> T getNextObjectAttr(Class<T> attrType, Object prev) {
+		return ObjectList.getNext(objectAttr, attrType, prev);
+	}
 
-  public boolean isReferenceArray () {
-    return false;
-  }
+	public ObjectList.Iterator objectAttrIterator() {
+		return ObjectList.iterator(objectAttr);
+	}
 
-  // our low level getters and setters
-  public abstract int getIntValue (int index);
+	public <T> ObjectList.TypedIterator<T> objectAttrIterator(Class<T> attrType) {
+		return ObjectList.typedIterator(objectAttr, attrType);
+	}
 
-  // same as getIntValue(), just here to make intentions clear
-  public abstract int getReferenceValue (int index);
+	public abstract int[] asFieldSlots();
 
-  public abstract long getLongValue (int index);
+	/**
+	 * give an approximation of the heap size in bytes - we assume fields are
+	 * word aligned, hence the number of values*4 should be good. Note that this
+	 * is overridden by ArrayFields (arrays would be packed)
+	 */
+	public abstract int getHeapSize();
 
-  public abstract boolean getBooleanValue (int index);
+	public boolean isReferenceArray() {
+		return false;
+	}
 
-  public abstract byte getByteValue (int index);
+	// our low level getters and setters
+	public abstract int getIntValue(int index);
 
-  public abstract char getCharValue (int index);
+	// same as getIntValue(), just here to make intentions clear
+	public abstract int getReferenceValue(int index);
 
-  public abstract short getShortValue (int index);
+	public abstract long getLongValue(int index);
 
-  public abstract float getFloatValue (int index);
+	public abstract boolean getBooleanValue(int index);
 
-  public abstract double getDoubleValue (int index);
+	public abstract byte getByteValue(int index);
 
-  //--- the field modifier methods (both instance and static)
+	public abstract char getCharValue(int index);
 
-  public abstract void setReferenceValue (int index, int newValue);
+	public abstract short getShortValue(int index);
 
-  public abstract void setBooleanValue (int index, boolean newValue);
+	public abstract float getFloatValue(int index);
 
-  public abstract void setByteValue (int index, byte newValue);
+	public abstract double getDoubleValue(int index);
 
-  public abstract void setCharValue (int index, char newValue);
+	// --- the field modifier methods (both instance and static)
 
-  public abstract void setShortValue (int index, short newValue);
+	public abstract void setReferenceValue(int index, int newValue);
 
-  public abstract void setFloatValue (int index, float newValue);
+	public abstract void setBooleanValue(int index, boolean newValue);
 
-  public abstract void setIntValue (int index, int newValue);
+	public abstract void setByteValue(int index, byte newValue);
 
-  public abstract void setLongValue (int index, long newValue);
+	public abstract void setCharValue(int index, char newValue);
 
-  public abstract void setDoubleValue (int index, double newValue);
+	public abstract void setShortValue(int index, short newValue);
 
-  public abstract Fields clone ();
+	public abstract void setFloatValue(int index, float newValue);
 
-  protected Fields cloneFields() {
-    try {
-      Fields f = (Fields)super.clone();
+	public abstract void setIntValue(int index, int newValue);
 
-      if (fieldAttrs != null) {
-        f.fieldAttrs = fieldAttrs.clone();
-      }
+	public abstract void setLongValue(int index, long newValue);
 
-      if (objectAttr != null) {
-        f.objectAttr = objectAttr; //
-      }
+	public abstract void setDoubleValue(int index, double newValue);
 
-      return f;
-    } catch (CloneNotSupportedException cnsx){
-      return null;
-    }
-  }
+	@Override
+	public abstract Fields clone();
 
-  public abstract boolean equals(Object o);
+	protected Fields cloneFields() {
+		try {
+			Fields f = (Fields) super.clone();
 
-  // <2do> not multi-attr aware yet
-  protected boolean compareAttrs(Fields f) {
-    if (fieldAttrs != null || f.fieldAttrs != null) {
-      if (!Misc.compare(fieldAttrs, f.fieldAttrs)) {
-        return false;
-      }
-    }
+			if (fieldAttrs != null) {
+				f.fieldAttrs = fieldAttrs.clone();
+			}
 
-    if (!ObjectList.equals(objectAttr, f.objectAttr)){
-      return false;
-    }
+			if (objectAttr != null) {
+				f.objectAttr = objectAttr; //
+			}
 
-    return true;
-  }
+			return f;
+		} catch (CloneNotSupportedException cnsx) {
+			return null;
+		}
+	}
 
-  // serialization interface
-  public abstract void appendTo(IntVector v);
+	@Override
+	public abstract boolean equals(Object o);
 
+	// <2do> not multi-attr aware yet
+	protected boolean compareAttrs(Fields f) {
+		if (fieldAttrs != null || f.fieldAttrs != null) {
+			if (!Misc.compare(fieldAttrs, f.fieldAttrs)) {
+				return false;
+			}
+		}
 
-  public int hashCode () {
-    HashData hd = new HashData();
-    hash(hd);
-    hashAttrs(hd);
-    return hd.getValue();
-  }
+		if (!ObjectList.equals(objectAttr, f.objectAttr)) {
+			return false;
+		}
 
-  public abstract void hash(HashData hd);
+		return true;
+	}
 
-  /**
-   * Adds some data to the computation of an hashcode.
-   */
-  public void hashAttrs (HashData hd) {
+	// serialization interface
+	public abstract void appendTo(IntVector v);
 
-    // it's debatable if we add the attributes to the state, but whatever it
-    // is, it should be kept consistent with the StackFrame.hash()
-    Object[] a = fieldAttrs;
-    if (a != null) {
-      for (int i=0, l=a.length; i < l; i++) {
-        ObjectList.hash(a[i], hd);
-      }
-    }
+	@Override
+	public int hashCode() {
+		HashData hd = new HashData();
+		hash(hd);
+		hashAttrs(hd);
+		return hd.getValue();
+	}
 
-    if (objectAttr != null){
-      ObjectList.hash(objectAttr, hd);
-    }
-  }
+	public abstract void hash(HashData hd);
 
+	/**
+	 * Adds some data to the computation of an hashcode.
+	 */
+	public void hashAttrs(HashData hd) {
 
-  // <2do> not multi-attr aware yet
-  public void copyAttrs(Fields other) {
-    if (other.fieldAttrs != null){
-      if (fieldAttrs == null){
-        fieldAttrs = other.fieldAttrs.clone();
-      } else {
-        System.arraycopy(other.fieldAttrs, 0, fieldAttrs, 0, fieldAttrs.length);
-      }
-    }
+		// it's debatable if we add the attributes to the state, but whatever it
+		// is, it should be kept consistent with the StackFrame.hash()
+		Object[] a = fieldAttrs;
+		if (a != null) {
+			for (int i = 0, l = a.length; i < l; i++) {
+				ObjectList.hash(a[i], hd);
+			}
+		}
 
-    objectAttr = other.objectAttr;
-  }
+		if (objectAttr != null) {
+			ObjectList.hash(objectAttr, hd);
+		}
+	}
+
+	// <2do> not multi-attr aware yet
+	public void copyAttrs(Fields other) {
+		if (other.fieldAttrs != null) {
+			if (fieldAttrs == null) {
+				fieldAttrs = other.fieldAttrs.clone();
+			} else {
+				System.arraycopy(other.fieldAttrs, 0, fieldAttrs, 0,
+						fieldAttrs.length);
+			}
+		}
+
+		objectAttr = other.objectAttr;
+	}
 }

@@ -32,81 +32,82 @@ import java.util.ListIterator;
  */
 public class InvocationCG extends ChoiceGeneratorBase<Invocation> {
 
-  protected List<Invocation> invokes;
-  protected Invocation cur;
-  protected ListIterator<Invocation> it;
-  
-  public InvocationCG (String id, List<Invocation> invokes){
-    super(id);
-    
-    this.invokes = invokes;
-    
-    it = invokes.listIterator();
-  }
-  
-  @Override
-  public void advance () {
-    cur = it.next();
-  }
+	protected List<Invocation> invokes;
+	protected Invocation cur;
+	protected ListIterator<Invocation> it;
 
-  @Override
-  public Class<Invocation> getChoiceType () {
-    return Invocation.class;
-  }
+	public InvocationCG(String id, List<Invocation> invokes) {
+		super(id);
 
-  @Override
-  public Invocation getNextChoice () {
-    return cur;
-  }
+		this.invokes = invokes;
 
-  @Override
-  public int getProcessedNumberOfChoices () {
-    return it.nextIndex();
-  }
+		it = invokes.listIterator();
+	}
 
-  @Override
-  public int getTotalNumberOfChoices () {
-    return invokes.size();
-  }
+	@Override
+	public void advance() {
+		cur = it.next();
+	}
 
-  @Override
-  public boolean hasMoreChoices () {
-    return it.hasNext();
-  }
+	@Override
+	public Class<Invocation> getChoiceType() {
+		return Invocation.class;
+	}
 
-  @Override
-  public ChoiceGenerator<Invocation> randomize () {
-    // <2do>
-    return this;
-  }
+	@Override
+	public Invocation getNextChoice() {
+		return cur;
+	}
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder(getClass().getName());
-    sb.append(" [");
-    int n = invokes.size();
-    for (int i=0; i<n; i++) {
-      if (i > 0) sb.append(',');
-      Invocation inv = invokes.get(i);
-      if (inv == cur) {
-        sb.append(MARKER);
-      }
-      sb.append(inv);
-    }
-    sb.append(']');
-    return sb.toString();
-  }
-  
-  public void printOn (PrintWriter pw) {
-    pw.print(toString());
-  }
-  
-  @Override
-  public void reset () {
-    cur = null;
-    it = invokes.listIterator();
+	@Override
+	public int getProcessedNumberOfChoices() {
+		return it.nextIndex();
+	}
 
-    isDone = false;
-  }
+	@Override
+	public int getTotalNumberOfChoices() {
+		return invokes.size();
+	}
+
+	@Override
+	public boolean hasMoreChoices() {
+		return it.hasNext();
+	}
+
+	@Override
+	public ChoiceGenerator<Invocation> randomize() {
+		// <2do>
+		return this;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder(getClass().getName());
+		sb.append(" [");
+		int n = invokes.size();
+		for (int i = 0; i < n; i++) {
+			if (i > 0)
+				sb.append(',');
+			Invocation inv = invokes.get(i);
+			if (inv == cur) {
+				sb.append(MARKER);
+			}
+			sb.append(inv);
+		}
+		sb.append(']');
+		return sb.toString();
+	}
+
+	public void printOn(PrintWriter pw) {
+		pw.print(toString());
+	}
+
+	@Override
+	public void reset() {
+		cur = null;
+		it = invokes.listIterator();
+
+		isDone = false;
+	}
 
 }

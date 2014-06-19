@@ -24,53 +24,56 @@ import gov.nasa.jpf.vm.ElementInfo;
 
 /**
  * a CG type adaptive, canonicalizing & filtering serializer that is an
- * under-approximation mostly aimed at finding data races and deadlocks in programs
- * with a large number of scheduling points (= thread choices)
- *
+ * under-approximation mostly aimed at finding data races and deadlocks in
+ * programs with a large number of scheduling points (= thread choices)
+ * 
  * This came to bear by accidentally discovering that JPF often seems to finds
- * concurrency defects by just serializing the thread states, their topmost stack
- * frames and the objects directly referenced from there.
- * For non-scheduling points, we just fall back to serializing statics, all thread
+ * concurrency defects by just serializing the thread states, their topmost
+ * stack frames and the objects directly referenced from there. For
+ * non-scheduling points, we just fall back to serializing statics, all thread
  * stacks and all the data reachable from there
  */
 public class AdaptiveSerializer extends CFSerializer {
 
-  boolean traverseObjects;
-  boolean isSchedulingPoint;
+	boolean traverseObjects;
+	boolean isSchedulingPoint;
 
-  @Override
-  protected void initReferenceQueue() {
-    super.initReferenceQueue();
-    traverseObjects = true;
+	@Override
+	protected void initReferenceQueue() {
+		super.initReferenceQueue();
+		traverseObjects = true;
 
-    ChoiceGenerator<?> nextCg = vm.getNextChoiceGenerator();
-    isSchedulingPoint = (nextCg != null) && nextCg.isSchedulingPoint();
-  }
+		ChoiceGenerator<?> nextCg = vm.getNextChoiceGenerator();
+		isSchedulingPoint = (nextCg != null) && nextCg.isSchedulingPoint();
+	}
 
-  @Override
-  protected void queueReference(ElementInfo ei){
-    if (traverseObjects){
-      refQueue.add(ei);
-    }
-  }
+	@Override
+	protected void queueReference(ElementInfo ei) {
+		if (traverseObjects) {
+			refQueue.add(ei);
+		}
+	}
 
-  @Override
-  protected void processReferenceQueue() {
-    if (isSchedulingPoint){
-      traverseObjects = false;
-    }
-    refQueue.process(this);
-  }
+	@Override
+	protected void processReferenceQueue() {
+		if (isSchedulingPoint) {
+			traverseObjects = false;
+		}
+		refQueue.process(this);
+	}
 
-  //@Override
-  protected void serializeClassLoaders(){
-    // for thread CGs we skip this - assuming that this is only relevant if there is
-    // a class object lock, which is covered by the thread lock info
-    if (!isSchedulingPoint){
-      // <2do> this seems too conservative - we should only serialize what is
-      // used from this thread, which can be collected at class load time
-      // by looking at GET/PUTSTATIC targets (and their superclasses)
-      super.serializeClassLoaders();
-    }
-  }
+	// @Override
+	@Override
+	protected void serializeClassLoaders() {
+		// for thread CGs we skip this - assuming that this is only relevant if
+		// there is
+		// a class object lock, which is covered by the thread lock info
+		if (!isSchedulingPoint) {
+			// <2do> this seems too conservative - we should only serialize what
+			// is
+			// used from this thread, which can be collected at class load time
+			// by looking at GET/PUTSTATIC targets (and their superclasses)
+			super.serializeClassLoaders();
+		}
+	}
 }

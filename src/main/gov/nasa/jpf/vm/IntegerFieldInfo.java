@@ -20,53 +20,57 @@ package gov.nasa.jpf.vm;
 
 import gov.nasa.jpf.JPFException;
 
-
-
 /**
  * type, name, mod info about integer fields
  */
 public class IntegerFieldInfo extends SingleSlotFieldInfo {
-  int init;
+	int init;
 
-  public IntegerFieldInfo (String name, int modifiers) {
-     super(name, "I", modifiers);
-  }
+	public IntegerFieldInfo(String name, int modifiers) {
+		super(name, "I", modifiers);
+	}
 
-  public void initialize (ElementInfo ei, ThreadInfo ti) {
-    ei.getFields().setIntValue( storageOffset, init);
-  }
+	@Override
+	public void initialize(ElementInfo ei, ThreadInfo ti) {
+		ei.getFields().setIntValue(storageOffset, init);
+	}
 
-  public void setConstantValue(Object constValue){
-    if (constValue instanceof Integer){
-      cv = constValue;
-      init = (Integer)constValue;
+	@Override
+	public void setConstantValue(Object constValue) {
+		if (constValue instanceof Integer) {
+			cv = constValue;
+			init = (Integer) constValue;
 
-    } else {
-      throw new JPFException("illegal int ConstValue=" + constValue);
-    }
-  }
+		} else {
+			throw new JPFException("illegal int ConstValue=" + constValue);
+		}
+	}
 
+	@Override
+	public Class<? extends ChoiceGenerator<?>> getChoiceGeneratorType() {
+		return IntChoiceGenerator.class;
+	}
 
-  public Class<? extends ChoiceGenerator<?>> getChoiceGeneratorType() {
-    return IntChoiceGenerator.class;
-  }
+	@Override
+	public String valueToString(Fields f) {
+		int i = f.getIntValue(storageOffset);
+		return Integer.toString(i);
+	}
 
-  public String valueToString (Fields f) {
-    int i = f.getIntValue(storageOffset);
-    return Integer.toString(i);
-  }
+	@Override
+	public Object getValueObject(Fields f) {
+		int i = f.getIntValue(storageOffset);
+		return new Integer(i);
+	}
 
-  public Object getValueObject (Fields f){
-    int i = f.getIntValue(storageOffset);
-    return new Integer(i);
-  }
+	@Override
+	public boolean isIntField() {
+		// booleans, byte, char and short are too
+		return true;
+	}
 
-  public boolean isIntField(){
-    // booleans, byte, char and short are too
-    return true;
-  }
-
-  public boolean isNumericField(){
-    return true;
-  }
+	@Override
+	public boolean isNumericField() {
+		return true;
+	}
 }

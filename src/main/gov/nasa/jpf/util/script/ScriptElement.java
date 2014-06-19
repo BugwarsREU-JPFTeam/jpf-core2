@@ -20,38 +20,39 @@
 package gov.nasa.jpf.util.script;
 
 public abstract class ScriptElement implements Cloneable {
-  protected ScriptElement parent;
-  protected ScriptElement nextSibling;
-  protected int line;
+	protected ScriptElement parent;
+	protected ScriptElement nextSibling;
+	protected int line;
 
-  ScriptElement (ScriptElement parent, int line){
-    this.parent = parent;
-    this.line = line;
-  }
+	ScriptElement(ScriptElement parent, int line) {
+		this.parent = parent;
+		this.line = line;
+	}
 
-  public ScriptElement getParent() {
-    return parent;
-  }
+	public ScriptElement getParent() {
+		return parent;
+	}
 
-  public int getLine() {
-    return line;
-  }
+	public int getLine() {
+		return line;
+	}
 
-  public ScriptElement getNextSibling() {
-    return nextSibling;
-  }
+	public ScriptElement getNextSibling() {
+		return nextSibling;
+	}
 
-  void setNextSibling(ScriptElement e) {
-    nextSibling = e;
-  }
+	void setNextSibling(ScriptElement e) {
+		nextSibling = e;
+	}
 
-  public ScriptElement clone() {
-    try {
-      return (ScriptElement) super.clone();
-    } catch (CloneNotSupportedException cnsx) {
-      return null;
-    }
-  }
+	@Override
+	public ScriptElement clone() {
+		try {
+			return (ScriptElement) super.clone();
+		} catch (CloneNotSupportedException cnsx) {
+			return null;
+		}
+	}
 
-  public abstract void process (ElementProcessor proc);
+	public abstract void process(ElementProcessor proc);
 }

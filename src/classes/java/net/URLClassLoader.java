@@ -30,96 +30,101 @@ import java.util.jar.Manifest;
 /**
  * @author Nastaran Shafiei <nastaran.shafiei@gmail.com>
  * 
- *  Model class for java.net.URLClassLoader
+ *         Model class for java.net.URLClassLoader
  */
 public class URLClassLoader extends SecureClassLoader {
 
-  private ArrayList<URL> urls = new ArrayList<URL>(0);
+	private ArrayList<URL> urls = new ArrayList<URL>(0);
 
-  public URLClassLoader(URL[] urls) {
-    super();
-    addURLs(urls);
-  }
+	public URLClassLoader(URL[] urls) {
+		super();
+		addURLs(urls);
+	}
 
-  public URLClassLoader(URL[] urls, ClassLoader parent) {
-    super(parent);
-    addURLs(urls);
-  }
+	public URLClassLoader(URL[] urls, ClassLoader parent) {
+		super(parent);
+		addURLs(urls);
+	}
 
-  private void addURLs(URL[] urls) {
-    for(URL url: urls) {
-      addURL(url);
-    }
-  }
+	private void addURLs(URL[] urls) {
+		for (URL url : urls) {
+			addURL(url);
+		}
+	}
 
-  private native void addURL0(String url);
+	private native void addURL0(String url);
 
-  protected void addURL(URL url) {
-    addURL0(url.toString());
-    urls.add(url);
-  }
+	protected void addURL(URL url) {
+		addURL0(url.toString());
+		urls.add(url);
+	}
 
-  protected native Class<?> findClass(final String name) throws ClassNotFoundException;
+	@Override
+	protected native Class<?> findClass(final String name)
+			throws ClassNotFoundException;
 
-  private native String findResource0 (String rname);
+	private native String findResource0(String rname);
 
-  public URL findResource(final String rname) {
-    URL url = null;
-    String path = findResource0(rname);
+	@Override
+	public URL findResource(final String rname) {
+		URL url = null;
+		String path = findResource0(rname);
 
-    try {
-      url = new URL(path);
-    } catch (MalformedURLException x){
-      url = null;
-    }
+		try {
+			url = new URL(path);
+		} catch (MalformedURLException x) {
+			url = null;
+		}
 
-    return url;
-  }
+		return url;
+	}
 
-  private native String[] findResources0 (String rname);
+	private native String[] findResources0(String rname);
 
-  public Enumeration<URL> findResources(String name) throws IOException {
-    String[] urls = findResources0(name);
-    Vector<URL> list = new Vector<URL>(0);
-    for(String url: urls) {
-      try {
-        list.add(new URL(url));
-      } catch (MalformedURLException x){
-        // process the rest
-      }
-    }
+	@Override
+	public Enumeration<URL> findResources(String name) throws IOException {
+		String[] urls = findResources0(name);
+		Vector<URL> list = new Vector<URL>(0);
+		for (String url : urls) {
+			try {
+				list.add(new URL(url));
+			} catch (MalformedURLException x) {
+				// process the rest
+			}
+		}
 
-    return list.elements();
-  }
+		return list.elements();
+	}
 
-  public URL[] getURLs() {
-    return urls.toArray(new URL[urls.size()]);
-  }
+	public URL[] getURLs() {
+		return urls.toArray(new URL[urls.size()]);
+	}
 
-  public static URLClassLoader newInstance(URL[] urls) {
-    return (new URLClassLoader(urls));
-  }
+	public static URLClassLoader newInstance(URL[] urls) {
+		return (new URLClassLoader(urls));
+	}
 
-  public static URLClassLoader newInstance(URL[] urls, ClassLoader parent) {
-    return (new URLClassLoader(urls, parent));
-  }
+	public static URLClassLoader newInstance(URL[] urls, ClassLoader parent) {
+		return (new URLClassLoader(urls, parent));
+	}
 
-  //--- unsupported methods
+	// --- unsupported methods
 
-  public URLClassLoader(URL[] urls, ClassLoader parent, URLStreamHandlerFactory factory) {
-    throw new UnsupportedOperationException();
-  }
+	public URLClassLoader(URL[] urls, ClassLoader parent,
+			URLStreamHandlerFactory factory) {
+		throw new UnsupportedOperationException();
+	}
 
-  public void close() throws IOException {
-    throw new UnsupportedOperationException();
-  }
+	public void close() throws IOException {
+		throw new UnsupportedOperationException();
+	}
 
-  protected Package definePackage(String name, Manifest man, URL url) 
-      throws IllegalArgumentException {
-    throw new UnsupportedOperationException();
-  }
+	protected Package definePackage(String name, Manifest man, URL url)
+			throws IllegalArgumentException {
+		throw new UnsupportedOperationException();
+	}
 
-  protected PermissionCollection getPermissions(CodeSource codesource) {
-    throw new UnsupportedOperationException();
-  }
+	protected PermissionCollection getPermissions(CodeSource codesource) {
+		throw new UnsupportedOperationException();
+	}
 }

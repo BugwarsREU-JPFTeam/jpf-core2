@@ -31,56 +31,68 @@ import java.net.URL;
  */
 public class Handler extends java.net.URLStreamHandler {
 
-  protected String proxy;
-  protected int proxyPort;
+	protected String proxy;
+	protected int proxyPort;
 
-  public Handler() {
-    proxy = null;
-    proxyPort = -1;
-  }
+	public Handler() {
+		proxy = null;
+		proxyPort = -1;
+	}
 
-  public Handler(String proxy, int port) {
-    this.proxy = proxy;
-    this.proxyPort = port;
-  }
+	public Handler(String proxy, int port) {
+		this.proxy = proxy;
+		this.proxyPort = port;
+	}
 
-  protected int getDefaultPort() {
-    return 80;
-  }
+	@Override
+	protected int getDefaultPort() {
+		return 80;
+	}
 
+	static Class<?>[] argTypes = { URL.class, Proxy.class };
 
-  static Class<?>[] argTypes = { URL.class, Proxy.class };
-  private native Class<? extends java.net.URLConnection> getConnectionClass(String url);
+	private native Class<? extends java.net.URLConnection> getConnectionClass(
+			String url);
 
-  
-  protected java.net.URLConnection openConnection (URL u, Proxy p) throws IOException {
+	@Override
+	protected java.net.URLConnection openConnection(URL u, Proxy p)
+			throws IOException {
 
-    Class<? extends java.net.URLConnection> clazz = getConnectionClass(u.toString());
+		Class<? extends java.net.URLConnection> clazz = getConnectionClass(u
+				.toString());
 
-    if (clazz != null){
-      try {
-        Constructor<? extends java.net.URLConnection> ctor = clazz.getConstructor(argTypes);
-        return ctor.newInstance(u, p);
+		if (clazz != null) {
+			try {
+				Constructor<? extends java.net.URLConnection> ctor = clazz
+						.getConstructor(argTypes);
+				return ctor.newInstance(u, p);
 
-      } catch (NoSuchMethodException nmx){
-        throw new IOException("connection class has no suitabe ctor: " + clazz.getName());
-      } catch (IllegalAccessException iax){
-        throw new IOException("connection class has no public ctor: " + clazz.getName());
-      } catch (InvocationTargetException itx){
-        throw new IOException("exception initializing URLConnection", itx);
-      } catch (InstantiationException ix){
-        throw new IOException("connection class cannot be instantiated: " + clazz.getName());
-      }
+			} catch (NoSuchMethodException nmx) {
+				throw new IOException("connection class has no suitabe ctor: "
+						+ clazz.getName());
+			} catch (IllegalAccessException iax) {
+				throw new IOException("connection class has no public ctor: "
+						+ clazz.getName());
+			} catch (InvocationTargetException itx) {
+				throw new IOException("exception initializing URLConnection",
+						itx);
+			} catch (InstantiationException ix) {
+				throw new IOException(
+						"connection class cannot be instantiated: "
+								+ clazz.getName());
+			}
 
-    } else {
-      // we just go with the standard thing, hoping that we have a modeled Socket layer
-      return new CachedROHttpConnection(u, p, this);
-    }
-  }
+		} else {
+			// we just go with the standard thing, hoping that we have a modeled
+			// Socket layer
+			return new CachedROHttpConnection(u, p, this);
+		}
+	}
 
-  protected java.net.URLConnection openConnection(URL u) throws IOException {
-    return openConnection(u, null);
-  }
+	@Override
+	protected java.net.URLConnection openConnection(URL u) throws IOException {
+		return openConnection(u, null);
+	}
 
-  //... and a lot of methods still missing
+	// ... and a lot of methods still missing
 }

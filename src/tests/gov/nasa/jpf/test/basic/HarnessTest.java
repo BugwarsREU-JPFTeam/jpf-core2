@@ -11,63 +11,69 @@ import org.junit.Test;
  */
 public class HarnessTest extends TestJPF {
 
-  int d;
+	int d;
 
-  @Test
-  public void noViolation() {
-    if (verifyNoPropertyViolation()) {
-      d += 42;
+	@Test
+	public void noViolation() {
+		if (verifyNoPropertyViolation()) {
+			d += 42;
 
-      System.out.println("** this is noViolation() - it should succeed");
-    }
-  }
+			System.out.println("** this is noViolation() - it should succeed");
+		}
+	}
 
-  @Test
-  public void verifyAssert() {
-    if (verifyAssertionErrorDetails("java.lang.AssertionError : wrong answer..")) {
-      System.out.println("** this is verifyAssert() - JPF should find an AssertionError");
+	@Test
+	public void verifyAssert() {
+		if (verifyAssertionErrorDetails("java.lang.AssertionError : wrong answer..")) {
+			System.out
+					.println("** this is verifyAssert() - JPF should find an AssertionError");
 
-      assert d == 42 : "wrong answer..";
-    }
-  }
+			assert d == 42 : "wrong answer..";
+		}
+	}
 
-  @Test
-  public void verifyNullPointerException() {
-    if (verifyUnhandledException("java.lang.NullPointerException")) {
-      System.out.println("** this is verifyNullPointerException() - JPF should find an NPE");
+	@Test
+	public void verifyNullPointerException() {
+		if (verifyUnhandledException("java.lang.NullPointerException")) {
+			System.out
+					.println("** this is verifyNullPointerException() - JPF should find an NPE");
 
-      String s = null;
+			String s = null;
 
-      s.length();
-    }
-  }
+			s.length();
+		}
+	}
 
-  @Test
-  public void verifyRuntimeException() {
-    if (verifyPropertyViolation(new TypeRef("gov.nasa.jpf.vm.NoUncaughtExceptionsProperty"))) {
-      System.out.println("** this is verifyRuntimeException() - JPF should find an unhandled exception");
+	@Test
+	public void verifyRuntimeException() {
+		if (verifyPropertyViolation(new TypeRef(
+				"gov.nasa.jpf.vm.NoUncaughtExceptionsProperty"))) {
+			System.out
+					.println("** this is verifyRuntimeException() - JPF should find an unhandled exception");
 
-      throw new RuntimeException("Bang!");
-    }
-  }
+			throw new RuntimeException("Bang!");
+		}
+	}
 
-  @Test
-  public void verifyJPFExcept() {
-    if (verifyJPFException(new TypeRef("gov.nasa.jpf.JPFConfigException"), "+vm.class=InvalidVMClass", "+pass_exceptions")) {
-      fail("** JPF should not run");
-    }
-  }
+	@Test
+	public void verifyJPFExcept() {
+		if (verifyJPFException(new TypeRef("gov.nasa.jpf.JPFConfigException"),
+				"+vm.class=InvalidVMClass", "+pass_exceptions")) {
+			fail("** JPF should not run");
+		}
+	}
 
-  // low level TestJPF API test
-  @Test
-  public void testLowLevelAPI() {
-    
-    JPF jpf = noPropertyViolation();
+	// low level TestJPF API test
+	@Test
+	public void testLowLevelAPI() {
 
-    if (jpf == null) {
-      System.out.println("** this is low level API test - it should succeed");
-    } else {
-      assert jpf.getSearchErrors().isEmpty() : "unexpected JPF search errors";
-    }
-  }
+		JPF jpf = noPropertyViolation();
+
+		if (jpf == null) {
+			System.out
+					.println("** this is low level API test - it should succeed");
+		} else {
+			assert jpf.getSearchErrors().isEmpty() : "unexpected JPF search errors";
+		}
+	}
 }

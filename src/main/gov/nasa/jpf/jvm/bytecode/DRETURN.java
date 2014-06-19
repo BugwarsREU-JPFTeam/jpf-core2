@@ -22,36 +22,37 @@ import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.Types;
 
-
 /**
- * Return double from method
- * ..., value => [empty]
+ * Return double from method ..., value => [empty]
  */
 public class DRETURN extends LongReturn {
-  
 
-  public double getReturnValue() {
-    return Types.longToDouble(ret);
-  }
+	public double getReturnValue() {
+		return Types.longToDouble(ret);
+	}
 
-  public Object getReturnValue(ThreadInfo ti) {
-    if (!isCompleted(ti)) { // we have to pull it from the operand stack
-      StackFrame frame = ti.getTopFrame();
-      ret = frame.peekLong();
-    }
+	@Override
+	public Object getReturnValue(ThreadInfo ti) {
+		if (!isCompleted(ti)) { // we have to pull it from the operand stack
+			StackFrame frame = ti.getTopFrame();
+			ret = frame.peekLong();
+		}
 
-    return new Double(Types.longToDouble(ret));
-  }
+		return new Double(Types.longToDouble(ret));
+	}
 
-  public int getByteCode () {
-    return 0xAF;
-  }
+	@Override
+	public int getByteCode() {
+		return 0xAF;
+	}
 
-  public String toString() {
-    return "dreturn " + mi.getFullName();
-  }
+	@Override
+	public String toString() {
+		return "dreturn " + mi.getFullName();
+	}
 
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

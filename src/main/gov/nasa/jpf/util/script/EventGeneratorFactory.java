@@ -14,268 +14,290 @@ import java.util.LinkedHashMap;
 
 /**
  * abstract root for backtrackable event generator factories
- *
- * <2do> - we don't support backtracking for sections yet! needs to be implemented for
- * state charts
+ * 
+ * <2do> - we don't support backtracking for sections yet! needs to be
+ * implemented for state charts
  */
-public abstract class EventGeneratorFactory extends ListenerAdapter
-                                         implements ElementProcessor, Iterable<EventGenerator> {
+public abstract class EventGeneratorFactory extends ListenerAdapter implements
+		ElementProcessor, Iterable<EventGenerator> {
 
-  static final String DEFAULT = "default";
+	static final String DEFAULT = "default";
 
-  // helper class to store our internal state. For a simple script based system,
-  // storing the 'cur' index (into the queue) would do, but the queue might have been
-  // generated dynamically, so we need some container to store both
-  static class Memento {
-    ArrayList<EventGenerator> queue;
-    int cur; // cursor into queue
+	// helper class to store our internal state. For a simple script based
+	// system,
+	// storing the 'cur' index (into the queue) would do, but the queue might
+	// have been
+	// generated dynamically, so we need some container to store both
+	static class Memento {
+		ArrayList<EventGenerator> queue;
+		int cur; // cursor into queue
 
-    Memento (EventGeneratorFactory fact) {
-      queue = fact.queue;
-      cur = fact.cur;
-    }
+		Memento(EventGeneratorFactory fact) {
+			queue = fact.queue;
+			cur = fact.cur;
+		}
 
-    void restore (EventGeneratorFactory fact) {
-      fact.queue = queue;
-      fact.cur = cur;
-    }
-  }
+		void restore(EventGeneratorFactory fact) {
+			fact.queue = queue;
+			fact.cur = cur;
+		}
+	}
 
+	// <2do> this is lame - if we really want 'instructions' in the queue,
+	// rather
+	// than data (== CGs), then we should have a queue of general EventOp
+	// entries
+	// this is only used for unbounded REPEATs so far
+	// <2do> the nextCG is currently unconditionally reset in
+	// getNextChoiceGenerator()
+	// so we have to make sure we don't jump back if the jump target state was
+	// already
+	// visited, which we have to store in the Jump
+	static class Loop extends EventGenerator {
 
-  // <2do> this is lame - if we really want 'instructions' in the queue, rather
-  // than data (== CGs), then we should have a queue of general EventOp entries
-  // this is only used for unbounded REPEATs so far
-  // <2do> the nextCG is currently unconditionally reset in getNextChoiceGenerator()
-  // so we have to make sure we don't jump back if the jump target state was already
-  // visited, which we have to store in the Jump
-  static class Loop extends EventGenerator {
+		int startPos, endPos;
 
-    int startPos, endPos;
+		Loop(String id, int startPos, int endPos) {
+			super(id);
 
-    Loop (String id, int startPos,  int endPos){
-      super(id);
-      
-      this.startPos = startPos;
-      this.endPos = endPos;
-    }
+			this.startPos = startPos;
+			this.endPos = endPos;
+		}
 
-    int getStartPos() {
-      return startPos;
-    }
+		int getStartPos() {
+			return startPos;
+		}
 
-    //--- those are all dummies - this isn't really a choice
-    public void advance() {}
+		// --- those are all dummies - this isn't really a choice
+		@Override
+		public void advance() {
+		}
 
-    public Class getChoiceType() {
-      return null;
-    }
+		@Override
+		public Class getChoiceType() {
+			return null;
+		}
 
-    public Object getNextChoice() {
-      return null;
-    }
+		@Override
+		public Object getNextChoice() {
+			return null;
+		}
 
-    public int getProcessedNumberOfChoices() {
-      return 0;
-    }
+		@Override
+		public int getProcessedNumberOfChoices() {
+			return 0;
+		}
 
-    public int getTotalNumberOfChoices() {
-      return 0;
-    }
+		@Override
+		public int getTotalNumberOfChoices() {
+			return 0;
+		}
 
-    public boolean hasMoreChoices() {
-      return false;
-    }
+		@Override
+		public boolean hasMoreChoices() {
+			return false;
+		}
 
-    public ChoiceGenerator randomize() {
-      return null;
-    }
+		@Override
+		public ChoiceGenerator randomize() {
+			return null;
+		}
 
-    public void reset() {}
+		@Override
+		public void reset() {
+		}
 
-  }
+	}
 
-  /** the last returned position in the generator stream */
-  protected int cur;
+	/** the last returned position in the generator stream */
+	protected int cur;
 
-  /** this is where we store the cur positions for backtracking and restoring states */
-  DynamicObjectArray<Memento> states;
+	/**
+	 * this is where we store the cur positions for backtracking and restoring
+	 * states
+	 */
+	DynamicObjectArray<Memento> states;
 
-  protected String scriptFileName;
-  protected Script script;
-  protected Config conf;
+	protected String scriptFileName;
+	protected Script script;
+	protected Config conf;
 
-  protected LinkedHashMap<String,ArrayList<EventGenerator>> sections;
-  protected ArrayList<EventGenerator> queue;
+	protected LinkedHashMap<String, ArrayList<EventGenerator>> sections;
+	protected ArrayList<EventGenerator> queue;
 
-  EventFactory efact;
+	EventFactory efact;
 
-  protected EventGeneratorFactory () {
-    efact = null;
-  }
+	protected EventGeneratorFactory() {
+		efact = null;
+	}
 
-  protected EventGeneratorFactory (EventFactory efact) {
-    this.efact = efact;
-  }
+	protected EventGeneratorFactory(EventFactory efact) {
+		this.efact = efact;
+	}
 
-  protected void init (String fname) throws ESParser.Exception {
-    cur = 0;
-    states = new DynamicObjectArray<Memento>();
+	protected void init(String fname) throws ESParser.Exception {
+		cur = 0;
+		states = new DynamicObjectArray<Memento>();
 
-    sections = new LinkedHashMap<String,ArrayList<EventGenerator>>();
-    queue = new ArrayList<EventGenerator>();
-    sections.put(DEFAULT, queue);
+		sections = new LinkedHashMap<String, ArrayList<EventGenerator>>();
+		queue = new ArrayList<EventGenerator>();
+		sections.put(DEFAULT, queue);
 
-    ESParser parser= new ESParser(fname, efact);
-    script = parser.parse();
-    scriptFileName = fname;
+		ESParser parser = new ESParser(fname, efact);
+		script = parser.parse();
+		scriptFileName = fname;
 
-    script.process(this);
-  }
+		script.process(this);
+	}
 
-  public Iterator<EventGenerator> iterator() {
-    return queue.iterator();
-  }
+	@Override
+	public Iterator<EventGenerator> iterator() {
+		return queue.iterator();
+	}
 
-  protected void addLoop (int startPos) {
-    queue.add( new Loop( "loop", startPos, queue.size()-1));
-  }
+	protected void addLoop(int startPos) {
+		queue.add(new Loop("loop", startPos, queue.size() - 1));
+	}
 
-  public abstract Class<?> getEventType();
+	public abstract Class<?> getEventType();
 
-  /**
-   * reset the enumeration state of this factory
-   */
-  public void reset () {
-    cur = 0;
-  }
+	/**
+	 * reset the enumeration state of this factory
+	 */
+	public void reset() {
+		cur = 0;
+	}
 
-  public String getScriptFileName() {
-    return scriptFileName;
-  }
+	public String getScriptFileName() {
+		return scriptFileName;
+	}
 
-  public Script getScript() {
-    return script;
-  }
+	public Script getScript() {
+		return script;
+	}
 
-  public boolean hasSection (String id) {
-    return sections.containsKey(id);
-  }
+	public boolean hasSection(String id) {
+		return sections.containsKey(id);
+	}
 
-  public ArrayList<EventGenerator> getSection (String id) {
-    return sections.get(id);
-  }
+	public ArrayList<EventGenerator> getSection(String id) {
+		return sections.get(id);
+	}
 
-  public ArrayList<EventGenerator> getDefaultSection () {
-    return sections.get(DEFAULT);
-  }
+	public ArrayList<EventGenerator> getDefaultSection() {
+		return sections.get(DEFAULT);
+	}
 
-  protected void setQueue (ArrayList<EventGenerator> q) {
-    if (queue != q) {
-      queue = q;
-      cur = 0;
-    }
-  }
+	protected void setQueue(ArrayList<EventGenerator> q) {
+		if (queue != q) {
+			queue = q;
+			cur = 0;
+		}
+	}
 
-  protected EventGenerator getNextEventGenerator() {
-    EventGenerator cg;
-    int n = queue.size();
+	protected EventGenerator getNextEventGenerator() {
+		EventGenerator cg;
+		int n = queue.size();
 
-    if (n == 0) {
-      return null; // nothing to do
-    }
+		if (n == 0) {
+			return null; // nothing to do
+		}
 
-    if (cur < n) {
-      cg = getQueueItem(cur); // might clone the queue item
+		if (cur < n) {
+			cg = getQueueItem(cur); // might clone the queue item
 
-      // <2do> - this is a BAD hot fix, but it's going away soon!
-      if (cg instanceof Loop) {
-        int tgtPos = ((Loop)cg).getStartPos();
-        cg = queue.get(tgtPos);
+			// <2do> - this is a BAD hot fix, but it's going away soon!
+			if (cg instanceof Loop) {
+				int tgtPos = ((Loop) cg).getStartPos();
+				cg = queue.get(tgtPos);
 
-        if (!cg.hasMoreChoices()) {
-          for (int i=tgtPos; i<cur; i++) {
-            queue.get(i).reset();
-          }
-        }
+				if (!cg.hasMoreChoices()) {
+					for (int i = tgtPos; i < cur; i++) {
+						queue.get(i).reset();
+					}
+				}
 
-        cur = tgtPos;
-      }
+				cur = tgtPos;
+			}
 
-      cg.setId(Integer.toString(cur));
+			cg.setId(Integer.toString(cur));
 
-      // might be reused if we re-enter a section sequence or REPEAT body, so we have to reset
-      // <2do> - commenting this out leads to premature state matching on model loops
-      // (will be fixed by the revamped environment modeling)
-      //cg.reset();
+			// might be reused if we re-enter a section sequence or REPEAT body,
+			// so we have to reset
+			// <2do> - commenting this out leads to premature state matching on
+			// model loops
+			// (will be fixed by the revamped environment modeling)
+			// cg.reset();
 
-      cur++;
-      return cg;
+			cur++;
+			return cg;
 
-    } else {
-      return null; // nothing left
-    }
-  }
+		} else {
+			return null; // nothing left
+		}
+	}
 
-  // we encapsulate this because it might require cloning
-  protected EventGenerator getQueueItem (int i) {
-    return queue.get(i);
-  }
+	// we encapsulate this because it might require cloning
+	protected EventGenerator getQueueItem(int i) {
+		return queue.get(i);
+	}
 
+	public int getTotalNumberOfEvents() {
+		int total = 0;
+		int last = 1;
 
-  public int getTotalNumberOfEvents() {
-    int total=0;
-    int last = 1;
+		for (EventGenerator cg : queue) {
+			int level = cg.getTotalNumberOfChoices() * last;
+			total += level;
+			last = level;
+		}
 
-    for (EventGenerator cg : queue) {
-       int level = cg.getTotalNumberOfChoices() * last;
-       total += level;
-       last = level;
-    }
+		return total;
+	}
 
-    return total;
-  }
+	public void printOn(PrintWriter pw) {
+		for (EventGenerator eg : queue) {
+			pw.println(eg);
+		}
+	}
 
-  public void printOn (PrintWriter pw) {
-    for (EventGenerator eg : queue) {
-      pw.println(eg);
-    }
-  }
+	/************************************** SearchListener interface **************/
+	/*
+	 * we need this after a backtrack and restore to determine the next CG to
+	 * return
+	 */
 
-  /************************************** SearchListener interface **************/
-  /* we need this after a backtrack and restore to determine the next CG to return
-   */
+	@Override
+	public void searchStarted(Search search) {
+		cur = 0;
+	}
 
-  @Override
-  public void searchStarted (Search search) {
-    cur = 0;
-  }
+	@Override
+	public void stateAdvanced(Search search) {
+		int idx = search.getStateId();
 
-  @Override
-  public void stateAdvanced (Search search) {
-    int idx = search.getStateId();
+		if (idx >= 0) { // <??> why would it be notified for the init state?
+			Memento m = new Memento(this);
+			states.set(idx, m);
+		}
+	}
 
-    if (idx >= 0) { // <??> why would it be notified for the init state?
-      Memento m = new Memento(this);
-      states.set(idx, m);
-    }
-  }
+	@Override
+	public void stateBacktracked(Search search) {
+		Memento m = states.get(search.getStateId());
+		m.restore(this);
+		// nextCg will be re-computed (->getNext), so there is no need to reset
+	}
 
-  @Override
-  public void stateBacktracked (Search search) {
-    Memento m = states.get(search.getStateId());
-    m.restore(this);
-    // nextCg will be re-computed (->getNext), so there is no need to reset
-  }
+	@Override
+	public void stateRestored(Search search) {
+		Memento m = states.get(search.getStateId());
+		m.restore(this);
 
-  @Override
-  public void stateRestored (Search search) {
-    Memento m = states.get(search.getStateId());
-    m.restore(this);
-
-    // nextCg is restored (not re-computed), so we need to reset
-    SystemState ss = search.getVM().getSystemState();
-    ChoiceGenerator cgNext = ss.getNextChoiceGenerator();
-    cgNext.reset();
-  }
+		// nextCg is restored (not re-computed), so we need to reset
+		SystemState ss = search.getVM().getSystemState();
+		ChoiceGenerator cgNext = ss.getNextChoiceGenerator();
+		cgNext.reset();
+	}
 
 }

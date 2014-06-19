@@ -27,58 +27,59 @@ import gov.nasa.jpf.util.test.TestJPF;
  */
 public class ClinitTest extends TestJPF {
 
-  static class X {
-    static int x;
-    static {
-      System.out.println("initializing X from " + Thread.currentThread());
-      assertTrue( x == 0);
-      x++;
-    }
-  }
-  
-  @Test
-  public void testNoConcurrentClinit () {
-    if (verifyNoPropertyViolation()) {
-   
-      Runnable r = new Runnable() {
-        public void run() {
-          int x = X.x;
-        }
-      };
-      Thread t = new Thread(r);
-      t.start();
-      
-      int x = X.x;
-      assertTrue( x == 1);
-    }
-  }
-  
-  
-  static class Y {
-    static long y;
-    
-    static {
-      Thread t = Thread.currentThread();
-      System.out.println("initializing Y from " + t);
-      y = t.getId();
-    }
-  }
-  
-  @Test
-  public void testClinitChoices() {
-    if (verifyAssertionErrorDetails("gotcha")) {
-      Runnable r = new Runnable() {
-        public void run() {
-          long y = Y.y;
-        }
-      };
-      Thread t = new Thread(r);
-      t.start();
-      
-      long y = Y.y;
-      Thread tCur = Thread.currentThread();
-      System.out.println("testing Y.y from " + tCur);
-      assertTrue( "gotcha", y == tCur.getId());
-    }
-  }
+	static class X {
+		static int x;
+		static {
+			System.out.println("initializing X from " + Thread.currentThread());
+			assertTrue(x == 0);
+			x++;
+		}
+	}
+
+	@Test
+	public void testNoConcurrentClinit() {
+		if (verifyNoPropertyViolation()) {
+
+			Runnable r = new Runnable() {
+				@Override
+				public void run() {
+					int x = X.x;
+				}
+			};
+			Thread t = new Thread(r);
+			t.start();
+
+			int x = X.x;
+			assertTrue(x == 1);
+		}
+	}
+
+	static class Y {
+		static long y;
+
+		static {
+			Thread t = Thread.currentThread();
+			System.out.println("initializing Y from " + t);
+			y = t.getId();
+		}
+	}
+
+	@Test
+	public void testClinitChoices() {
+		if (verifyAssertionErrorDetails("gotcha")) {
+			Runnable r = new Runnable() {
+				@Override
+				public void run() {
+					long y = Y.y;
+				}
+			};
+			Thread t = new Thread(r);
+			t.start();
+
+			long y = Y.y;
+			Thread tCur = Thread.currentThread();
+			System.out.println("testing Y.y from " + tCur);
+			assertTrue("gotcha", y == tCur.getId());
+		}
+	}
 }

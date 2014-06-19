@@ -33,65 +33,70 @@ import org.junit.Test;
  */
 public class AnnotationInfoTest extends TestJPF {
 
-  @interface X {
-    String value() default "nothing";
-  }
+	@interface X {
+		String value() default "nothing";
+	}
 
-  @interface Y {
-    String name();
-    int[] someArray() default { 1, 2, 3 };
-  }
+	@interface Y {
+		String name();
 
-  protected AnnotationInfo createAnnotationInfo (String annotationName) throws ClassParseException {
-    DirClassFileContainer dfc = new DirClassFileContainer( new File("build/tests"));
-    ClassPath cp = new ClassPath();
-    cp.addClassFileContainer(dfc);
-    
-    JVMClassFileContainer.JVMClassFileMatch match = (JVMClassFileContainer.JVMClassFileMatch)cp.findMatch( annotationName);
-    byte[] data = match.getData();
-    
-    ClassFile cf = new ClassFile( data);
-    JVMAnnotationParser parser = new JVMAnnotationParser(cf);
-    
-    return new AnnotationInfo( annotationName, null, parser);
-  }
-  
-  @Test
-  public void testStringDefaultValue() {
-    try {
-      String annotationName = "gov.nasa.jpf.vm.AnnotationInfoTest$X";
-      
-      AnnotationInfo ai = createAnnotationInfo(annotationName);
-      AnnotationInfo.Entry[] entries = ai.getEntries();
-      
-      assertTrue(entries.length == 1);
-      assertTrue(entries[0].getKey().equals("value"));
-      assertTrue(entries[0].getValue().equals("nothing"));
-    
-    } catch (Throwable t){
-      t.printStackTrace();
-      fail("unexpected exception: " + t);
-    }
-  }
+		int[] someArray() default { 1, 2, 3 };
+	}
 
-  @Test
-  public void testIntArrayDefaultValue() {
-    try {
-      String annotationName = "gov.nasa.jpf.vm.AnnotationInfoTest$Y";
-      
-      AnnotationInfo ai = createAnnotationInfo(annotationName);
-      AnnotationInfo.Entry[] entries = ai.getEntries();
+	protected AnnotationInfo createAnnotationInfo(String annotationName)
+			throws ClassParseException {
+		DirClassFileContainer dfc = new DirClassFileContainer(new File(
+				"build/tests"));
+		ClassPath cp = new ClassPath();
+		cp.addClassFileContainer(dfc);
 
-      assertTrue(entries.length == 2);
-      assertTrue(entries[1].getKey().equals("someArray"));
+		JVMClassFileContainer.JVMClassFileMatch match = (JVMClassFileContainer.JVMClassFileMatch) cp
+				.findMatch(annotationName);
+		byte[] data = match.getData();
 
-      Object[] a = (Object[]) entries[1].getValue();
-      assertTrue(a.length == 3);
-      assertTrue((Integer)a[0] == 1 && (Integer)a[1] == 2 && (Integer)a[2] == 3);
-      
-    } catch (Throwable t){
-      t.printStackTrace();
-      fail("unexpected exception: " + t);
-    }
-  }
+		ClassFile cf = new ClassFile(data);
+		JVMAnnotationParser parser = new JVMAnnotationParser(cf);
+
+		return new AnnotationInfo(annotationName, null, parser);
+	}
+
+	@Test
+	public void testStringDefaultValue() {
+		try {
+			String annotationName = "gov.nasa.jpf.vm.AnnotationInfoTest$X";
+
+			AnnotationInfo ai = createAnnotationInfo(annotationName);
+			AnnotationInfo.Entry[] entries = ai.getEntries();
+
+			assertTrue(entries.length == 1);
+			assertTrue(entries[0].getKey().equals("value"));
+			assertTrue(entries[0].getValue().equals("nothing"));
+
+		} catch (Throwable t) {
+			t.printStackTrace();
+			fail("unexpected exception: " + t);
+		}
+	}
+
+	@Test
+	public void testIntArrayDefaultValue() {
+		try {
+			String annotationName = "gov.nasa.jpf.vm.AnnotationInfoTest$Y";
+
+			AnnotationInfo ai = createAnnotationInfo(annotationName);
+			AnnotationInfo.Entry[] entries = ai.getEntries();
+
+			assertTrue(entries.length == 2);
+			assertTrue(entries[1].getKey().equals("someArray"));
+
+			Object[] a = (Object[]) entries[1].getValue();
+			assertTrue(a.length == 3);
+			assertTrue((Integer) a[0] == 1 && (Integer) a[1] == 2
+					&& (Integer) a[2] == 3);
+
+		} catch (Throwable t) {
+			t.printStackTrace();
+			fail("unexpected exception: " + t);
+		}
+	}
 }

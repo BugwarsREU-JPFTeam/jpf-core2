@@ -18,37 +18,38 @@
 //
 package gov.nasa.jpf.jvm.bytecode;
 
-
 /**
- * Push item from runtime constant pool (wide index)
- * ... => ..., value
+ * Push item from runtime constant pool (wide index) ... => ..., value
  */
 public class LDC_W extends LDC {
 
-  public LDC_W() {}
+	public LDC_W() {
+	}
 
-  public LDC_W (String s, boolean isClass){
-    super(s,isClass);
-  }
+	public LDC_W(String s, boolean isClass) {
+		super(s, isClass);
+	}
 
-  public LDC_W (int v){
-    super(v);
-  }
+	public LDC_W(int v) {
+		super(v);
+	}
 
-  public LDC_W (float f){
-    super(f);
-  }
+	public LDC_W(float f) {
+		super(f);
+	}
 
+	@Override
+	public int getLength() {
+		return 3; // opcode, index1, index2
+	}
 
-  public int getLength() {
-    return 3; // opcode, index1, index2
-  }
+	@Override
+	public int getByteCode() {
+		return 0x13;
+	}
 
-  public int getByteCode () {
-    return 0x13;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

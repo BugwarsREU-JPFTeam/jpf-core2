@@ -29,106 +29,107 @@ import org.junit.Test;
  */
 public class SemaphoreTest extends TestJPF {
 
-  //--- test methods
+	// --- test methods
 
-  static final int MAX = 1;
-  static final Semaphore avail = new Semaphore(MAX, true);
-  static Resource[] items = new Resource[MAX];
-  static boolean[] isUsed = new boolean[MAX];
-  static final Object lock = new Object();
+	static final int MAX = 1;
+	static final Semaphore avail = new Semaphore(MAX, true);
+	static Resource[] items = new Resource[MAX];
+	static boolean[] isUsed = new boolean[MAX];
+	static final Object lock = new Object();
 
+	static {
+		for (int i = 0; i < items.length; i++) {
+			items[i] = new Resource(i);
+		}
+	}
 
-  static {
-    for (int i = 0; i < items.length; i++) {
-      items[i] = new Resource(i);
-    }
-  }
+	static class Resource {
 
-  static class Resource {
+		String id;
+		String user;
 
-    String id;
-    String user;
+		Resource(int id) {
+			this.id = "Resource-" + id;
+		}
 
-    Resource(int id) {
-      this.id = "Resource-" + id;
-    }
+		public void use(String newUser) {
+			assert user == null : "resource " + id + " in use by " + user
+					+ ", but attempted to be acquired by: " + newUser;
+			user = newUser;
+		}
 
-    public void use(String newUser) {
-      assert user == null : "resource " + id + " in use by " + user +
-              ", but attempted to be acquired by: " + newUser;
-      user = newUser;
-    }
+		public void release() {
+			user = null;
+		}
 
-    public void release() {
-      user = null;
-    }
+		@Override
+		public String toString() {
+			return id;
+		}
+	}
 
-    public String toString() {
-      return id;
-    }
-  }
+	public static Resource getItem() throws InterruptedException {
+		avail.acquire();
 
-  public static Resource getItem() throws InterruptedException {
-    avail.acquire();
+		synchronized (lock) {
+			for (int i = 0; i < MAX; i++) {
+				if (!isUsed[i]) {
+					isUsed[i] = true;
+					return items[i];
+				}
+			}
+		}
+		assert false : "couldn't find unused resource";
+		return null;
+	}
 
-    synchronized (lock) {
-      for (int i = 0; i < MAX; i++) {
-        if (!isUsed[i]) {
-          isUsed[i] = true;
-          return items[i];
-        }
-      }
-    }
-    assert false : "couldn't find unused resource";
-    return null;
-  }
+	public static void putItem(Resource o) {
+		synchronized (lock) {
+			for (int i = 0; i < MAX; i++) {
+				if (items[i] == o) {
+					if (isUsed[i]) {
+						isUsed[i] = false;
+						avail.release();
+					}
+					break;
+				}
+			}
+		}
+	}
 
-  public static void putItem(Resource o) {
-    synchronized (lock) {
-      for (int i = 0; i < MAX; i++) {
-        if (items[i] == o) {
-          if (isUsed[i]) {
-            isUsed[i] = false;
-            avail.release();
-          }
-          break;
-        }
-      }
-    }
-  }
+	static class Client implements Runnable {
 
-  static class Client implements Runnable {
+		@Override
+		public void run() {
+			String id = Thread.currentThread().getName();
 
-    public void run() {
-      String id = Thread.currentThread().getName();
+			try {
+				System.out.println(id + " acquiring resource..");
+				Resource r = SemaphoreTest.getItem();
+				System.out.println(id + " got resource: " + r);
 
-      try {
-        System.out.println(id + " acquiring resource..");
-        Resource r = SemaphoreTest.getItem();
-        System.out.println(id + " got resource: " + r);
+				r.use(id);
+				// .. more stuff here
+				r.release();
 
-        r.use(id);
-        //.. more stuff here
-        r.release();
+				System.out.println(id + " releasing resource: " + r);
+				SemaphoreTest.putItem(r);
+				System.out.println(id + " released");
 
-        System.out.println(id + " releasing resource: " + r);
-        SemaphoreTest.putItem(r);
-        System.out.println(id + " released");
+			} catch (InterruptedException ix) {
+				System.out.println("!! INTERRUPTED");
+			}
+		}
+	}
 
-      } catch (InterruptedException ix) {
-        System.out.println("!! INTERRUPTED");
-      }
-    }
-  }
-
-  //--------------- the test cases
-  @Test
-  public void testResourceAcquisition() {
-    if (verifyNoPropertyViolation()) {
-      for (int i = 0; i <= MAX; i++) {
-        Thread t = new Thread(new Client());
-        t.start();
-      }
-    }
-  }
+	// --------------- the test cases
+	@Test
+	public void testResourceAcquisition() {
+		if (verifyNoPropertyViolation()) {
+			for (int i = 0; i <= MAX; i++) {
+				Thread t = new Thread(new Client());
+				t.start();
+			}
+		}
+	}
 }

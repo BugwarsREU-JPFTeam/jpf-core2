@@ -18,63 +18,64 @@
 //
 package gov.nasa.jpf.search;
 
-
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.vm.VM;
 
-
 /**
- * this is a straight execution pseudo-search - it doesn't search at
- * all (i.e. it doesn't backtrack), but just behaves like a 'normal' VM,
- * going forward() until there is no next state
- *
- * <2do> of course it doesn't quite behave like a normal VM, since it
- * doesn't honor thread priorities yet (needs a special scheduler)
- *
- * <2do> it's not really clear to me how this differs from a 'PathSearch'
- * other than using a different scheduler. Looks like there should be just one
- *
+ * this is a straight execution pseudo-search - it doesn't search at all (i.e.
+ * it doesn't backtrack), but just behaves like a 'normal' VM, going forward()
+ * until there is no next state
+ * 
+ * <2do> of course it doesn't quite behave like a normal VM, since it doesn't
+ * honor thread priorities yet (needs a special scheduler)
+ * 
+ * <2do> it's not really clear to me how this differs from a 'PathSearch' other
+ * than using a different scheduler. Looks like there should be just one
+ * 
  * <2do> this needs to be updated & tested
- *
+ * 
  */
 public class Simulation extends Search {
-  
-  public Simulation (Config config, VM vm) {
-    super(config, vm);
-  }
 
-  public void search () {
-    int    depth = 0;
+	public Simulation(Config config, VM vm) {
+		super(config, vm);
+	}
 
-    depth++;
+	@Override
+	public void search() {
+		int depth = 0;
 
-    if (hasPropertyTermination()) {
-      return;
-    }
+		depth++;
 
-    notifySearchStarted();
-    
-    while (!done) {
-      if (forward()) {
+		if (hasPropertyTermination()) {
+			return;
+		}
 
-        if (currentError != null){
-          notifyPropertyViolated();
+		notifySearchStarted();
 
-          if (hasPropertyTermination()) {
-            return;
-          }
-        }
+		while (!done) {
+			if (forward()) {
 
-        depth++;
+				if (currentError != null) {
+					notifyPropertyViolated();
 
-      } else { // no next state
+					if (hasPropertyTermination()) {
+						return;
+					}
+				}
 
-        // <2do> we could check for more things here. If the last insn wasn't
-        // the main return, or a System.exit() call, we could flag a JPFException
-        checkPropertyViolation();
-        done = true;
-      }
-    }
-    notifySearchFinished();
-  }
+				depth++;
+
+			} else { // no next state
+
+				// <2do> we could check for more things here. If the last insn
+				// wasn't
+				// the main return, or a System.exit() call, we could flag a
+				// JPFException
+				checkPropertyViolation();
+				done = true;
+			}
+		}
+		notifySearchFinished();
+	}
 }

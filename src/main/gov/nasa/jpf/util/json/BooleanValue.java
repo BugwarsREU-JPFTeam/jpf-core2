@@ -20,19 +20,20 @@ package gov.nasa.jpf.util.json;
 
 /**
  * Boolean value from JSON document
+ * 
  * @author Ivan Mushketik
  */
 class BooleanValue extends AbstractValue {
 
-  Boolean value;
+	Boolean value;
 
-  public BooleanValue(boolean b, String read) {
-    super(read);
-    value = b;
-  }
+	public BooleanValue(boolean b, String read) {
+		super(read);
+		value = b;
+	}
 
-  @Override
-  public Boolean getBoolean() {
-    return value;
-  }
+	@Override
+	public Boolean getBoolean() {
+		return value;
+	}
 }

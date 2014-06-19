@@ -22,56 +22,60 @@ import java.nio.channels.FileChannel;
 
 public class FileOutputStream extends OutputStream {
 
-  FileDescriptor fd;
-  private FileChannel fc = null;
-  
-  public FileOutputStream (String fname) throws FileNotFoundException {
-    try {
-      fd = new FileDescriptor(fname, FileDescriptor.FD_WRITE);
-    } catch (IOException iox){
-      throw new FileNotFoundException(fname);
-    }
-  }
-  
-  public FileOutputStream (File file) throws FileNotFoundException {
-    this( file.getAbsolutePath());
-  }
-  
-  public FileOutputStream (FileDescriptor fd) {
-    this.fd = fd;
-  }
-  
-  public FileChannel getChannel() {
-    if(this.fc ==null){
-      this.fc = new FileChannel(fd);
-    }
-    return this.fc;
-  }
-  
-  public FileDescriptor getFD() {
-    return fd;
-  }
-  
-  //--- our native peer methods
-  
-  boolean open (String fname) {
-    // this sets the FileDescriptor from the peer side
-    return false;
-  }
-  
-  public void write (int b) throws IOException {
-    fd.write(b);
-  }
+	FileDescriptor fd;
+	private FileChannel fc = null;
 
-  public void write (byte[] buf, int off, int len) throws IOException {
-    fd.write(buf, off, len);
-  }
-  
-  public void close () throws IOException {
-    fd.close();
-  }
+	public FileOutputStream(String fname) throws FileNotFoundException {
+		try {
+			fd = new FileDescriptor(fname, FileDescriptor.FD_WRITE);
+		} catch (IOException iox) {
+			throw new FileNotFoundException(fname);
+		}
+	}
 
-  public void flush () throws IOException {
-    fd.sync();
-  }
+	public FileOutputStream(File file) throws FileNotFoundException {
+		this(file.getAbsolutePath());
+	}
+
+	public FileOutputStream(FileDescriptor fd) {
+		this.fd = fd;
+	}
+
+	public FileChannel getChannel() {
+		if (this.fc == null) {
+			this.fc = new FileChannel(fd);
+		}
+		return this.fc;
+	}
+
+	public FileDescriptor getFD() {
+		return fd;
+	}
+
+	// --- our native peer methods
+
+	boolean open(String fname) {
+		// this sets the FileDescriptor from the peer side
+		return false;
+	}
+
+	@Override
+	public void write(int b) throws IOException {
+		fd.write(b);
+	}
+
+	@Override
+	public void write(byte[] buf, int off, int len) throws IOException {
+		fd.write(buf, off, len);
+	}
+
+	@Override
+	public void close() throws IOException {
+		fd.close();
+	}
+
+	@Override
+	public void flush() throws IOException {
+		fd.sync();
+	}
 }

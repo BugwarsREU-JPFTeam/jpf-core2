@@ -24,70 +24,70 @@ import java.io.File;
  * MJI model class for java.lang.StackTraceElement
  */
 public class StackTraceElement {
-  String clsName;
-  String fileName;
-  String mthName;
-  int    line;
-  
-  public StackTraceElement() {
-     // nothing to do
-  }
+	String clsName;
+	String fileName;
+	String mthName;
+	int line;
 
-  public StackTraceElement (String clsName, String mthName, String fileName, int line) {
-    if (clsName == null) {
-      throw new NullPointerException("Declaring class is null");
-    } 
+	public StackTraceElement() {
+		// nothing to do
+	}
 
-    if (mthName == null) {
-      throw new NullPointerException("Method name is null");
-    }
+	public StackTraceElement(String clsName, String mthName, String fileName,
+			int line) {
+		if (clsName == null) {
+			throw new NullPointerException("Declaring class is null");
+		}
 
-    this.clsName = clsName;
-    this.mthName = mthName;
-    this.fileName = fileName;
-    this.line = line;
-  }
+		if (mthName == null) {
+			throw new NullPointerException("Method name is null");
+		}
 
-  public String getClassName () {
-    return clsName;
-  }
+		this.clsName = clsName;
+		this.mthName = mthName;
+		this.fileName = fileName;
+		this.line = line;
+	}
 
-  public String getFileName () {
-    return fileName;
-  }
+	public String getClassName() {
+		return clsName;
+	}
 
-  public int getLineNumber () {
-    return line;
-  }
+	public String getFileName() {
+		return fileName;
+	}
 
-  public String getMethodName () {
-    return mthName;
-  }
+	public int getLineNumber() {
+		return line;
+	}
 
-  public boolean isNativeMethod () {
-    return false;
-  }
+	public String getMethodName() {
+		return mthName;
+	}
 
-  /**
-  public int hashCode () {
-    return 0;
-  }
-  **/
+	public boolean isNativeMethod() {
+		return false;
+	}
 
-  public String toString () {
-    StringBuilder sb = new StringBuilder();
-    sb.append(clsName);
-    sb.append('.');
-    sb.append(mthName);
-    sb.append("(");
+	/**
+	 * public int hashCode () { return 0; }
+	 **/
 
-    sb.append(new File(fileName).getName());
-    
-    if (line >= 0){
-      sb.append(':');
-      sb.append(line);
-    }
-    sb.append(')');
-    return sb.toString();
-  }
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(clsName);
+		sb.append('.');
+		sb.append(mthName);
+		sb.append("(");
+
+		sb.append(new File(fileName).getName());
+
+		if (line >= 0) {
+			sb.append(':');
+			sb.append(line);
+		}
+		sb.append(')');
+		return sb.toString();
+	}
 }

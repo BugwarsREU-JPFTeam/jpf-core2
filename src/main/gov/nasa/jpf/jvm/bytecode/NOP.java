@@ -22,26 +22,27 @@ import gov.nasa.jpf.jvm.JVMInstruction;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Do nothing
- *    No change
+ * Do nothing No change
  */
 public class NOP extends JVMInstruction {
-  
-  public NOP () {
-    // nothing to do
-  }
-  
-  public Instruction execute (ThreadInfo th) {
-    return getNext(th);
-  }
 
-  public int getByteCode () {
-    return 0x00;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	public NOP() {
+		// nothing to do
+	}
+
+	@Override
+	public Instruction execute(ThreadInfo th) {
+		return getNext(th);
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0x00;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

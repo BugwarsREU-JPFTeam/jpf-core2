@@ -24,29 +24,27 @@ import gov.nasa.jpf.vm.MJIEnv;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Push null
- * ... => ..., null
+ * Push null ... => ..., null
  */
 public class ACONST_NULL extends JVMInstruction {
-  
-  @Override
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
-    
-    frame.pushRef(MJIEnv.NULL);
-    
-    return getNext(ti);
-  }
 
-  @Override
-  public int getByteCode () {
-    return 0x01;
-  }
-  
-  @Override
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
+
+		frame.pushRef(MJIEnv.NULL);
+
+		return getNext(ti);
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0x01;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

@@ -23,147 +23,158 @@ import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.MJIEnv;
 import gov.nasa.jpf.vm.MethodInfo;
-import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
-
 
 /**
  * a base class for virtual call instructions
  */
 public abstract class VirtualInvocation extends InstanceInvocation {
 
-  // note that we can't null laseCalleeCi and invokedMethod in cleanupTransients()
-  // since we use it as an internal optimization (loops with repeated calls on the
-  // same object)
-  
-  ClassInfo lastCalleeCi; // cached for performance
+	// note that we can't null laseCalleeCi and invokedMethod in
+	// cleanupTransients()
+	// since we use it as an internal optimization (loops with repeated calls on
+	// the
+	// same object)
 
-  protected VirtualInvocation () {}
+	ClassInfo lastCalleeCi; // cached for performance
 
-  protected VirtualInvocation (String clsDescriptor, String methodName, String signature){
-    super(clsDescriptor, methodName, signature);
-  }
+	protected VirtualInvocation() {
+	}
 
-  public Instruction execute (ThreadInfo ti) {
-    int objRef = ti.getCalleeThis(getArgSize());
+	protected VirtualInvocation(String clsDescriptor, String methodName,
+			String signature) {
+		super(clsDescriptor, methodName, signature);
+	}
 
-    if (objRef == MJIEnv.NULL) {
-      lastObj = MJIEnv.NULL;
-      return ti.createAndThrowException("java.lang.NullPointerException", "Calling '" + mname + "' on null object");
-    }
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		int objRef = ti.getCalleeThis(getArgSize());
 
-    MethodInfo callee = getInvokedMethod(ti, objRef);
-    ElementInfo ei = ti.getElementInfoWithUpdatedSharedness(objRef);
-    
-    if (callee == null) {
-      String clsName = ti.getClassInfo(objRef).getName();
-      return ti.createAndThrowException("java.lang.NoSuchMethodError", clsName + '.' + mname);
-    } else {
-      if (callee.isAbstract()){
-        return ti.createAndThrowException("java.lang.AbstractMethodError", callee.getFullName() + ", object: " + ei);
-      }
-    }
+		if (objRef == MJIEnv.NULL) {
+			lastObj = MJIEnv.NULL;
+			return ti.createAndThrowException("java.lang.NullPointerException",
+					"Calling '" + mname + "' on null object");
+		}
 
-    if (callee.isSynchronized()) {
-      if (checkSyncCG(ei, ti)){
-        return this;
-      }
-    }
+		MethodInfo callee = getInvokedMethod(ti, objRef);
+		ElementInfo ei = ti.getElementInfoWithUpdatedSharedness(objRef);
 
-    setupCallee( ti, callee); // this creates, initializes and pushes the callee StackFrame
+		if (callee == null) {
+			String clsName = ti.getClassInfo(objRef).getName();
+			return ti.createAndThrowException("java.lang.NoSuchMethodError",
+					clsName + '.' + mname);
+		} else {
+			if (callee.isAbstract()) {
+				return ti.createAndThrowException(
+						"java.lang.AbstractMethodError", callee.getFullName()
+								+ ", object: " + ei);
+			}
+		}
 
-    return ti.getPC(); // we can't just return the first callee insn if a listener throws an exception
-  }
-  
-  /**
-   * If the current thread already owns the lock, then the current thread can go on.
-   * For example, this is a recursive acquisition.
-   */
-  protected boolean isLockOwner(ThreadInfo ti, ElementInfo ei) {
-    return ei.getLockingThread() == ti;
-  }
+		if (callee.isSynchronized()) {
+			if (checkSyncCG(ei, ti)) {
+				return this;
+			}
+		}
 
-  /**
-   * If the object will still be owned, then the current thread can go on.
-   * For example, all but the last monitorexit for the object.
-   */
-  protected boolean isLastUnlock(ElementInfo ei) {
-    return ei.getLockCount() == 1;
-  }
+		setupCallee(ti, callee); // this creates, initializes and pushes the
+									// callee StackFrame
 
+		return ti.getPC(); // we can't just return the first callee insn if a
+							// listener throws an exception
+	}
 
-  public MethodInfo getInvokedMethod(ThreadInfo ti){
-    int objRef;
+	/**
+	 * If the current thread already owns the lock, then the current thread can
+	 * go on. For example, this is a recursive acquisition.
+	 */
+	protected boolean isLockOwner(ThreadInfo ti, ElementInfo ei) {
+		return ei.getLockingThread() == ti;
+	}
 
-    if (ti.getNextPC() == null){ // this is pre-exec
-      objRef = ti.getCalleeThis(getArgSize());
-    } else {                     // this is post-exec
-      objRef = lastObj;
-    }
+	/**
+	 * If the object will still be owned, then the current thread can go on. For
+	 * example, all but the last monitorexit for the object.
+	 */
+	protected boolean isLastUnlock(ElementInfo ei) {
+		return ei.getLockCount() == 1;
+	}
 
-    return getInvokedMethod(ti, objRef);
-  }
+	@Override
+	public MethodInfo getInvokedMethod(ThreadInfo ti) {
+		int objRef;
 
-  public MethodInfo getInvokedMethod (ThreadInfo ti, int objRef) {
+		if (ti.getNextPC() == null) { // this is pre-exec
+			objRef = ti.getCalleeThis(getArgSize());
+		} else { // this is post-exec
+			objRef = lastObj;
+		}
 
-    if (objRef != MJIEnv.NULL) {
-      lastObj = objRef;
+		return getInvokedMethod(ti, objRef);
+	}
 
-      ClassInfo cci = ti.getClassInfo(objRef);
+	public MethodInfo getInvokedMethod(ThreadInfo ti, int objRef) {
 
-      if (lastCalleeCi != cci) { // callee ClassInfo has changed
-        lastCalleeCi = cci;
-        invokedMethod = cci.getMethod(mname, true);
+		if (objRef != MJIEnv.NULL) {
+			lastObj = objRef;
 
-        // here we could catch the NoSuchMethodError
-        if (invokedMethod == null) {
-          lastObj = MJIEnv.NULL;
-          lastCalleeCi = null;
-        }
-      }
+			ClassInfo cci = ti.getClassInfo(objRef);
 
-    } else {
-      lastObj = MJIEnv.NULL;
-      lastCalleeCi = null;
-      invokedMethod = null;
-    }
+			if (lastCalleeCi != cci) { // callee ClassInfo has changed
+				lastCalleeCi = cci;
+				invokedMethod = cci.getMethod(mname, true);
 
-    return invokedMethod;
-  }
+				// here we could catch the NoSuchMethodError
+				if (invokedMethod == null) {
+					lastObj = MJIEnv.NULL;
+					lastCalleeCi = null;
+				}
+			}
 
-  public Object getFieldValue (String id, ThreadInfo ti){
-    int objRef = getCalleeThis(ti);
-    ElementInfo ei = ti.getElementInfo(objRef);
+		} else {
+			lastObj = MJIEnv.NULL;
+			lastCalleeCi = null;
+			invokedMethod = null;
+		}
 
-    Object v = ei.getFieldValueObject(id);
+		return invokedMethod;
+	}
 
-    if (v == null){ // try a static field
-      v = ei.getClassInfo().getStaticFieldValueObject(id);
-    }
+	@Override
+	public Object getFieldValue(String id, ThreadInfo ti) {
+		int objRef = getCalleeThis(ti);
+		ElementInfo ei = ti.getElementInfo(objRef);
 
-    return v;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		Object v = ei.getFieldValueObject(id);
 
-  @Override
-  public Instruction typeSafeClone(MethodInfo clonedMethod) {
-    VirtualInvocation clone = null;
+		if (v == null) { // try a static field
+			v = ei.getClassInfo().getStaticFieldValueObject(id);
+		}
 
-    try {
-      clone = (VirtualInvocation) super.clone();
+		return v;
+	}
 
-      // reset the method that this insn belongs to
-      clone.mi = clonedMethod;
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 
-      clone.lastCalleeCi = null;
-      clone.invokedMethod = null;
-    } catch (CloneNotSupportedException e) {
-      e.printStackTrace();
-    }
+	@Override
+	public Instruction typeSafeClone(MethodInfo clonedMethod) {
+		VirtualInvocation clone = null;
 
-    return clone;
-  }
+		try {
+			clone = (VirtualInvocation) super.clone();
+
+			// reset the method that this insn belongs to
+			clone.mi = clonedMethod;
+
+			clone.lastCalleeCi = null;
+			clone.invokedMethod = null;
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+		}
+
+		return clone;
+	}
 }

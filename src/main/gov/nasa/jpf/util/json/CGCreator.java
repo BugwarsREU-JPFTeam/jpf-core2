@@ -22,23 +22,26 @@ package gov.nasa.jpf.util.json;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 
 /**
- * Creates Choice generator from Value array.
- * We need this interface because there are too many Choice Generators in JPF if we
- * will try to create CG trying to match CG constructors parameters and Values array
- * we will have following problems:
- * <li> Ambiguity with some constructors
- * <li> User would unable to create some kind of CG (some requires Config for example)
- * <li> User would need to specify unique ids in JSON
+ * Creates Choice generator from Value array. We need this interface because
+ * there are too many Choice Generators in JPF if we will try to create CG
+ * trying to match CG constructors parameters and Values array we will have
+ * following problems: <li>Ambiguity with some constructors <li>User would
+ * unable to create some kind of CG (some requires Config for example) <li>User
+ * would need to specify unique ids in JSON
+ * 
  * @see Value
  * @author Ivan Mushketik
  */
 public interface CGCreator {
 
-  /**
-   * Create choice generator
-   * @param id - unique id for this CG
-   * @param params - params read from JSON file
-   * @return new CG.
-   */
-  public ChoiceGenerator<?> createCG(String id, Value[] params);
+	/**
+	 * Create choice generator
+	 * 
+	 * @param id
+	 *            - unique id for this CG
+	 * @param params
+	 *            - params read from JSON file
+	 * @return new CG.
+	 */
+	public ChoiceGenerator<?> createCG(String id, Value[] params);
 }

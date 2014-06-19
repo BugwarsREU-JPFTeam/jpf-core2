@@ -19,9 +19,12 @@
 package gov.nasa.jpf.annotation;
 
 public @interface JPFOption {
-  String type();
-  String key();
-  String defaultValue(); 
-  String comment();
- 
+	String type();
+
+	String key();
+
+	String defaultValue();
+
+	String comment();
+
 }

@@ -23,67 +23,71 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Branch always
- * No change
- *
+ * Branch always No change
+ * 
  * <2do> store this as code insnIndex, not as bytecode position
  */
 public class GOTO extends JVMInstruction {
-  protected int targetPosition;
-  Instruction target;
+	protected int targetPosition;
+	Instruction target;
 
-  public GOTO (int targetPosition){
-    this.targetPosition = targetPosition;
-  }
+	public GOTO(int targetPosition) {
+		this.targetPosition = targetPosition;
+	}
 
-  public Instruction execute (ThreadInfo th) {
-    return getTarget();
-  }
+	@Override
+	public Instruction execute(ThreadInfo th) {
+		return getTarget();
+	}
 
-  public boolean isBackJump () {
-    return (targetPosition <= position);
-  }
-  
-  public Instruction getTarget() {
-    if (target == null) {
-      target = mi.getInstructionAt(targetPosition);
-    }
-    return target;
-  }
+	@Override
+	public boolean isBackJump() {
+		return (targetPosition <= position);
+	}
 
-  public int getLength() {
-    return 3; // opcode, bb1, bb2
-  }
-  
-  public int getByteCode () {
-    return 0xA7;
-  }
-  
-  public String toString () {
-    return getMnemonic() + " " + targetPosition;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	public Instruction getTarget() {
+		if (target == null) {
+			target = mi.getInstructionAt(targetPosition);
+		}
+		return target;
+	}
 
-  @Override
-  public Instruction typeSafeClone(MethodInfo mi) {
-    GOTO clone = null;
+	@Override
+	public int getLength() {
+		return 3; // opcode, bb1, bb2
+	}
 
-    try {
-      clone = (GOTO) super.clone();
+	@Override
+	public int getByteCode() {
+		return 0xA7;
+	}
 
-      // reset the method that this insn belongs to
-      clone.mi = mi;
+	@Override
+	public String toString() {
+		return getMnemonic() + " " + targetPosition;
+	}
 
-      clone.target = null;
-    } catch (CloneNotSupportedException e) {
-      e.printStackTrace();
-    }
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 
-    return clone;
-  }
+	@Override
+	public Instruction typeSafeClone(MethodInfo mi) {
+		GOTO clone = null;
+
+		try {
+			clone = (GOTO) super.clone();
+
+			// reset the method that this insn belongs to
+			clone.mi = mi;
+
+			clone.target = null;
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+		}
+
+		return clone;
+	}
 }

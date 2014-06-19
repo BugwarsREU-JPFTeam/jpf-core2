@@ -20,27 +20,34 @@
 package java.util.concurrent.atomic;
 
 /**
- * model class for the AtomicReferenceFieldUpdater
- * in reality it's an abstract class, but this here is merely a stub anyways
+ * model class for the AtomicReferenceFieldUpdater in reality it's an abstract
+ * class, but this here is merely a stub anyways
  */
-public class AtomicReferenceFieldUpdater<T,V> {
+public class AtomicReferenceFieldUpdater<T, V> {
 
-  int fieldId;
+	int fieldId;
 
-  public static <O,F> AtomicReferenceFieldUpdater<O,F> newUpdater (Class<O> objClass, Class<F> fieldClass,
-                                                                   String fieldName) {
-    return new AtomicReferenceFieldUpdater<O,F>(objClass, fieldClass, fieldName);
-  }
+	public static <O, F> AtomicReferenceFieldUpdater<O, F> newUpdater(
+			Class<O> objClass, Class<F> fieldClass, String fieldName) {
+		return new AtomicReferenceFieldUpdater<O, F>(objClass, fieldClass,
+				fieldName);
+	}
 
-  protected AtomicReferenceFieldUpdater(Class<T> objClass, Class<V> fieldClass, String fieldName){
-    // direct Object subclass, so we can directly intercept the ctor
-    // w/o having to call a parent ctor
-  }
+	protected AtomicReferenceFieldUpdater(Class<T> objClass,
+			Class<V> fieldClass, String fieldName) {
+		// direct Object subclass, so we can directly intercept the ctor
+		// w/o having to call a parent ctor
+	}
 
-  public native boolean compareAndSet(T obj, V expect, V update);
-  public native V       get(T obj);
-  public native V       getAndSet(T obj, V newValue);
-  public native void    lazySet(T obj, V newValue);
-  public native void    set(T obj, V newValue);
-  public native boolean weakCompareAndSet(T obj, V expect, V update);
+	public native boolean compareAndSet(T obj, V expect, V update);
+
+	public native V get(T obj);
+
+	public native V getAndSet(T obj, V newValue);
+
+	public native void lazySet(T obj, V newValue);
+
+	public native void set(T obj, V newValue);
+
+	public native boolean weakCompareAndSet(T obj, V expect, V update);
 }

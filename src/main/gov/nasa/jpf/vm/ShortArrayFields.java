@@ -22,85 +22,94 @@ import gov.nasa.jpf.util.HashData;
 import gov.nasa.jpf.util.IntVector;
 
 import java.io.PrintStream;
-import java.io.PrintWriter;
 
 /**
  * element values for short[] objects
  */
 public class ShortArrayFields extends ArrayFields {
 
-  short[] values;
+	short[] values;
 
-  public ShortArrayFields (int length) {
-    values = new short[length];
-  }
+	public ShortArrayFields(int length) {
+		values = new short[length];
+	}
 
-  public short[] asShortArray() {
-    return values;
-  }
+	@Override
+	public short[] asShortArray() {
+		return values;
+	}
 
-  protected void printValue(PrintStream ps, int idx){
-    ps.print(values[idx]);
-  }
-  
-  public Object getValues(){
-    return values;
-  }
+	@Override
+	protected void printValue(PrintStream ps, int idx) {
+		ps.print(values[idx]);
+	}
 
-  public int arrayLength() {
-    return values.length;
-  }
+	@Override
+	public Object getValues() {
+		return values;
+	}
 
-  public int getHeapSize() {  // in bytes
-    return values.length * 2;
-  }
+	@Override
+	public int arrayLength() {
+		return values.length;
+	}
 
-  public void appendTo (IntVector v) {
-    v.appendPacked(values);
-  }
+	@Override
+	public int getHeapSize() { // in bytes
+		return values.length * 2;
+	}
 
-  public ShortArrayFields clone(){
-    ShortArrayFields f = (ShortArrayFields)cloneFields();
-    f.values = values.clone();
-    return f;
-  }
+	@Override
+	public void appendTo(IntVector v) {
+		v.appendPacked(values);
+	}
 
-  public boolean equals (Object o) {
-    if (o instanceof ShortArrayFields) {
-      ShortArrayFields other = (ShortArrayFields)o;
-      short[] v = values;
-      short[] vOther = other.values;
-      if (v.length != vOther.length) {
-        return false;
-      }
+	@Override
+	public ShortArrayFields clone() {
+		ShortArrayFields f = (ShortArrayFields) cloneFields();
+		f.values = values.clone();
+		return f;
+	}
 
-      for (int i=0; i<v.length; i++) {
-        if (v[i] != vOther[i]) {
-          return false;
-        }
-      }
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof ShortArrayFields) {
+			ShortArrayFields other = (ShortArrayFields) o;
+			short[] v = values;
+			short[] vOther = other.values;
+			if (v.length != vOther.length) {
+				return false;
+			}
 
-      return compareAttrs(other);
+			for (int i = 0; i < v.length; i++) {
+				if (v[i] != vOther[i]) {
+					return false;
+				}
+			}
 
-    } else {
-      return false;
-    }
-  }
+			return compareAttrs(other);
 
+		} else {
+			return false;
+		}
+	}
 
-  public short getShortValue(int pos) {
-    return values[pos];
-  }
+	@Override
+	public short getShortValue(int pos) {
+		return values[pos];
+	}
 
-  public void setShortValue (int pos, short newValue) {
-    values[pos] = newValue;
-  }
+	@Override
+	public void setShortValue(int pos, short newValue) {
+		values[pos] = newValue;
+	}
 
-  public void hash(HashData hd) {
-    short[] v = values;
-    for (int i=0; i < v.length; i++) {
-      hd.add(v[i]);
-    }
-  }
+	@Override
+	public void hash(HashData hd) {
+		short[] v = values;
+		for (int i = 0; i < v.length; i++) {
+			hd.add(v[i]);
+		}
+	}
 
 }

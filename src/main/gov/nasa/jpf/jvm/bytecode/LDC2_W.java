@@ -23,63 +23,64 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Push long or double from runtime constant pool (wide index)
- * ... => ..., value
+ * Push long or double from runtime constant pool (wide index) ... => ..., value
  */
 public class LDC2_W extends JVMInstruction {
 
-  public enum Type {LONG, DOUBLE};
+	public enum Type {
+		LONG, DOUBLE
+	};
 
-  protected Type type;
-  protected long value;
+	protected Type type;
+	protected long value;
 
-  public LDC2_W(long l){
-    value = l;
-    type = Type.LONG;
-  }
+	public LDC2_W(long l) {
+		value = l;
+		type = Type.LONG;
+	}
 
-  public LDC2_W(double d){
-    value = Double.doubleToLongBits(d);
-    type = Type.DOUBLE;
-  }
+	public LDC2_W(double d) {
+		value = Double.doubleToLongBits(d);
+		type = Type.DOUBLE;
+	}
 
-  @Override
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
-    
-    frame.pushLong(value);
-    return getNext(ti);
-  }
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-  public int getLength() {
-    return 3; // opcode, index1, index2
-  }
+		frame.pushLong(value);
+		return getNext(ti);
+	}
 
-  @Override
-  public int getByteCode () {
-    return 0x14;
-  }
-  
-  public Type getType() {
-    return type;
-  }
-  
-  public double getDoubleValue(){
-	  if(type!=Type.DOUBLE){
-		  throw new IllegalStateException();
-	  }
-    
-	  return Double.longBitsToDouble(value);
-  }
-  
-  public long getValue() {
-    return value;
-  }
-  
-  @Override
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public int getLength() {
+		return 3; // opcode, index1, index2
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0x14;
+	}
+
+	public Type getType() {
+		return type;
+	}
+
+	public double getDoubleValue() {
+		if (type != Type.DOUBLE) {
+			throw new IllegalStateException();
+		}
+
+		return Double.longBitsToDouble(value);
+	}
+
+	public long getValue() {
+		return value;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

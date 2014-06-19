@@ -21,35 +21,39 @@ package gov.nasa.jpf.util.json;
 import gov.nasa.jpf.JPFException;
 
 /**
- *
+ * 
  * @author Ivan Mushketik
  */
 class JSONObjectValue implements Value {
 
-  JSONObject object;
+	JSONObject object;
 
-  public JSONObjectValue(JSONObject parseObject) {
-    object = parseObject;
-  }
+	public JSONObjectValue(JSONObject parseObject) {
+		object = parseObject;
+	}
 
-  @Override
-  public JSONObject getObject() {
-    return object;
-  }
+	@Override
+	public JSONObject getObject() {
+		return object;
+	}
 
-  public String getString() {
-    throw new JPFException("Can't convert JSON object to String");
-  }
+	@Override
+	public String getString() {
+		throw new JPFException("Can't convert JSON object to String");
+	}
 
-  public Double getDouble() {
-    throw new JPFException("Can't convert JSON object to Double");
-  }
+	@Override
+	public Double getDouble() {
+		throw new JPFException("Can't convert JSON object to Double");
+	}
 
-  public Value[] getArray() {
-    throw new JPFException("Can't convert JSON object to Array");
-  }
+	@Override
+	public Value[] getArray() {
+		throw new JPFException("Can't convert JSON object to Array");
+	}
 
-  public Boolean getBoolean() {
-    throw new JPFException("Can't convert JSON object to Boolean");
-  }
+	@Override
+	public Boolean getBoolean() {
+		throw new JPFException("Can't convert JSON object to Boolean");
+	}
 }

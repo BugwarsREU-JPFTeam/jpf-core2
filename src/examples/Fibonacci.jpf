@@ -1,0 +1,4 @@
+classpath = ${jpf-core}/build/examples
+sourcepath = ${jpf-core}/src/examples
+target = Fibonacci
+search.class = .search.heuristic.DFSHeuristic

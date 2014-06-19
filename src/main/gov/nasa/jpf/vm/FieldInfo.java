@@ -18,311 +18,320 @@
 //
 package gov.nasa.jpf.vm;
 
-import gov.nasa.jpf.util.ObjectList;
-
 import java.lang.reflect.Modifier;
-
 
 /**
  * type, name and attribute information of a field.
  */
-public abstract class FieldInfo extends InfoObject implements GenericSignatureHolder {
+public abstract class FieldInfo extends InfoObject implements
+		GenericSignatureHolder {
 
-  //--- FieldInfo attributes
-  // don't break transitions on get/putXX insns of this field, even if shared
-  static final int NEVER_BREAK = 0x10000;
-  
-  // always break on this field's access if object is shared
-  // (ignored if NEVER_BREAK is set)
-  static final int BREAK_SHARED = 0x20000;
+	// --- FieldInfo attributes
+	// don't break transitions on get/putXX insns of this field, even if shared
+	static final int NEVER_BREAK = 0x10000;
 
-  // those might relate to sticky ElementInto.ATTR_*
-  protected int attributes;
+	// always break on this field's access if object is shared
+	// (ignored if NEVER_BREAK is set)
+	static final int BREAK_SHARED = 0x20000;
 
-  
-  protected final String name;
-  protected String type;  // lazy initialized fully qualified type name as per JLS 6.7 ("int", "x.Y[]")
-  protected final String signature; // "I", "[Lx/Y;" etc.
-  protected int storageSize;
+	// those might relate to sticky ElementInto.ATTR_*
+	protected int attributes;
 
-  protected ClassInfo ci; // class this field belongs to
-  protected int fieldIndex; // declaration ordinal
+	protected final String name;
+	protected String type; // lazy initialized fully qualified type name as per
+							// JLS 6.7 ("int", "x.Y[]")
+	protected final String signature; // "I", "[Lx/Y;" etc.
+	protected int storageSize;
 
-  // where in the corresponding Fields object do we store the value
-  // (note this works because of the wonderful single inheritance)
-  protected int storageOffset;
+	protected ClassInfo ci; // class this field belongs to
+	protected int fieldIndex; // declaration ordinal
 
-  // optional initializer for this field, can't be final because it is set from
-  // classfile field_info attributes (i.e. after construction)
-  protected  Object cv;
+	// where in the corresponding Fields object do we store the value
+	// (note this works because of the wonderful single inheritance)
+	protected int storageOffset;
 
-  protected String genericSignature;
+	// optional initializer for this field, can't be final because it is set
+	// from
+	// classfile field_info attributes (i.e. after construction)
+	protected Object cv;
 
-  protected int modifiers;
-  
-  public static FieldInfo create (String name, String signature, int modifiers){
-    switch(signature.charAt(0)){
-      case 'Z':
-        return new BooleanFieldInfo(name, modifiers);
-      case 'B':
-        return new ByteFieldInfo(name, modifiers);
-      case 'S':
-        return new ShortFieldInfo(name, modifiers);
-      case 'C':
-        return new CharFieldInfo(name, modifiers);
-      case 'I':
-        return new IntegerFieldInfo(name, modifiers);
-      case 'J':
-        return new LongFieldInfo(name, modifiers);
-      case 'F':
-        return new FloatFieldInfo(name, modifiers);
-      case 'D':
-        return new DoubleFieldInfo(name, modifiers);
-      default:
-        return new ReferenceFieldInfo(name, signature, modifiers);
-    }
-  }
-  
-  protected FieldInfo(String name, String signature, int modifiers) {
-    this.name = name;
-    this.signature = signature;
-    this.modifiers = modifiers;
-  }
+	protected String genericSignature;
 
-  protected void linkToClass (ClassInfo ci, int idx, int off){
-    this.ci = ci;
-    this.fieldIndex = idx;
-    this.storageOffset = off;
-  }
-  
-  // those are set subsequently from classfile attributes
-  public void setConstantValue(Object constValue){
-    cv = constValue;
-  }
+	protected int modifiers;
 
-  public abstract String valueToString (Fields f);
+	public static FieldInfo create(String name, String signature, int modifiers) {
+		switch (signature.charAt(0)) {
+		case 'Z':
+			return new BooleanFieldInfo(name, modifiers);
+		case 'B':
+			return new ByteFieldInfo(name, modifiers);
+		case 'S':
+			return new ShortFieldInfo(name, modifiers);
+		case 'C':
+			return new CharFieldInfo(name, modifiers);
+		case 'I':
+			return new IntegerFieldInfo(name, modifiers);
+		case 'J':
+			return new LongFieldInfo(name, modifiers);
+		case 'F':
+			return new FloatFieldInfo(name, modifiers);
+		case 'D':
+			return new DoubleFieldInfo(name, modifiers);
+		default:
+			return new ReferenceFieldInfo(name, signature, modifiers);
+		}
+	}
 
-  public boolean is1SlotField(){
-    return false;
-  }
-  public boolean is2SlotField(){
-    return false;
-  }
+	protected FieldInfo(String name, String signature, int modifiers) {
+		this.name = name;
+		this.signature = signature;
+		this.modifiers = modifiers;
+	}
 
-  public boolean isBooleanField() {
-    return false;
-  }
-  public boolean isByteField() {
-    return false;
-  }
-  public boolean isCharField() {
-    return false;
-  }
-  public boolean isShortField() {
-    return false;
-  }
-  public boolean isIntField() {
-    return false;
-  }
-  public boolean isLongField() {
-    return false;
-  }
-  public boolean isFloatField(){
-    return false;
-  }
-  public boolean isDoubleField(){
-    return false;
-  }
+	protected void linkToClass(ClassInfo ci, int idx, int off) {
+		this.ci = ci;
+		this.fieldIndex = idx;
+		this.storageOffset = off;
+	}
 
-  public boolean isNumericField(){
-    return false;
-  }
+	// those are set subsequently from classfile attributes
+	public void setConstantValue(Object constValue) {
+		cv = constValue;
+	}
 
-  public boolean isFloatingPointField(){
-    return false;
-  }
+	public abstract String valueToString(Fields f);
 
-  public boolean isReference () {
-    return false;
-  }
+	public boolean is1SlotField() {
+		return false;
+	}
 
-  public boolean isArrayField () {
-    return false;
-  }
+	public boolean is2SlotField() {
+		return false;
+	}
 
-  /**
-   * Returns the class that this field is associated with.
-   */
-  public ClassInfo getClassInfo () {
-    return ci;
-  }
+	public boolean isBooleanField() {
+		return false;
+	}
 
-  public Object getConstantValue () {
-    return cv;
-  }
+	public boolean isByteField() {
+		return false;
+	}
 
-  public abstract Object getValueObject (Fields data);
+	public boolean isCharField() {
+		return false;
+	}
 
-  public int getModifiers() {
-    return modifiers;
-  }
+	public boolean isShortField() {
+		return false;
+	}
 
-  public int getFieldIndex () {
-    return fieldIndex;
-  }
+	public boolean isIntField() {
+		return false;
+	}
 
-  /**
-   * is this a static field? Counter productive to the current class struct,
-   * but at some point we want to get rid of the Dynamic/Static branch (it's
-   * really just a field attribute)
-   */
-  public boolean isStatic () {
-    return (modifiers & Modifier.STATIC) != 0;
-  }
+	public boolean isLongField() {
+		return false;
+	}
 
-  /**
-   * is this field declared `final'?
-   */
-  public boolean isFinal () {
-    return (modifiers & Modifier.FINAL) != 0;
-  }
+	public boolean isFloatField() {
+		return false;
+	}
 
-  public boolean isVolatile () {
-    return (modifiers & Modifier.VOLATILE) != 0;
-  }
+	public boolean isDoubleField() {
+		return false;
+	}
 
-  public boolean isTransient () {
-    return (modifiers & Modifier.TRANSIENT) != 0;
-  }
+	public boolean isNumericField() {
+		return false;
+	}
 
-  public boolean isPublic () {
-    return (modifiers & Modifier.PUBLIC) != 0;
-  }
+	public boolean isFloatingPointField() {
+		return false;
+	}
 
+	public boolean isReference() {
+		return false;
+	}
 
-  /**
-   * Returns the name of the field.
-   */
-  public String getName () {
-    return name;
-  }
+	public boolean isArrayField() {
+		return false;
+	}
 
-  /**
-   * @return the storage size of this field, @see Types.getTypeSize
-   */
-  public int getStorageSize () {
-    return 1;
-  }
+	/**
+	 * Returns the class that this field is associated with.
+	 */
+	public ClassInfo getClassInfo() {
+		return ci;
+	}
 
-  /**
-   * Returns the type of the field as a fully qualified type name according to JLS 6.7
-   * ("int", "x.Y[]")
-   */
-  public String getType () {
-    if (type == null){
-      type = Types.getTypeName(signature);
-    }
-    return type;
-  }
-  
-  public byte getTypeCode (){
-    return Types.getTypeCode(signature);
-  }
+	public Object getConstantValue() {
+		return cv;
+	}
 
-  public String getSignature(){
-    return signature;
-  }
+	public abstract Object getValueObject(Fields data);
 
-  public String getGenericSignature() {
-    return genericSignature; 
-  }
+	public int getModifiers() {
+		return modifiers;
+	}
 
-  public void setGenericSignature(String sig){
-    genericSignature = sig;
-  }
+	public int getFieldIndex() {
+		return fieldIndex;
+	}
 
-  public ClassInfo getTypeClassInfo () {
-    return ClassLoaderInfo.getCurrentResolvedClassInfo(getType());
-  }
+	/**
+	 * is this a static field? Counter productive to the current class struct,
+	 * but at some point we want to get rid of the Dynamic/Static branch (it's
+	 * really just a field attribute)
+	 */
+	public boolean isStatic() {
+		return (modifiers & Modifier.STATIC) != 0;
+	}
 
-  public Class<? extends ChoiceGenerator<?>> getChoiceGeneratorType (){
-    return null;
-  }
+	/**
+	 * is this field declared `final'?
+	 */
+	public boolean isFinal() {
+		return (modifiers & Modifier.FINAL) != 0;
+	}
 
-  /**
-   * pushClinit the corresponding data in the provided Fields instance
-   */
-  public abstract void initialize (ElementInfo ei, ThreadInfo ti);
+	public boolean isVolatile() {
+		return (modifiers & Modifier.VOLATILE) != 0;
+	}
 
+	public boolean isTransient() {
+		return (modifiers & Modifier.TRANSIENT) != 0;
+	}
 
-  /**
-   * Returns a string representation of the field.
-   */
-  public String toString () {
-    StringBuilder sb = new StringBuilder();
+	public boolean isPublic() {
+		return (modifiers & Modifier.PUBLIC) != 0;
+	}
 
-    if (isStatic()) {
-      sb.append("static ");
-    }
-    if (isFinal()) {
-      sb.append("final ");
-    }
+	/**
+	 * Returns the name of the field.
+	 */
+	public String getName() {
+		return name;
+	}
 
-    //sb.append(Types.getTypeName(type));
-    sb.append(getType());
-    sb.append(' ');
-    sb.append(ci.getName());
-    sb.append('.');
-    sb.append(name);
+	/**
+	 * @return the storage size of this field, @see Types.getTypeSize
+	 */
+	public int getStorageSize() {
+		return 1;
+	}
 
-    return sb.toString();
-  }
-  
-  //--- those are the JPF internal attribute flags (not to mix with free user attrs)
+	/**
+	 * Returns the type of the field as a fully qualified type name according to
+	 * JLS 6.7 ("int", "x.Y[]")
+	 */
+	public String getType() {
+		if (type == null) {
+			type = Types.getTypeName(signature);
+		}
+		return type;
+	}
 
-  void setAttributes (int a) {
-    attributes = a;
-  }
+	public byte getTypeCode() {
+		return Types.getTypeCode(signature);
+	}
 
-  public void addAttribute (int a){
-    attributes |= a;
-  }
+	public String getSignature() {
+		return signature;
+	}
 
-  public int getAttributes () {
-    return attributes;
-  }
+	@Override
+	public String getGenericSignature() {
+		return genericSignature;
+	}
 
-  public boolean breakShared() {
-    return ((attributes & BREAK_SHARED) != 0);
-  }
-  
-  public boolean neverBreak() {
-    return ((attributes & NEVER_BREAK) != 0);    
-  }
-  
-  public int getStorageOffset () {
-    return storageOffset;
-  }
+	@Override
+	public void setGenericSignature(String sig) {
+		genericSignature = sig;
+	}
 
-  public String getFullName() {
-    return ci.getName() + '.' + name;
-  }
+	public ClassInfo getTypeClassInfo() {
+		return ClassLoaderInfo.getCurrentResolvedClassInfo(getType());
+	}
 
-  /**
-   * Creates a field for a given class, by cloning this FieldInfo
-   * and reseting the class that the field belongs to
-   */
-  public FieldInfo getInstanceFor(ClassInfo ci) {
-    FieldInfo clone;
+	public Class<? extends ChoiceGenerator<?>> getChoiceGeneratorType() {
+		return null;
+	}
 
-    try {
-      clone = (FieldInfo)clone();
-      clone.ci = ci;
-    } catch (CloneNotSupportedException cnsx){
-      cnsx.printStackTrace();
-      return null;
-    }
+	/**
+	 * pushClinit the corresponding data in the provided Fields instance
+	 */
+	public abstract void initialize(ElementInfo ei, ThreadInfo ti);
 
-    return clone;
-  }
+	/**
+	 * Returns a string representation of the field.
+	 */
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+
+		if (isStatic()) {
+			sb.append("static ");
+		}
+		if (isFinal()) {
+			sb.append("final ");
+		}
+
+		// sb.append(Types.getTypeName(type));
+		sb.append(getType());
+		sb.append(' ');
+		sb.append(ci.getName());
+		sb.append('.');
+		sb.append(name);
+
+		return sb.toString();
+	}
+
+	// --- those are the JPF internal attribute flags (not to mix with free user
+	// attrs)
+
+	void setAttributes(int a) {
+		attributes = a;
+	}
+
+	public void addAttribute(int a) {
+		attributes |= a;
+	}
+
+	public int getAttributes() {
+		return attributes;
+	}
+
+	public boolean breakShared() {
+		return ((attributes & BREAK_SHARED) != 0);
+	}
+
+	public boolean neverBreak() {
+		return ((attributes & NEVER_BREAK) != 0);
+	}
+
+	public int getStorageOffset() {
+		return storageOffset;
+	}
+
+	public String getFullName() {
+		return ci.getName() + '.' + name;
+	}
+
+	/**
+	 * Creates a field for a given class, by cloning this FieldInfo and reseting
+	 * the class that the field belongs to
+	 */
+	public FieldInfo getInstanceFor(ClassInfo ci) {
+		FieldInfo clone;
+
+		try {
+			clone = (FieldInfo) clone();
+			clone.ci = ci;
+		} catch (CloneNotSupportedException cnsx) {
+			cnsx.printStackTrace();
+			return null;
+		}
+
+		return clone;
+	}
 }

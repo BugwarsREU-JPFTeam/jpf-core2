@@ -23,49 +23,65 @@ import java.lang.annotation.Annotation;
 /**
  * (incomplete) support for consructor reflection
  * 
- * pretty stupid - this is almost identical to Method, but we can't derive,
- * and the delegation happens at the peer level anyways.
+ * pretty stupid - this is almost identical to Method, but we can't derive, and
+ * the delegation happens at the peer level anyways.
  * 
  * NOTE: 'regIdx' and 'name' need to be like Method, or the peer delegation
  * fails (this is the hack'ish part)
  * 
- * NOTE: we ditch the 'final' modifier so that we can provide our
- * own serialization ctor objects - that's probably going away
- * once we replace ObjectStreamClass
+ * NOTE: we ditch the 'final' modifier so that we can provide our own
+ * serialization ctor objects - that's probably going away once we replace
+ * ObjectStreamClass
  */
-public /*final*/ class Constructor <T> extends AccessibleObject implements Member {
-  
-  protected int regIdx;
-  protected String name;
+public/* final */class Constructor<T> extends AccessibleObject implements Member {
 
-  public native String getName();
-  public native T newInstance (Object... args)
-        throws IllegalAccessException, InvocationTargetException, InstantiationException;
-  
-  public native int getModifiers();
-  public native Class<?> getReturnType();
-  public native Class<?>[] getParameterTypes();
-  
-  public native Class<T> getDeclaringClass();
-  
-  public native Annotation[] getAnnotations();
-  public native Annotation[] getDeclaredAnnotations();
-  public native <T extends Annotation> T getAnnotation( Class<T> annotationCls);
-  public native Annotation[][] getParameterAnnotations();
-  
-  public boolean isSynthetic () {
-    return false;
-  }
-  
-  public native String toString();
-  
-  public native boolean equals (Object obj);
+	protected int regIdx;
+	protected String name;
 
-  public boolean isVarArgs (){
-    return (getModifiers() & Modifier.VARARGS) != 0;
-  }
+	@Override
+	public native String getName();
 
-  public native int hashCode ();
+	public native T newInstance(Object... args) throws IllegalAccessException,
+			InvocationTargetException, InstantiationException;
 
-  public native String toGenericString ();
+	@Override
+	public native int getModifiers();
+
+	public native Class<?> getReturnType();
+
+	public native Class<?>[] getParameterTypes();
+
+	@Override
+	public native Class<T> getDeclaringClass();
+
+	@Override
+	public native Annotation[] getAnnotations();
+
+	@Override
+	public native Annotation[] getDeclaredAnnotations();
+
+	@Override
+	public native <T extends Annotation> T getAnnotation(Class<T> annotationCls);
+
+	public native Annotation[][] getParameterAnnotations();
+
+	@Override
+	public boolean isSynthetic() {
+		return false;
+	}
+
+	@Override
+	public native String toString();
+
+	@Override
+	public native boolean equals(Object obj);
+
+	public boolean isVarArgs() {
+		return (getModifiers() & Modifier.VARARGS) != 0;
+	}
+
+	@Override
+	public native int hashCode();
+
+	public native String toGenericString();
 }

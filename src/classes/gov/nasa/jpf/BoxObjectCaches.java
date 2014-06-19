@@ -21,26 +21,26 @@ package gov.nasa.jpf;
 
 /**
  * @author Nastaran Shafiei <nastaran.shafiei@gmail.com>
- *
- * Refereces to the caches for the types Byte, Character, Short, Integer, 
- * Long.
  * 
- * This class is added to the startup class list in VM.initialize, to be
- * loaded before the valueOf()s are called.
+ *         Refereces to the caches for the types Byte, Character, Short,
+ *         Integer, Long.
+ * 
+ *         This class is added to the startup class list in VM.initialize, to be
+ *         loaded before the valueOf()s are called.
  */
 public class BoxObjectCaches {
-  // Byte cache
-  static Byte byteCache[];
+	// Byte cache
+	static Byte byteCache[];
 
-  // Character cache
-  static Character charCache[];
+	// Character cache
+	static Character charCache[];
 
-  // Short
-  static Short shortCache[];
+	// Short
+	static Short shortCache[];
 
-  // Integer cache
-  static Integer intCache[];
+	// Integer cache
+	static Integer intCache[];
 
-  // Long cache
-  static Long longCache[];
+	// Long cache
+	static Long longCache[];
 }

@@ -19,15 +19,20 @@
 package gov.nasa.jpf.vm.serialize;
 
 /**
- * interface to abstract concrete primitive values for the sake of state matching 
+ * interface to abstract concrete primitive values for the sake of state
+ * matching
  */
 public interface Abstraction {
-  
-  int getAbstractValue (int v);
-  int getAbstractValue (float v);
-  int getAbstractValue (long v);
-  int getAbstractValue (double v);
-  
-  int getAbstractObject (int ref);
-  boolean traverseObject (int ref);
+
+	int getAbstractValue(int v);
+
+	int getAbstractValue(float v);
+
+	int getAbstractValue(long v);
+
+	int getAbstractValue(double v);
+
+	int getAbstractObject(int ref);
+
+	boolean traverseObject(int ref);
 }

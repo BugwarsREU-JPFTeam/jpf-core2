@@ -26,58 +26,53 @@ import java.lang.ref.WeakReference;
 
 import org.junit.Test;
 
-public class WeakReferenceTest extends TestJPF
-{
-   @Test
-   public void testGCClearsRef()
-   {
-      WeakReference<Target> ref;
+public class WeakReferenceTest extends TestJPF {
+	@Test
+	public void testGCClearsRef() {
+		WeakReference<Target> ref;
 
-      if (verifyNoPropertyViolation())
-      {
-         ref = new WeakReference<Target>(new Target());
+		if (verifyNoPropertyViolation()) {
+			ref = new WeakReference<Target>(new Target());
 
-         forceGC();
-         
-         assertNull(ref.get());
-      }
-   }
+			forceGC();
 
-   @Test
-   public void testStrongReferenceKeepsWeakReference()
-   {
-      WeakReference<Target> ref;
-      Target target;
+			assertNull(ref.get());
+		}
+	}
 
-      if (verifyNoPropertyViolation())
-      {
-         target = new Target();
-         ref    = new WeakReference<Target>(target);
+	@Test
+	public void testStrongReferenceKeepsWeakReference() {
+		WeakReference<Target> ref;
+		Target target;
 
-         forceGC();
+		if (verifyNoPropertyViolation()) {
+			target = new Target();
+			ref = new WeakReference<Target>(target);
 
-         assertSame(target, ref.get());
-      }
-   }
+			forceGC();
 
-   /* ClassInfo.refClassInfo wasn't being set to null between JPF runs.  Thus, 
-    * refClassInfo wasn't being updated.  Hence, the WeakReference below would 
-    * be treated as a normal object in GC.  Re-run testGCClearsRef() to 
-    * reproduce the issue.
-    */
-   @Test
-   public void testClearClassInfoRefClassInfo()
-   {
-      testGCClearsRef();
-   }
-   
-   private static void forceGC()
-   {
-      System.gc();         // Mark that GC is needed
-      Verify.breakTransition("testForceGC"); // Cause a state to be captured and hence GC to run
-   }
-   
-   private static class Target   // Make this object easy to find in JPF heap
-   {
-   }
+			assertSame(target, ref.get());
+		}
+	}
+
+	/*
+	 * ClassInfo.refClassInfo wasn't being set to null between JPF runs. Thus,
+	 * refClassInfo wasn't being updated. Hence, the WeakReference below would
+	 * be treated as a normal object in GC. Re-run testGCClearsRef() to
+	 * reproduce the issue.
+	 */
+	@Test
+	public void testClearClassInfoRefClassInfo() {
+		testGCClearsRef();
+	}
+
+	private static void forceGC() {
+		System.gc(); // Mark that GC is needed
+		Verify.breakTransition("testForceGC"); // Cause a state to be captured
+												// and hence GC to run
+	}
+
+	private static class Target // Make this object easy to find in JPF heap
+	{
+	}
 }

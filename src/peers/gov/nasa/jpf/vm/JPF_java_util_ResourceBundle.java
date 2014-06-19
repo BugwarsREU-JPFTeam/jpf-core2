@@ -34,21 +34,21 @@ import java.util.List;
  */
 public class JPF_java_util_ResourceBundle extends NativePeer {
 
-  @MJI
-  public int getClassContext_____3Ljava_lang_Class_2 (MJIEnv env, int clsRef){
-    ThreadInfo ti = env.getThreadInfo();
+	@MJI
+	public int getClassContext_____3Ljava_lang_Class_2(MJIEnv env, int clsRef) {
+		ThreadInfo ti = env.getThreadInfo();
 
-    List<StackFrame> list = ti.getInvokedStackFrames();
-    int aRef = env.newObjectArray("java.lang.Class", list.size());
+		List<StackFrame> list = ti.getInvokedStackFrames();
+		int aRef = env.newObjectArray("java.lang.Class", list.size());
 
-    int j=0;
-    for (StackFrame frame : list){
-      MethodInfo mi = frame.getMethodInfo();
-      ClassInfo ci = mi.getClassInfo();
-      int clsObjRef = ci.getClassObjectRef();
-      env.setReferenceArrayElement(aRef, j++, clsObjRef);
-    }
+		int j = 0;
+		for (StackFrame frame : list) {
+			MethodInfo mi = frame.getMethodInfo();
+			ClassInfo ci = mi.getClassInfo();
+			int clsObjRef = ci.getClassObjectRef();
+			env.setReferenceArrayElement(aRef, j++, clsObjRef);
+		}
 
-    return aRef;
-  }
+		return aRef;
+	}
 }

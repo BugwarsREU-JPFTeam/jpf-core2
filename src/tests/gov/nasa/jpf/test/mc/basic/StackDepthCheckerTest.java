@@ -27,30 +27,32 @@ import org.junit.Test;
  * regression test for StackDepthChecker listener
  */
 public class StackDepthCheckerTest extends TestJPF {
-  
-  int n;
-  
-  void foo(){
-    n++;
-    System.out.print("entered foo() at level ");
-    System.out.println(n);
-    
-    foo();
-    
-    n--; // not that we ever get here
-    System.out.print("exited foo() at level ");
-    System.out.println(n);
-  }
-  
-  @Test 
-  @SuppressWarnings("deprecation")
-  public void testInfiniteRecursion (){
-    if (verifyUnhandledException("java.lang.StackOverflowError", 
-        "+listener=.listener.StackDepthChecker", "+sdc.max_stack_depth=42")){
-      Thread t = Thread.currentThread();
-      n = t.countStackFrames(); // it's deprecated, but we just want to make the printout more readable
-      foo();
-    }
-  }
+
+	int n;
+
+	void foo() {
+		n++;
+		System.out.print("entered foo() at level ");
+		System.out.println(n);
+
+		foo();
+
+		n--; // not that we ever get here
+		System.out.print("exited foo() at level ");
+		System.out.println(n);
+	}
+
+	@Test
+	@SuppressWarnings("deprecation")
+	public void testInfiniteRecursion() {
+		if (verifyUnhandledException("java.lang.StackOverflowError",
+				"+listener=.listener.StackDepthChecker",
+				"+sdc.max_stack_depth=42")) {
+			Thread t = Thread.currentThread();
+			n = t.countStackFrames(); // it's deprecated, but we just want to
+										// make the printout more readable
+			foo();
+		}
+	}
 
 }

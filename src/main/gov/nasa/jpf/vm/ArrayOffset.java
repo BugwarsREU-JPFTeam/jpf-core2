@@ -23,23 +23,23 @@ package gov.nasa.jpf.vm;
  * incremented by get()) so it probably should be renamed
  */
 public final class ArrayOffset {
-  public int[] data;
-  int          offset;
+	public int[] data;
+	int offset;
 
-  public ArrayOffset (int[] d) {
-    data = d;
-    offset = 0;
-  }
+	public ArrayOffset(int[] d) {
+		data = d;
+		offset = 0;
+	}
 
-  public void advance(int n) {
-    offset += n;
-  }
-  
-  public int get () {
-    return data[offset++];
-  }
+	public void advance(int n) {
+		offset += n;
+	}
 
-  public int peek () {
-    return data[offset];
-  }
+	public int get() {
+		return data[offset++];
+	}
+
+	public int peek() {
+		return data[offset];
+	}
 }

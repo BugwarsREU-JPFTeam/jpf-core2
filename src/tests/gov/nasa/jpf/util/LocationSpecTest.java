@@ -28,83 +28,85 @@ import org.junit.Test;
  */
 public class LocationSpecTest extends TestJPF {
 
-  @Test
-  public void testSingleLocation() {
-    LocationSpec ls = LocationSpec.createLocationSpec("Foobar.java:42");
-    System.out.println("# testing: " + ls);
+	@Test
+	public void testSingleLocation() {
+		LocationSpec ls = LocationSpec.createLocationSpec("Foobar.java:42");
+		System.out.println("# testing: " + ls);
 
-    assertTrue(ls.matchesFile("Foobar.java"));
-    assertTrue(!ls.isLineInterval());
-    assertTrue(ls.getLine() == 42);
+		assertTrue(ls.matchesFile("Foobar.java"));
+		assertTrue(!ls.isLineInterval());
+		assertTrue(ls.getLine() == 42);
 
-    assertFalse(ls.matchesFile("Bull"));
+		assertFalse(ls.matchesFile("Bull"));
 
-    assertTrue(ls.matchesFile("/x/y/Foobar.java"));
-  }
+		assertTrue(ls.matchesFile("/x/y/Foobar.java"));
+	}
 
-  @Test
-  public void testAbsoluteLocation() {
-    LocationSpec ls = LocationSpec.createLocationSpec("/x/y/z/Foobar.java:42");
-    System.out.println("# testing: " + ls);
+	@Test
+	public void testAbsoluteLocation() {
+		LocationSpec ls = LocationSpec
+				.createLocationSpec("/x/y/z/Foobar.java:42");
+		System.out.println("# testing: " + ls);
 
-    assertTrue(ls.matchesFile("/x/y/z/Foobar.java"));
-  }
+		assertTrue(ls.matchesFile("/x/y/z/Foobar.java"));
+	}
 
-  @Test
-  public void testPlatformLocation() {
-    LocationSpec ls = LocationSpec.createLocationSpec("C:\\x\\y\\z\\Foobar.java:42");
-    System.out.println("# testing: " + ls);
+	@Test
+	public void testPlatformLocation() {
+		LocationSpec ls = LocationSpec
+				.createLocationSpec("C:\\x\\y\\z\\Foobar.java:42");
+		System.out.println("# testing: " + ls);
 
-    assertTrue(ls.matchesFile("C:\\x\\y\\z\\Foobar.java"));
-    assertTrue(ls.getLine() == 42);
-  }
+		assertTrue(ls.matchesFile("C:\\x\\y\\z\\Foobar.java"));
+		assertTrue(ls.getLine() == 42);
+	}
 
+	@Test
+	public void testRelativeLocation() {
+		LocationSpec ls = LocationSpec
+				.createLocationSpec("x/y/z/Foobar.java:42");
+		System.out.println("# testing: " + ls);
 
-  @Test
-  public void testRelativeLocation() {
-    LocationSpec ls = LocationSpec.createLocationSpec("x/y/z/Foobar.java:42");
-    System.out.println("# testing: " + ls);
+		assertTrue(ls.matchesFile("x/y/z/Foobar.java"));
+	}
 
-    assertTrue(ls.matchesFile("x/y/z/Foobar.java"));
-  }
+	@Test
+	public void testWildcards() {
+		LocationSpec ls = LocationSpec.createLocationSpec("x/*/Foo*.java:42");
+		System.out.println("# testing: " + ls);
 
-  @Test
-  public void testWildcards() {
-    LocationSpec ls = LocationSpec.createLocationSpec("x/*/Foo*.java:42");
-    System.out.println("# testing: " + ls);
+		assertTrue(ls.matchesFile("x/y/z/Foobar.java"));
+		assertTrue(ls.matchesFile("Fooboo.java"));
+	}
 
-    assertTrue(ls.matchesFile("x/y/z/Foobar.java"));
-    assertTrue(ls.matchesFile("Fooboo.java"));
-  }
+	@Test
+	public void testAbsoluteRange() {
+		LocationSpec ls = LocationSpec.createLocationSpec("Foobar.java:42-48");
+		System.out.println("# testing: " + ls);
 
-  @Test
-  public void testAbsoluteRange(){
-    LocationSpec ls = LocationSpec.createLocationSpec("Foobar.java:42-48");
-    System.out.println("# testing: " + ls);
+		assertTrue(ls.isLineInterval());
+		assertTrue(ls.getFromLine() == 42);
+		assertTrue(ls.getToLine() == 48);
+	}
 
-    assertTrue(ls.isLineInterval());
-    assertTrue(ls.getFromLine() == 42);
-    assertTrue(ls.getToLine() == 48);
-  }
+	@Test
+	public void testRelativeRange() {
+		LocationSpec ls = LocationSpec.createLocationSpec("Foobar.java:42+6");
+		System.out.println("# testing: " + ls);
 
-  @Test
-  public void testRelativeRange(){
-    LocationSpec ls = LocationSpec.createLocationSpec("Foobar.java:42+6");
-    System.out.println("# testing: " + ls);
+		assertTrue(ls.isLineInterval());
+		assertTrue(ls.getFromLine() == 42);
+		assertTrue(ls.getToLine() == 48);
+	}
 
-    assertTrue(ls.isLineInterval());
-    assertTrue(ls.getFromLine() == 42);
-    assertTrue(ls.getToLine() == 48);
-  }
+	@Test
+	public void testOpenRange() {
+		LocationSpec ls = LocationSpec.createLocationSpec("Foobar.java:42+");
+		System.out.println("# testing: " + ls);
 
-  @Test
-  public void testOpenRange(){
-    LocationSpec ls = LocationSpec.createLocationSpec("Foobar.java:42+");
-    System.out.println("# testing: " + ls);
-
-    assertTrue(ls.isLineInterval());
-    assertTrue(ls.getFromLine() == 42);
-    assertTrue(ls.getToLine() == Integer.MAX_VALUE);
-  }
+		assertTrue(ls.isLineInterval());
+		assertTrue(ls.getFromLine() == 42);
+		assertTrue(ls.getToLine() == Integer.MAX_VALUE);
+	}
 
 }

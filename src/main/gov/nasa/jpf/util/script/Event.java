@@ -19,210 +19,214 @@
 
 package gov.nasa.jpf.util.script;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class Event extends ScriptElement {
 
-  public static final String NONE = "NONE";
+	public static final String NONE = "NONE";
 
-  protected String id;
-  protected String[] arguments;
+	protected String id;
+	protected String[] arguments;
 
+	public Event(ScriptElement parent, String id, String[] args, int line) {
+		super(parent, line);
+		this.id = id;
 
-  public Event(ScriptElement parent, String id, String[] args, int line) {
-    super(parent, line);
-    this.id = id;
+		if ((args != null) && (args.length > 0)) {
+			arguments = args.clone();
+		}
+	}
 
-    if ((args != null) && (args.length > 0)){
-      arguments = args.clone();
-    }
-  }
+	public boolean isNone() {
+		return (NONE.equals(id));
+	}
 
-  public boolean isNone() {
-    return (NONE.equals(id));
-  }
+	public static boolean isNone(String id) {
+		return (NONE.equals(id));
+	}
 
-  public static boolean isNone (String id) {
-    return (NONE.equals(id));
-  }
+	public String getId() {
+		return id;
+	}
 
-  public String getId() {
-    return id;
-  }
+	@Override
+	public int getLine() {
+		return line;
+	}
 
-  public int getLine() {
-    return line;
-  }
+	@Override
+	public String toString() {
+		if (arguments == null) {
+			return id;
+		} else {
+			StringBuilder sb = new StringBuilder(id);
 
-  public String toString() {
-    if (arguments == null) {
-      return id;
-    } else {
-      StringBuilder sb = new StringBuilder(id);
+			sb.append('(');
+			for (int i = 0; i < arguments.length; i++) {
+				if (i > 0) {
+					sb.append(',');
+				}
+				sb.append(arguments[i]);
+			}
+			sb.append(')');
 
-      sb.append('(');
-      for (int i=0; i<arguments.length; i++) {
-        if (i > 0) {
-          sb.append(',');
-        }
-        sb.append(arguments[i]);
-      }
-      sb.append(')');
+			return sb.toString();
+		}
+	}
 
-      return sb.toString();
-    }
-  }
+	public String[] getArguments() {
+		return arguments;
+	}
 
-  public String[] getArguments() {
-    return arguments;
-  }
+	public void setArguments(String[] args) {
+		arguments = args;
+	}
 
-  public void setArguments (String[] args) {
-    arguments = args;
-  }
+	@Override
+	public void process(ElementProcessor p) {
+		p.process(this);
+	}
 
-  public void process (ElementProcessor p) {
-    p.process(this);
-  }
+	String[] expandArgument(String a) {
+		ArrayList<String> list = new ArrayList<String>();
 
-  String[] expandArgument (String a) {
-    ArrayList<String> list = new ArrayList<String>();
+		StringExpander ex = new StringExpander(a);
+		List<String> l = ex.expand();
+		list.addAll(l);
 
-    StringExpander ex = new StringExpander(a);
-    List<String> l = ex.expand();
-    list.addAll(l);
+		return list.toArray(new String[list.size()]);
+	}
 
-    return list.toArray(new String[list.size()]);
-  }
+	/**
+	 * this is an interesting little exercise since we have to cover all
+	 * combinations of parameter values, which would normally be a simple set of
+	 * nested loops, only that the number of parameters is a variable itself
+	 * (I'm notoriously bad at this)
+	 */
+	public List<Event> expand() {
+		StringExpander ex = new StringExpander(id);
+		List<String> ids = ex.expand();
+		ArrayList<Event> list = new ArrayList<Event>();
 
-  /**
-   * this is an interesting little exercise since we have to cover all
-   * combinations of parameter values, which would normally be a simple set
-   * of nested loops, only that the number of parameters is a variable itself
-   * (I'm notoriously bad at this)
-   */
-  public List<Event> expand () {
-    StringExpander ex = new StringExpander(id);
-    List<String> ids = ex.expand();
-    ArrayList<Event> list = new ArrayList<Event>();
+		if (arguments != null) {
+			String[] a = new String[arguments.length];
+			String[][] args = new String[arguments.length][];
+			int[] argIdx = new int[args.length];
 
-    if (arguments != null) {
-      String[] a = new String[arguments.length];
-      String[][] args = new String[arguments.length][];
-      int[] argIdx = new int[args.length];
+			for (int i = 0; i < args.length; i++) {
+				args[i] = expandArgument(arguments[i]);
+			}
 
-      for (int i=0; i<args.length; i++) {
-        args[i] = expandArgument(arguments[i]);
-      }
+			int n = args.length - 1;
 
-      int n = args.length-1;
+			for (String id : ids) {
+				int i;
+				for (i = 0; i <= n; i++) { // reset arg indices
+					argIdx[i] = 0;
+				}
 
-      for (String id : ids) {
-        int i;
-        for (i=0; i<=n; i++) { // reset arg indices
-          argIdx[i] = 0;
-        }
+				for (i = n;;) {
+					if (argIdx[i] >= args[i].length) { // all choices at this
+														// level exhausted
+						// increment next lower level(s), reset level(s) above
+						int l;
+						for (l = i - 1; l >= 0; l--) {
+							argIdx[l]++;
+							argIdx[l + 1] = 0;
+							if (argIdx[l] < args[l].length) {
+								break;
+							}
+						}
+						if (l < 0) {
+							break; // done, do next id
+						} else {
+							i = n; // restart from top level
+						}
 
-        for (i=n; ;) {
-          if (argIdx[i] >= args[i].length){ // all choices at this level exhausted
-            // increment next lower level(s), reset level(s) above
-            int l;
-            for (l=i-1; l >= 0; l--) {
-              argIdx[l]++;
-              argIdx[l+1] = 0;
-              if (argIdx[l] < args[l].length) {
-                break;
-              }
-            }
-            if (l < 0) {
-              break; // done, do next id
-            } else {
-              i = n; // restart from top level
-            }
+					} else { // got a new combination
+						for (int k = 0; k < args.length; k++) {
+							a[k] = args[k][argIdx[k]];
+						}
+						Event ee = new Event(parent, id, a, line);
+						list.add(ee);
+						argIdx[i]++;
+					}
+				}
+			}
 
-          } else { // got a new combination
-            for (int k=0; k<args.length; k++) {
-              a[k] = args[k][argIdx[k]];
-            }
-            Event ee = new Event(parent, id, a, line);
-            list.add(ee);
-            argIdx[i]++;
-          }
-        }
-      }
+		} else { // no parameter variation, but we still might have expanded ids
+			if (ids.size() == 1) {
+				list.add(this);
+			} else {
+				for (String id : ids) {
+					list.add(new Event(parent, id, arguments, line));
+				}
+			}
+		}
 
-    } else { // no parameter variation, but we still might have expanded ids
-      if (ids.size() == 1) {
-        list.add(this);
-      } else {
-        for (String id : ids) {
-          list.add( new Event(parent, id, arguments, line));
-        }
-      }
-    }
+		return list;
+	}
 
-    return list;
-  }
+	public Object[] getConcreteArguments() {
+		if (arguments == null) {
+			return null;
+		}
+		if (arguments.length == 0) {
+			return new Object[0];
+		}
 
-  public Object[] getConcreteArguments () {
-    if (arguments == null) {
-      return null;
-    }
-    if (arguments.length == 0) {
-      return new Object[0];
-    }
+		Object[] a = new Object[arguments.length];
+		for (int i = 0; i < arguments.length; i++) {
+			a[i] = getConcreteArgument(arguments[i]);
+		}
 
-    Object[] a = new Object[arguments.length];
-    for (int i=0; i<arguments.length; i++) {
-      a[i] = getConcreteArgument(arguments[i]);
-    }
+		return a;
+	}
 
-    return a;
-  }
+	Object getConcreteArgument(String s) {
+		char c = s.charAt(0);
 
-  Object getConcreteArgument (String s) {
-    char c = s.charAt(0);
+		if (c == '"' || c == '\'') { // String literal
+			return s.substring(1, s.length() - 1);
 
-    if (c == '"' || c == '\'') { // String literal
-      return s.substring(1,s.length()-1);
+		} else if (Character.isDigit(c)) { // ints and doubbles
+			if (s.indexOf('.') >= 0) {
+				return Double.parseDouble(s);
+			} else {
+				return Integer.parseInt(s);
+			}
 
-    } else if (Character.isDigit(c)) { // ints and doubbles
-      if (s.indexOf('.') >=0) {
-        return Double.parseDouble(s);
-      } else {
-        return Integer.parseInt(s);
-      }
-      
-    } else if (s.equals("true")) { // boolean
-      return Boolean.TRUE;
-    } else if (s.equals("false")) {
-      return Boolean.FALSE;
-      
-    } else if (c == '@'){ // variable
-      return s;
-      
-    } else { // not supported
-      throw new IllegalArgumentException("unsupported event argument type of value=" + s);
-    }
-  }
+		} else if (s.equals("true")) { // boolean
+			return Boolean.TRUE;
+		} else if (s.equals("false")) {
+			return Boolean.FALSE;
 
-  /**
-   * variations over boolean lists are quite easy to produce :)
-   */
-  public static Object[][] getBooleanArgVariations (int nArgs) {
-    int n = 1<<nArgs;
-    Object[][] args = new Object[n][];
+		} else if (c == '@') { // variable
+			return s;
 
-    for (int i=0; i<n; i++) {
-      args[i] = new Boolean[nArgs];
-      for (int j=0; j<nArgs; j++) {
-        args[i][j] = ((i & (1<<j)) != 0) ? Boolean.TRUE : Boolean.FALSE;
-      }
-    }
+		} else { // not supported
+			throw new IllegalArgumentException(
+					"unsupported event argument type of value=" + s);
+		}
+	}
 
-    return args;
-  }
+	/**
+	 * variations over boolean lists are quite easy to produce :)
+	 */
+	public static Object[][] getBooleanArgVariations(int nArgs) {
+		int n = 1 << nArgs;
+		Object[][] args = new Object[n][];
+
+		for (int i = 0; i < n; i++) {
+			args[i] = new Boolean[nArgs];
+			for (int j = 0; j < nArgs; j++) {
+				args[i][j] = ((i & (1 << j)) != 0) ? Boolean.TRUE
+						: Boolean.FALSE;
+			}
+		}
+
+		return args;
+	}
 
 }

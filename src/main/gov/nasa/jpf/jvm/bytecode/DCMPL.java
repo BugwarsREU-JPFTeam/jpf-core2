@@ -18,40 +18,31 @@
 //
 package gov.nasa.jpf.jvm.bytecode;
 
-import gov.nasa.jpf.vm.Instruction;
-import gov.nasa.jpf.vm.StackFrame;
-import gov.nasa.jpf.vm.ThreadInfo;
-import gov.nasa.jpf.vm.Types;
-
-
-
 /**
- * Compare double
- * ..., value1, value2 => ..., result
+ * Compare double ..., value1, value2 => ..., result
  */
 public class DCMPL extends DoubleCompareInstruction {
 
+	@Override
+	protected int conditionValue(double v1, double v2) {
+		if (Double.isNaN(v1) || Double.isNaN(v2)) {
+			return -1;
+		} else if (v1 == v2) {
+			return 0;
+		} else if (v2 > v1) {
+			return 1;
+		} else {
+			return -1;
+		}
+	}
 
-  @Override
-  protected int conditionValue(double v1, double v2) {
-    if (Double.isNaN(v1) || Double.isNaN(v2)) {
-      return -1;
-    } else if (v1 == v2) {
-      return 0;
-    } else if (v2 > v1) {
-      return 1;
-    } else {
-      return -1;
-    }
-  }
-  
-  @Override
-  public int getByteCode () {
-    return 0x97;
-  }
-  
-  @Override
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public int getByteCode() {
+		return 0x97;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

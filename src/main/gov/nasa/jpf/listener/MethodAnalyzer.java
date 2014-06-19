@@ -39,340 +39,356 @@ import gov.nasa.jpf.vm.ThreadInfo;
 import java.io.PrintWriter;
 import java.util.HashMap;
 
-
 /**
- * analyzes call/execute sequences of methods
- * closely modeled after the DeadlockAnalyzer, i.e. keeps it's own
- * log and doesn't require full instruction trace
+ * analyzes call/execute sequences of methods closely modeled after the
+ * DeadlockAnalyzer, i.e. keeps it's own log and doesn't require full
+ * instruction trace
  * 
- * <2do> this needs to be refactored with DeadlockAnalyzer - the whole
- * trace mgnt (except of the printing) can be made generic
+ * <2do> this needs to be refactored with DeadlockAnalyzer - the whole trace
+ * mgnt (except of the printing) can be made generic
  */
 public class MethodAnalyzer extends ListenerAdapter {
-  
-  enum OpType { CALL (">  "),                 // invokeX breaks transition (e.g. blocked sync)
-                EXECUTE (" - "),              // method entered method after transition break
-                CALL_EXECUTE (">- "),         // call & enter within same transition
-                RETURN ("  <"),               // method returned
-                EXEC_RETURN (" -<"),          // enter & return in consecutive ops
-                CALL_EXEC_RETURN (">-<");     // call & enter & return in consecutive ops
-    String code;
-    OpType (String code){ this.code = code; }
-  };
 
-  static class MethodOp {
-    OpType type;
-    
-    ThreadInfo ti;
-    ElementInfo ei;
-    Instruction insn; // the caller
-    MethodInfo mi;    // the callee
-    int stackDepth;
-    
-    // this is used to keep our own trace
-    int stateId = Integer.MIN_VALUE;
-    MethodOp prevTransition;
-    MethodOp p;   // prev during execution
-    
-    MethodOp (OpType type, MethodInfo mi, ThreadInfo ti, ElementInfo ei, int stackDepth){
-      this.type = type;
-      this.ti = ti;
-      this.mi = mi;
-      this.ei = ei;
-      this.stackDepth = stackDepth;
-    }
+	enum OpType {
+		CALL(">  "), // invokeX breaks transition (e.g. blocked sync)
+		EXECUTE(" - "), // method entered method after transition break
+		CALL_EXECUTE(">- "), // call & enter within same transition
+		RETURN("  <"), // method returned
+		EXEC_RETURN(" -<"), // enter & return in consecutive ops
+		CALL_EXEC_RETURN(">-<"); // call & enter & return in consecutive ops
+		String code;
 
-    MethodOp clone (OpType newType){
-      MethodOp op = new MethodOp(newType, mi, ti, ei, stackDepth);
-      op.p = p;
-      return op;
-    }
+		OpType(String code) {
+			this.code = code;
+		}
+	};
 
-    boolean isMethodEnter() {
-      return (type == OpType.CALL_EXECUTE) || (type == OpType.EXECUTE);
-    }
+	static class MethodOp {
+		OpType type;
 
-    boolean isSameMethod(MethodOp op) {
-      return (mi == op.mi) && (ti == op.ti) && (ei == op.ei) && (stackDepth == op.stackDepth);
-    }
+		ThreadInfo ti;
+		ElementInfo ei;
+		Instruction insn; // the caller
+		MethodInfo mi; // the callee
+		int stackDepth;
 
-    void printOn(PrintWriter pw, MethodAnalyzer analyzer) {
-      pw.print(ti.getId());
-      pw.print(": ");
-      
-      pw.print(type.code);
-      pw.print(' ');
+		// this is used to keep our own trace
+		int stateId = Integer.MIN_VALUE;
+		MethodOp prevTransition;
+		MethodOp p; // prev during execution
 
-      if (analyzer.showDepth){
-        for (int i = 0; i < stackDepth; i++) {
-          pw.print('.');
-        }
-        pw.print(' ');
-      }
+		MethodOp(OpType type, MethodInfo mi, ThreadInfo ti, ElementInfo ei,
+				int stackDepth) {
+			this.type = type;
+			this.ti = ti;
+			this.mi = mi;
+			this.ei = ei;
+			this.stackDepth = stackDepth;
+		}
 
-      if (!mi.isStatic()){
-        if (ei.getClassInfo() != mi.getClassInfo()){ // method is in superclass
-          pw.print(mi.getClassName());
-          pw.print('<');
-          pw.print(ei);
-          pw.print('>');
-        } else { // method is in concrete object class
-          pw.print(ei);
-        }
-      } else {
-        pw.print(mi.getClassName());
-      }
+		MethodOp clone(OpType newType) {
+			MethodOp op = new MethodOp(newType, mi, ti, ei, stackDepth);
+			op.p = p;
+			return op;
+		}
 
-      pw.print('.');
-      pw.print(mi.getUniqueName());
-    }
-    
-    public String toString() {
-      return "Op {" + ti.getName() + ',' + type.code +
-                   ',' + mi.getFullName() + ',' + ei + '}';
-    }
-  }
+		boolean isMethodEnter() {
+			return (type == OpType.CALL_EXECUTE) || (type == OpType.EXECUTE);
+		}
 
-  // report options
+		boolean isSameMethod(MethodOp op) {
+			return (mi == op.mi) && (ti == op.ti) && (ei == op.ei)
+					&& (stackDepth == op.stackDepth);
+		}
 
-  StringSetMatcher includes = null; //  means all
-  StringSetMatcher excludes = null; //  means none
+		void printOn(PrintWriter pw, MethodAnalyzer analyzer) {
+			pw.print(ti.getId());
+			pw.print(": ");
 
-  int maxHistory;
-  String format;
-  boolean skipInit;
-  boolean showDepth;
-  boolean showTransition;
-  boolean showCompleted;
+			pw.print(type.code);
+			pw.print(' ');
 
-  // execution environment
+			if (analyzer.showDepth) {
+				for (int i = 0; i < stackDepth; i++) {
+					pw.print('.');
+				}
+				pw.print(' ');
+			}
 
-  VM vm;
-  Search search;
+			if (!mi.isStatic()) {
+				if (ei.getClassInfo() != mi.getClassInfo()) { // method is in
+																// superclass
+					pw.print(mi.getClassName());
+					pw.print('<');
+					pw.print(ei);
+					pw.print('>');
+				} else { // method is in concrete object class
+					pw.print(ei);
+				}
+			} else {
+				pw.print(mi.getClassName());
+			}
 
-  OpType opType;
-  
-  // this is used to keep our own trace
-  MethodOp lastOp;
-  MethodOp lastTransition;
-  boolean isFirstTransition = true;
+			pw.print('.');
+			pw.print(mi.getUniqueName());
+		}
 
-  // this is set after we call revertAndFlatten during reporting
-  // (we can't call revertAndFlatten twice since it is destructive, but
-  // we might have to report several times in case we have several publishers)
-  MethodOp firstOp = null;
-  
-  // for HeuristicSearches. Ok, that's braindead but at least no need for cloning
-  HashMap<Integer,MethodOp> storedTransition = new HashMap<Integer,MethodOp>();
+		@Override
+		public String toString() {
+			return "Op {" + ti.getName() + ',' + type.code + ','
+					+ mi.getFullName() + ',' + ei + '}';
+		}
+	}
 
-  
-  public MethodAnalyzer (Config config, JPF jpf){
-    jpf.addPublisherExtension(ConsolePublisher.class, this);
-    
-    maxHistory = config.getInt("method.max_history", Integer.MAX_VALUE);
-    format = config.getString("method.format", "raw");
-    skipInit = config.getBoolean("method.skip_init", true);
-    showDepth = config.getBoolean("method.show_depth", false);
-    showTransition = config.getBoolean("method.show_transition", true);
-    
-    includes = StringSetMatcher.getNonEmpty(config.getStringArray("method.include"));
-    excludes = StringSetMatcher.getNonEmpty(config.getStringArray("method.exclude"));
-    
-    vm = jpf.getVM();
-    search = jpf.getSearch();
-  }
+	// report options
 
+	StringSetMatcher includes = null; // means all
+	StringSetMatcher excludes = null; // means none
 
-  void addOp (VM vm, OpType opType, MethodInfo mi, ThreadInfo ti, ElementInfo ei, int stackDepth){
-    if (!(skipInit && isFirstTransition)) {
-      MethodOp op = new MethodOp(opType, mi, ti, ei, stackDepth);
-      if (lastOp == null){
-        lastOp = op;
-      } else {
-        op.p = lastOp;
-        lastOp = op;
-      }
-    }
-  }
+	int maxHistory;
+	String format;
+	boolean skipInit;
+	boolean showDepth;
+	boolean showTransition;
+	boolean showCompleted;
 
-  boolean isAnalyzedMethod (MethodInfo mi){
-    if (mi != null){
-      String mthName = mi.getFullName();
-      return StringSetMatcher.isMatch(mthName, includes, excludes);
-    } else {
-      return false;
-    }
-  }
+	// execution environment
 
-  void printOn (PrintWriter pw) {
-    MethodOp start = firstOp;
-    int lastStateId  = Integer.MIN_VALUE;
-    int transition = skipInit ? 1 : 0;
-    int lastTid = start.ti.getId();
-    
-    for (MethodOp op = start; op != null; op = op.p) {
+	VM vm;
+	Search search;
 
-      if (showTransition) {
-        if (op.stateId != lastStateId) {
-          lastStateId = op.stateId;
-          pw.print("------------------------------------------ #");
-          pw.println(transition++);
-        }
-      } else {
-        int tid = op.ti.getId();
-        if (tid != lastTid) {
-          lastTid = tid;
-          pw.println("------------------------------------------");
-        }
-      }
-      
-      op.printOn(pw, this);
-      pw.println();
-    }
-  }
+	OpType opType;
 
-  // warning - this rotates pointers in situ, i.e. destroys the original structure
-  MethodOp revertAndFlatten (MethodOp start) {
+	// this is used to keep our own trace
+	MethodOp lastOp;
+	MethodOp lastTransition;
+	boolean isFirstTransition = true;
 
-    MethodOp last = null;
-    MethodOp prevTransition = start.prevTransition;
+	// this is set after we call revertAndFlatten during reporting
+	// (we can't call revertAndFlatten twice since it is destructive, but
+	// we might have to report several times in case we have several publishers)
+	MethodOp firstOp = null;
 
-    for (MethodOp op = start; op != null;) {
-      MethodOp opp = op.p;
-      op.p = last;
-      
-      if (opp == null) {
-        if (prevTransition == null) {
-          return op;
-        } else {
-          last = op;
-          op = prevTransition;
-          prevTransition = op.prevTransition;
-        }
-      } else {
-        last = op;
-        op = opp;
-      }
-    }
+	// for HeuristicSearches. Ok, that's braindead but at least no need for
+	// cloning
+	HashMap<Integer, MethodOp> storedTransition = new HashMap<Integer, MethodOp>();
 
-    return null;
-  }
-  
-  //--- SearchListener interface
-  // <2do> this is the same as DeadlockAnalyzer, except of xxOp type -> refactor
-  @Override
-  public void stateAdvanced (Search search){
-    
-    if (search.isNewState() && (lastOp != null)) {
-      int stateId = search.getStateId();
-      
-      for (MethodOp op=lastOp; op != null; op=op.p) {
-        op.stateId = stateId;
-      }
-      
-      lastOp.prevTransition = lastTransition;
-      lastTransition = lastOp;
-    }
-    
-    lastOp = null;
-    isFirstTransition = false;
-  }
-  
-  @Override
-  public void stateBacktracked (Search search){
-    int stateId = search.getStateId();
-    while ((lastTransition != null) && (lastTransition.stateId > stateId)){
-      lastTransition = lastTransition.prevTransition;
-    }
-    lastOp = null;
-  }
-  
-  @Override
-  public void stateStored (Search search) {
-    // always called after stateAdvanced
-    storedTransition.put(search.getStateId(), lastTransition);
-  }
-  
-  @Override
-  public void stateRestored (Search search) {
-    int stateId = search.getStateId();
-    MethodOp op = storedTransition.get(stateId);
-    if (op != null) {
-      lastTransition = op;
-      storedTransition.remove(stateId);  // not strictly required, but we don't come back
-    }
-  }
+	public MethodAnalyzer(Config config, JPF jpf) {
+		jpf.addPublisherExtension(ConsolePublisher.class, this);
 
+		maxHistory = config.getInt("method.max_history", Integer.MAX_VALUE);
+		format = config.getString("method.format", "raw");
+		skipInit = config.getBoolean("method.skip_init", true);
+		showDepth = config.getBoolean("method.show_depth", false);
+		showTransition = config.getBoolean("method.show_transition", true);
 
-  //--- VMlistener interface
-  @Override
-  public void instructionExecuted (VM vm, ThreadInfo thread, Instruction nextInsn, Instruction executedInsn) {
-    ThreadInfo ti;
-    MethodInfo mi;
-    ElementInfo ei = null;
-    
-    if (executedInsn instanceof InvokeInstruction) {
-      InvokeInstruction call = (InvokeInstruction)executedInsn;
-      ti = thread;
-      mi = call.getInvokedMethod(ti);
-            
-      if (isAnalyzedMethod(mi)) {
-        OpType type;
+		includes = StringSetMatcher.getNonEmpty(config
+				.getStringArray("method.include"));
+		excludes = StringSetMatcher.getNonEmpty(config
+				.getStringArray("method.exclude"));
 
-        // check if this was actually executed, or is a blocked sync call
-        if (ti.getNextPC() == call) { // re-executed -> blocked or overlayed
-          type = OpType.CALL;
+		vm = jpf.getVM();
+		search = jpf.getSearch();
+	}
 
-        } else { // executed
-          if (ti.isFirstStepInsn()) {
-            type = OpType.EXECUTE;
-          } else {
-            type = OpType.CALL_EXECUTE;
-          }
-        }
+	void addOp(VM vm, OpType opType, MethodInfo mi, ThreadInfo ti,
+			ElementInfo ei, int stackDepth) {
+		if (!(skipInit && isFirstTransition)) {
+			MethodOp op = new MethodOp(opType, mi, ti, ei, stackDepth);
+			if (lastOp == null) {
+				lastOp = op;
+			} else {
+				op.p = lastOp;
+				lastOp = op;
+			}
+		}
+	}
 
-        if (call instanceof InstanceInvocation) {
-          ei = ((InstanceInvocation)call).getThisElementInfo(ti);
-        }
-        
-        addOp(vm,type,mi,ti,ei, ti.getStackDepth());
-      }
-      
-    } else if (executedInsn instanceof ReturnInstruction) {
-      ReturnInstruction ret = (ReturnInstruction)executedInsn;
-      ti = thread;
-      StackFrame frame = ret.getReturnFrame();
-      mi = frame.getMethodInfo();
+	boolean isAnalyzedMethod(MethodInfo mi) {
+		if (mi != null) {
+			String mthName = mi.getFullName();
+			return StringSetMatcher.isMatch(mthName, includes, excludes);
+		} else {
+			return false;
+		}
+	}
 
-      if (isAnalyzedMethod(mi)) {
-        if (!mi.isStatic()) {
-          int ref = frame.getThis();
-          if (ref != MJIEnv.NULL) {
-            ei = ti.getElementInfo(ref);
-          }
-        }
-        
-        addOp(vm,OpType.RETURN,mi,ti,ei, ti.getStackDepth()+1); // postExec-> frame already popped
-      }
-    }
-  }
-  
-  //--- the PubisherExtension part
-  @Override
-  public void publishPropertyViolation (Publisher publisher) {
+	void printOn(PrintWriter pw) {
+		MethodOp start = firstOp;
+		int lastStateId = Integer.MIN_VALUE;
+		int transition = skipInit ? 1 : 0;
+		int lastTid = start.ti.getId();
 
-    if (firstOp == null && lastTransition != null){ // do this just once
-      firstOp = revertAndFlatten(lastTransition);
-    }
+		for (MethodOp op = start; op != null; op = op.p) {
 
-    if (firstOp == null){
-      return;
-    }
+			if (showTransition) {
+				if (op.stateId != lastStateId) {
+					lastStateId = op.stateId;
+					pw.print("------------------------------------------ #");
+					pw.println(transition++);
+				}
+			} else {
+				int tid = op.ti.getId();
+				if (tid != lastTid) {
+					lastTid = tid;
+					pw.println("------------------------------------------");
+				}
+			}
 
-    PrintWriter pw = publisher.getOut();
-    publisher.publishTopicStart("method ops " + publisher.getLastErrorId());
+			op.printOn(pw, this);
+			pw.println();
+		}
+	}
 
+	// warning - this rotates pointers in situ, i.e. destroys the original
+	// structure
+	MethodOp revertAndFlatten(MethodOp start) {
 
-    printOn(pw);
-  }
+		MethodOp last = null;
+		MethodOp prevTransition = start.prevTransition;
+
+		for (MethodOp op = start; op != null;) {
+			MethodOp opp = op.p;
+			op.p = last;
+
+			if (opp == null) {
+				if (prevTransition == null) {
+					return op;
+				} else {
+					last = op;
+					op = prevTransition;
+					prevTransition = op.prevTransition;
+				}
+			} else {
+				last = op;
+				op = opp;
+			}
+		}
+
+		return null;
+	}
+
+	// --- SearchListener interface
+	// <2do> this is the same as DeadlockAnalyzer, except of xxOp type ->
+	// refactor
+	@Override
+	public void stateAdvanced(Search search) {
+
+		if (search.isNewState() && (lastOp != null)) {
+			int stateId = search.getStateId();
+
+			for (MethodOp op = lastOp; op != null; op = op.p) {
+				op.stateId = stateId;
+			}
+
+			lastOp.prevTransition = lastTransition;
+			lastTransition = lastOp;
+		}
+
+		lastOp = null;
+		isFirstTransition = false;
+	}
+
+	@Override
+	public void stateBacktracked(Search search) {
+		int stateId = search.getStateId();
+		while ((lastTransition != null) && (lastTransition.stateId > stateId)) {
+			lastTransition = lastTransition.prevTransition;
+		}
+		lastOp = null;
+	}
+
+	@Override
+	public void stateStored(Search search) {
+		// always called after stateAdvanced
+		storedTransition.put(search.getStateId(), lastTransition);
+	}
+
+	@Override
+	public void stateRestored(Search search) {
+		int stateId = search.getStateId();
+		MethodOp op = storedTransition.get(stateId);
+		if (op != null) {
+			lastTransition = op;
+			storedTransition.remove(stateId); // not strictly required, but we
+												// don't come back
+		}
+	}
+
+	// --- VMlistener interface
+	@Override
+	public void instructionExecuted(VM vm, ThreadInfo thread,
+			Instruction nextInsn, Instruction executedInsn) {
+		ThreadInfo ti;
+		MethodInfo mi;
+		ElementInfo ei = null;
+
+		if (executedInsn instanceof InvokeInstruction) {
+			InvokeInstruction call = (InvokeInstruction) executedInsn;
+			ti = thread;
+			mi = call.getInvokedMethod(ti);
+
+			if (isAnalyzedMethod(mi)) {
+				OpType type;
+
+				// check if this was actually executed, or is a blocked sync
+				// call
+				if (ti.getNextPC() == call) { // re-executed -> blocked or
+												// overlayed
+					type = OpType.CALL;
+
+				} else { // executed
+					if (ti.isFirstStepInsn()) {
+						type = OpType.EXECUTE;
+					} else {
+						type = OpType.CALL_EXECUTE;
+					}
+				}
+
+				if (call instanceof InstanceInvocation) {
+					ei = ((InstanceInvocation) call).getThisElementInfo(ti);
+				}
+
+				addOp(vm, type, mi, ti, ei, ti.getStackDepth());
+			}
+
+		} else if (executedInsn instanceof ReturnInstruction) {
+			ReturnInstruction ret = (ReturnInstruction) executedInsn;
+			ti = thread;
+			StackFrame frame = ret.getReturnFrame();
+			mi = frame.getMethodInfo();
+
+			if (isAnalyzedMethod(mi)) {
+				if (!mi.isStatic()) {
+					int ref = frame.getThis();
+					if (ref != MJIEnv.NULL) {
+						ei = ti.getElementInfo(ref);
+					}
+				}
+
+				addOp(vm, OpType.RETURN, mi, ti, ei, ti.getStackDepth() + 1); // postExec->
+																				// frame
+																				// already
+																				// popped
+			}
+		}
+	}
+
+	// --- the PubisherExtension part
+	@Override
+	public void publishPropertyViolation(Publisher publisher) {
+
+		if (firstOp == null && lastTransition != null) { // do this just once
+			firstOp = revertAndFlatten(lastTransition);
+		}
+
+		if (firstOp == null) {
+			return;
+		}
+
+		PrintWriter pw = publisher.getOut();
+		publisher.publishTopicStart("method ops " + publisher.getLastErrorId());
+
+		printOn(pw);
+	}
 }

@@ -37,159 +37,157 @@ import org.junit.Test;
  */
 public class MethodListenerTest extends TestJPF {
 
-  // avoid loading JPF classes when running under JPF (specify classnames explicitly)
-  static String CLSNAME = "gov.nasa.jpf.test.mc.basic.MethodListenerTest";
-  static String LISTENER = "+listener=gov.nasa.jpf.test.mc.basic.MethodListenerTest$Listener";
+	// avoid loading JPF classes when running under JPF (specify classnames
+	// explicitly)
+	static String CLSNAME = "gov.nasa.jpf.test.mc.basic.MethodListenerTest";
+	static String LISTENER = "+listener=gov.nasa.jpf.test.mc.basic.MethodListenerTest$Listener";
 
-  public static class Listener extends ListenerAdapter {
-    String startMthName;
+	public static class Listener extends ListenerAdapter {
+		String startMthName;
 
-    boolean traceActive = false;
-    int level;
+		boolean traceActive = false;
+		int level;
 
-    public Listener (Config config){
-      startMthName = config.getString("_start");
-    }
+		public Listener(Config config) {
+			startMthName = config.getString("_start");
+		}
 
-    String levelPrefix (int lvl){
-      String prefix = "";
-      for (int i=0; i<lvl; i++){
-        prefix += "  ";
-      }
-      return prefix;
-    }
+		String levelPrefix(int lvl) {
+			String prefix = "";
+			for (int i = 0; i < lvl; i++) {
+				prefix += "  ";
+			}
+			return prefix;
+		}
 
-    @Override
-    public void searchStarted(Search search) {
-      trace.clear();
-    }
+		@Override
+		public void searchStarted(Search search) {
+			trace.clear();
+		}
 
-    @Override
-    public void methodEntered (VM vm, ThreadInfo ti, MethodInfo mi){
-      assertSame(mi, ThreadInfo.getCurrentThread().getTopFrameMethodInfo());
+		@Override
+		public void methodEntered(VM vm, ThreadInfo ti, MethodInfo mi) {
+			assertSame(mi, ThreadInfo.getCurrentThread()
+					.getTopFrameMethodInfo());
 
-      if (CLSNAME.equals(mi.getClassName())){
-        String mthName = mi.getName();
-        if (mthName.equals(startMthName)) {
-          traceActive = true;
-          level=0;
-        }
+			if (CLSNAME.equals(mi.getClassName())) {
+				String mthName = mi.getName();
+				if (mthName.equals(startMthName)) {
+					traceActive = true;
+					level = 0;
+				}
 
-        if (traceActive){
-          String prefix = levelPrefix(level);
-          trace.add(prefix + "> " + mthName);
+				if (traceActive) {
+					String prefix = levelPrefix(level);
+					trace.add(prefix + "> " + mthName);
 
-          System.out.println(prefix + "> " + mthName);
+					System.out.println(prefix + "> " + mthName);
 
-          level++;
-        }
-      }
-    }
+					level++;
+				}
+			}
+		}
 
-    @Override
-    public void methodExited (VM vm, ThreadInfo ti, MethodInfo mi){
-      if (traceActive){
-        assertSame(mi, ThreadInfo.getCurrentThread().getTopFrameMethodInfo());
-        
-        if (CLSNAME.equals(mi.getClassName())){
-          level--;
+		@Override
+		public void methodExited(VM vm, ThreadInfo ti, MethodInfo mi) {
+			if (traceActive) {
+				assertSame(mi, ThreadInfo.getCurrentThread()
+						.getTopFrameMethodInfo());
 
-          String prefix = levelPrefix(level);
-          trace.add(prefix + "< " + mi.getName());
+				if (CLSNAME.equals(mi.getClassName())) {
+					level--;
 
-          System.out.println(prefix + "< " + mi.getName());
+					String prefix = levelPrefix(level);
+					trace.add(prefix + "< " + mi.getName());
 
-          if (level == 0){
-            traceActive = false;
-          }
-        }
+					System.out.println(prefix + "< " + mi.getName());
 
-      }
-    }
+					if (level == 0) {
+						traceActive = false;
+					}
+				}
 
-    @Override
-    public void exceptionThrown (VM vm, ThreadInfo ti, ElementInfo ei){
-      if (traceActive){
-        String xCls = ei.getClassInfo().getName();
-        trace.add("X " + xCls);
-        System.out.println("X " + xCls);
-      }
-    }
-  }
+			}
+		}
 
-  static ArrayList<String> trace = new ArrayList<String>();
+		@Override
+		public void exceptionThrown(VM vm, ThreadInfo ti, ElementInfo ei) {
+			if (traceActive) {
+				String xCls = ei.getClassInfo().getName();
+				trace.add("X " + xCls);
+				System.out.println("X " + xCls);
+			}
+		}
+	}
 
-  static boolean traceEquals(String... expected){
-    if (expected.length != trace.size()){
-      System.err.println("wrong trace size, found: " + trace.size() + ", expected: " + expected.length);
-      return false;
-    }
+	static ArrayList<String> trace = new ArrayList<String>();
 
-    int i = 0;
-    for (String s : trace){
-      if (!s.equals(expected[i])){
-        System.err.println("wrong trace entry, found: " + s + ", expected: " + expected[i]);
-        return false;
-      }
-      i++;
-    }
-    return true;
-  }
+	static boolean traceEquals(String... expected) {
+		if (expected.length != trace.size()) {
+			System.err.println("wrong trace size, found: " + trace.size()
+					+ ", expected: " + expected.length);
+			return false;
+		}
 
-  //--- internal test stuff
-  void foo(){
-    bar();
-  }
+		int i = 0;
+		for (String s : trace) {
+			if (!s.equals(expected[i])) {
+				System.err.println("wrong trace entry, found: " + s
+						+ ", expected: " + expected[i]);
+				return false;
+			}
+			i++;
+		}
+		return true;
+	}
 
-  int bar(){
-    return 24;
-  }
+	// --- internal test stuff
+	void foo() {
+		bar();
+	}
 
-  void baz (){
-    blowUp();
-  }
+	int bar() {
+		return 24;
+	}
 
-  void blowUp() {
-    throw new RuntimeException("I blow up");
-  }
-  
-  void time() {
-    System.currentTimeMillis();
-  }
+	void baz() {
+		blowUp();
+	}
 
-  //--- test methods
-  @Test public void testBasicInvocation() {
-    if (verifyNoPropertyViolation(LISTENER, "+_start=testBasicInvocation")){
-      foo();
-      
-    } else {
-      assertTrue(traceEquals(
-              "> testBasicInvocation",
-              "  > foo",
-              "    > bar",
-              "    < bar",
-              "  < foo",
-              "< testBasicInvocation"));
-    }
-  }
+	void blowUp() {
+		throw new RuntimeException("I blow up");
+	}
 
-  @Test public void testException() {
-    if (verifyNoPropertyViolation(LISTENER, "+_start=testException")){
-      try {
-        baz();
+	void time() {
+		System.currentTimeMillis();
+	}
 
-      } catch (RuntimeException x){
-      }
+	// --- test methods
+	@Test
+	public void testBasicInvocation() {
+		if (verifyNoPropertyViolation(LISTENER, "+_start=testBasicInvocation")) {
+			foo();
 
-    } else {
-      assertTrue(traceEquals(
-              "> testException",
-              "  > baz",
-              "    > blowUp",
-              "X java.lang.RuntimeException",
-              "    < blowUp",
-              "  < baz",
-              "< testException"));
-    }
-  }
+		} else {
+			assertTrue(traceEquals("> testBasicInvocation", "  > foo",
+					"    > bar", "    < bar", "  < foo",
+					"< testBasicInvocation"));
+		}
+	}
+
+	@Test
+	public void testException() {
+		if (verifyNoPropertyViolation(LISTENER, "+_start=testException")) {
+			try {
+				baz();
+
+			} catch (RuntimeException x) {
+			}
+
+		} else {
+			assertTrue(traceEquals("> testException", "  > baz",
+					"    > blowUp", "X java.lang.RuntimeException",
+					"    < blowUp", "  < baz", "< testException"));
+		}
+	}
 }

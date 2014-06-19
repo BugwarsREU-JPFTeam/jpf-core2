@@ -30,76 +30,88 @@ import gov.nasa.jpf.vm.StaticElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
 
 /**
- * a CFSerializer that stores the serialized program state in a 
+ * a CFSerializer that stores the serialized program state in a
  * readable/diffable format.
  * 
- * Automatically used by Debug..StateSet if the configured vm.storage.class is .vm.DebugJenkinsStateSet 
+ * Automatically used by Debug..StateSet if the configured vm.storage.class is
+ * .vm.DebugJenkinsStateSet
  */
-public class DebugCFSerializer extends CFSerializer implements DebugStateSerializer {
+public class DebugCFSerializer extends CFSerializer implements
+		DebugStateSerializer {
 
-  JPFOutputStream os;
-  
-  // this is for debugging purposes only
-  public DebugCFSerializer() {
-    os = new JPFOutputStream(System.out);
-  }
-  
-  public void setOutputStream (OutputStream s){
-    os = new JPFOutputStream(s);
-  }
-  
-  protected int[] computeStoringData() {    
-    os.printCommentLine("------------------------ serialized state");
-    return super.computeStoringData();
-  }
-  
-  protected void processReferenceQueue(){
-    os.println();
-    os.printCommentLine("--- heap");
-    os.println();
-    super.processReferenceQueue();
-  }
-  
-  public void process (ElementInfo ei) {
-    super.process( ei);
-    
-    FinalBitSet filtered = !ei.isArray() ? getInstanceFilterMask(ei.getClassInfo()) : null;
-    os.print(ei, filtered);
-    os.println();
-  }
-  
-  protected void serializeClassLoaders(){
-    os.println();
-    os.printCommentLine("--- classes");
-    os.println();
-    super.serializeClassLoaders();
-  }
-  
-  protected void serializeClass (StaticElementInfo sei){
-    super.serializeClass(sei);
-    
-    FinalBitSet filtered = getStaticFilterMask(sei.getClassInfo());
-    os.print(sei, filtered);
-    os.println();    
-  }
-  
-  protected void serializeStackFrames(){
-    os.println();
-    os.printCommentLine("--- threads");
-    os.println();
-    super.serializeStackFrames();
-  }
-  
-  protected void serializeStackFrames(ThreadInfo ti){
-    os.println();
-    os.print(ti);
-    os.println();
-    super.serializeStackFrames(ti);
-  }
-  
-  protected void serializeFrame(StackFrame frame){
-    os.print(frame);
-    os.println();
-    super.serializeFrame(frame);
-  }
+	JPFOutputStream os;
+
+	// this is for debugging purposes only
+	public DebugCFSerializer() {
+		os = new JPFOutputStream(System.out);
+	}
+
+	@Override
+	public void setOutputStream(OutputStream s) {
+		os = new JPFOutputStream(s);
+	}
+
+	@Override
+	protected int[] computeStoringData() {
+		os.printCommentLine("------------------------ serialized state");
+		return super.computeStoringData();
+	}
+
+	@Override
+	protected void processReferenceQueue() {
+		os.println();
+		os.printCommentLine("--- heap");
+		os.println();
+		super.processReferenceQueue();
+	}
+
+	@Override
+	public void process(ElementInfo ei) {
+		super.process(ei);
+
+		FinalBitSet filtered = !ei.isArray() ? getInstanceFilterMask(ei
+				.getClassInfo()) : null;
+		os.print(ei, filtered);
+		os.println();
+	}
+
+	@Override
+	protected void serializeClassLoaders() {
+		os.println();
+		os.printCommentLine("--- classes");
+		os.println();
+		super.serializeClassLoaders();
+	}
+
+	@Override
+	protected void serializeClass(StaticElementInfo sei) {
+		super.serializeClass(sei);
+
+		FinalBitSet filtered = getStaticFilterMask(sei.getClassInfo());
+		os.print(sei, filtered);
+		os.println();
+	}
+
+	@Override
+	protected void serializeStackFrames() {
+		os.println();
+		os.printCommentLine("--- threads");
+		os.println();
+		super.serializeStackFrames();
+	}
+
+	@Override
+	protected void serializeStackFrames(ThreadInfo ti) {
+		os.println();
+		os.print(ti);
+		os.println();
+		super.serializeStackFrames(ti);
+	}
+
+	@Override
+	protected void serializeFrame(StackFrame frame) {
+		os.print(frame);
+		os.println();
+		super.serializeFrame(frame);
+	}
 }

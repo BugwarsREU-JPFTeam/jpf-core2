@@ -29,77 +29,78 @@ import org.junit.Test;
  */
 public class SearchMultipleTest extends TestJPF {
 
-  @Test
-  public void testSimple() {
-    if (!isJPFRun()){
-      Verify.resetCounter(0);
-    }
+	@Test
+	public void testSimple() {
+		if (!isJPFRun()) {
+			Verify.resetCounter(0);
+		}
 
-    if (verifyAssertionError("+search.multiple_errors")){
-      boolean b = Verify.getBoolean();
-      System.out.println("## b = " + b);
+		if (verifyAssertionError("+search.multiple_errors")) {
+			boolean b = Verify.getBoolean();
+			System.out.println("## b = " + b);
 
-      Verify.incrementCounter(0);
-      
-      assert false : "blow up here";
+			Verify.incrementCounter(0);
 
-      fail("should never get here");
-    }
+			assert false : "blow up here";
 
-    if (!isJPFRun()){
-      assertTrue( Verify.getCounter(0) == 2);
-    }
-  }
+			fail("should never get here");
+		}
 
-  @Test
-  public void testSimpleBFS() {
-    if (!isJPFRun()){
-      Verify.resetCounter(0);
-    }
+		if (!isJPFRun()) {
+			assertTrue(Verify.getCounter(0) == 2);
+		}
+	}
 
-    if (verifyAssertionError("+search.multiple_errors", "+search.class=.search.heuristic.BFSHeuristic")){
-      boolean b = Verify.getBoolean();
-      System.out.println("## b = " + b);
+	@Test
+	public void testSimpleBFS() {
+		if (!isJPFRun()) {
+			Verify.resetCounter(0);
+		}
 
-      Verify.incrementCounter(0);
+		if (verifyAssertionError("+search.multiple_errors",
+				"+search.class=.search.heuristic.BFSHeuristic")) {
+			boolean b = Verify.getBoolean();
+			System.out.println("## b = " + b);
 
-      assert false : "blow up here";
-    }
+			Verify.incrementCounter(0);
 
-    if (!isJPFRun()){
-      assertTrue( Verify.getCounter(0) == 2);
-    }
-  }
+			assert false : "blow up here";
+		}
 
-  @Test
-  public void testDeadlock(){
-    if (!isJPFRun()){
-      Verify.resetCounter(0);
-    }
+		if (!isJPFRun()) {
+			assertTrue(Verify.getCounter(0) == 2);
+		}
+	}
 
-    if (verifyDeadlock("+search.multiple_errors", "+cg.boolean.false_first")){
-      Object lock = new Object();
-      boolean b = Verify.getBoolean();
-      boolean c = Verify.getBoolean();
-      System.out.println("b=" + b + ", c=" + c);
+	@Test
+	public void testDeadlock() {
+		if (!isJPFRun()) {
+			Verify.resetCounter(0);
+		}
 
-      if (!b){
-        synchronized(lock){
-          try {
-            System.out.println("now deadlocking");
-            lock.wait(); // this should always deadlock
-          } catch (InterruptedException ix){
-            System.out.println("got interrupted");
-          }
-        }
-      }
+		if (verifyDeadlock("+search.multiple_errors", "+cg.boolean.false_first")) {
+			Object lock = new Object();
+			boolean b = Verify.getBoolean();
+			boolean c = Verify.getBoolean();
+			System.out.println("b=" + b + ", c=" + c);
 
-      System.out.println("should get here for b=true");
-      Verify.incrementCounter(0);
-    }
+			if (!b) {
+				synchronized (lock) {
+					try {
+						System.out.println("now deadlocking");
+						lock.wait(); // this should always deadlock
+					} catch (InterruptedException ix) {
+						System.out.println("got interrupted");
+					}
+				}
+			}
 
-    if (!isJPFRun()){
-      assertTrue( Verify.getCounter(0) == 2);
-    }
-  }
+			System.out.println("should get here for b=true");
+			Verify.incrementCounter(0);
+		}
+
+		if (!isJPFRun()) {
+			assertTrue(Verify.getCounter(0) == 2);
+		}
+	}
 }

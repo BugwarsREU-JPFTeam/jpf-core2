@@ -27,32 +27,33 @@ import org.junit.Test;
  * regression test for StopWatchFuzzer
  */
 public class StopWatchFuzzerTest extends TestJPF {
-  
-  @Test
-  public void testPaths() {
-    
-    if (!isJPFRun()){
-      Verify.resetCounter(0);
-      Verify.resetCounter(1);
-    }
 
-    if (verifyNoPropertyViolation("+listener=.listener.StopWatchFuzzer")){
-      long tStart = System.currentTimeMillis();
-      System.out.println("some lengthy computation..");
-      long tEnd = System.currentTimeMillis();
-      
-      if (tEnd - tStart <= 5000){
-        System.out.println("all fine, finished in time");
-        Verify.incrementCounter(0); // should get here two times, for < and ==
-      } else {
-        System.out.println("panic, we didn't make it in time");
-        Verify.incrementCounter(1);
-      }
-    }
-    
-    if (!isJPFRun()){
-      assertTrue( Verify.getCounter(0) == 2);
-      assertTrue( Verify.getCounter(1) == 1);
-    }
-  }
+	@Test
+	public void testPaths() {
+
+		if (!isJPFRun()) {
+			Verify.resetCounter(0);
+			Verify.resetCounter(1);
+		}
+
+		if (verifyNoPropertyViolation("+listener=.listener.StopWatchFuzzer")) {
+			long tStart = System.currentTimeMillis();
+			System.out.println("some lengthy computation..");
+			long tEnd = System.currentTimeMillis();
+
+			if (tEnd - tStart <= 5000) {
+				System.out.println("all fine, finished in time");
+				Verify.incrementCounter(0); // should get here two times, for <
+											// and ==
+			} else {
+				System.out.println("panic, we didn't make it in time");
+				Verify.incrementCounter(1);
+			}
+		}
+
+		if (!isJPFRun()) {
+			assertTrue(Verify.getCounter(0) == 2);
+			assertTrue(Verify.getCounter(1) == 1);
+		}
+	}
 }

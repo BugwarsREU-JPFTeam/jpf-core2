@@ -19,36 +19,37 @@
 package gov.nasa.jpf.util;
 
 /**
- * simple result wrapper that can store a boolean value and a String, to
- * be used as method return value if we have to keep exceptions in the callee
+ * simple result wrapper that can store a boolean value and a String, to be used
+ * as method return value if we have to keep exceptions in the callee
  */
 public class Result {
-  
-  public static final Result OK = new Result();
-  
-  // final so that we don't need getters
-  public final String error;
-  
-  // if you need a positive result, use OK
-  private Result (){
-    error = null;
-  }
-  
-  private Result (String errorMsg){
-    error = errorMsg;
-  }
-  
-  public boolean equals(Object o){
-    // we only compare if there was an error, not which one
-    if (o instanceof Boolean){
-      return (error == null) == (Boolean)o;
-    } else if (o instanceof Result){
-      return (error == null) == (((Result)o).error == null);
-    }
-    return false;
-  }
 
-  public static Result failure (String errorMsg){
-    return new Result(errorMsg);
-  }
+	public static final Result OK = new Result();
+
+	// final so that we don't need getters
+	public final String error;
+
+	// if you need a positive result, use OK
+	private Result() {
+		error = null;
+	}
+
+	private Result(String errorMsg) {
+		error = errorMsg;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		// we only compare if there was an error, not which one
+		if (o instanceof Boolean) {
+			return (error == null) == (Boolean) o;
+		} else if (o instanceof Result) {
+			return (error == null) == (((Result) o).error == null);
+		}
+		return false;
+	}
+
+	public static Result failure(String errorMsg) {
+		return new Result(errorMsg);
+	}
 }

@@ -20,11 +20,11 @@ package java.util.concurrent;
 
 @SuppressWarnings("serial")
 public class BrokenBarrierException extends Exception {
-     
-     public BrokenBarrierException () {
-     }
-     
-     public BrokenBarrierException (String details) {
-          super(details);
-     }
+
+	public BrokenBarrierException() {
+	}
+
+	public BrokenBarrierException(String details) {
+		super(details);
+	}
 }

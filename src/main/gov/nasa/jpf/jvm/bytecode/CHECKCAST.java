@@ -28,84 +28,87 @@ import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.Types;
 
-
 /**
- * Check whether object is of given type
- * ..., objectref => ..., objectref
+ * Check whether object is of given type ..., objectref => ..., objectref
  */
 public class CHECKCAST extends JVMInstruction {
-  String type;
+	String type;
 
-  public CHECKCAST() {} // this is going away
+	public CHECKCAST() {
+	} // this is going away
 
-  public CHECKCAST(String typeName){
-    type = Types.getClassNameFromTypeName(typeName);
-  }
+	public CHECKCAST(String typeName) {
+		type = Types.getClassNameFromTypeName(typeName);
+	}
 
-  public String getTypeName() {
-    return type;
-  }
+	public String getTypeName() {
+		return type;
+	}
 
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getTopFrame();
-    int objref = frame.peek();
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getTopFrame();
+		int objref = frame.peek();
 
-    if (objref == MJIEnv.NULL) {
-       // we can cast 'null' to anything
+		if (objref == MJIEnv.NULL) {
+			// we can cast 'null' to anything
 
-    } else {
-      boolean isValid = false;
+		} else {
+			boolean isValid = false;
 
-      if(Types.isReferenceSignature(type)) {
-        String t;
-        if(Types.isArray(type)) {
-          // retrieve the component terminal
-          t = Types.getComponentTerminal(type);
-        } else {
-          t = type;
-        }
+			if (Types.isReferenceSignature(type)) {
+				String t;
+				if (Types.isArray(type)) {
+					// retrieve the component terminal
+					t = Types.getComponentTerminal(type);
+				} else {
+					t = type;
+				}
 
-        // resolve the referenced class
-        try {
-          ti.resolveReferencedClass(t);
-        } catch(LoadOnJPFRequired lre) {
-          return ti.getPC();
-        }
-      }
+				// resolve the referenced class
+				try {
+					ti.resolveReferencedClass(t);
+				} catch (LoadOnJPFRequired lre) {
+					return ti.getPC();
+				}
+			}
 
-      ElementInfo e = ti.getElementInfo(objref);
-      ClassInfo eci = e.getClassInfo();
+			ElementInfo e = ti.getElementInfo(objref);
+			ClassInfo eci = e.getClassInfo();
 
-      if (type.charAt(0) == '['){  // cast between array types
-        if (eci.isArray()) {
-          // check if the element types are compatible
-          ClassInfo cci = eci.getComponentClassInfo();
-          isValid = cci.isInstanceOf(type.substring(1));
-        }
+			if (type.charAt(0) == '[') { // cast between array types
+				if (eci.isArray()) {
+					// check if the element types are compatible
+					ClassInfo cci = eci.getComponentClassInfo();
+					isValid = cci.isInstanceOf(type.substring(1));
+				}
 
-      } else { // non-array types
-        isValid = e.getClassInfo().isInstanceOf(type);
-      }
+			} else { // non-array types
+				isValid = e.getClassInfo().isInstanceOf(type);
+			}
 
-      if (!isValid) {
-        return ti.createAndThrowException("java.lang.ClassCastException",
-                e.getClassInfo().getName() + " cannot be cast to " + type);
-      }
-    }
+			if (!isValid) {
+				return ti.createAndThrowException(
+						"java.lang.ClassCastException", e.getClassInfo()
+								.getName() + " cannot be cast to " + type);
+			}
+		}
 
-    return getNext(ti);
-  }
+		return getNext(ti);
+	}
 
+	@Override
+	public int getLength() {
+		return 3; // opcode, index1, index2
+	}
 
-  public int getLength() {
-    return 3; // opcode, index1, index2
-  }
-  
-  public int getByteCode () {
-    return 0xC0;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public int getByteCode() {
+		return 0xC0;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

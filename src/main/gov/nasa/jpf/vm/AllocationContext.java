@@ -19,12 +19,12 @@
 package gov.nasa.jpf.vm;
 
 /**
- * abstract type that captures the context (class, thread id and callstack)
- * of an allocation
+ * abstract type that captures the context (class, thread id and callstack) of
+ * an allocation
  * 
  * Used for SGOID computation
  */
 public interface AllocationContext {
-  
-  AllocationContext extend (ClassInfo ci, int anchor);
+
+	AllocationContext extend(ClassInfo ci, int anchor);
 }

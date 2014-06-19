@@ -23,5 +23,5 @@ package gov.nasa.jpf.vm;
  */
 public interface ReferenceProcessor {
 
-  void processReference (int ref);
+	void processReference(int ref);
 }

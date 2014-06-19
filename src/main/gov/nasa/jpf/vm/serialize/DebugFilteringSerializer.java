@@ -24,17 +24,19 @@ import java.io.OutputStream;
 import gov.nasa.jpf.vm.DebugStateSerializer;
 
 /**
- * a FilteringSerializer that stores the serialized program state in a 
+ * a FilteringSerializer that stores the serialized program state in a
  * readable/diffable format.
  * 
- * Automatically used by Debug..StateSet if the configured vm.serializer.class is FilteringSerializer
+ * Automatically used by Debug..StateSet if the configured vm.serializer.class
+ * is FilteringSerializer
  */
-public class DebugFilteringSerializer extends FilteringSerializer implements DebugStateSerializer {
+public class DebugFilteringSerializer extends FilteringSerializer implements
+		DebugStateSerializer {
 
-  @Override
-  public void setOutputStream(OutputStream os) {
-    // TODO Auto-generated method stub
+	@Override
+	public void setOutputStream(OutputStream os) {
+		// TODO Auto-generated method stub
 
-  }
+	}
 
 }

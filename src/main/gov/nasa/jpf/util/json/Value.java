@@ -20,41 +20,47 @@
 package gov.nasa.jpf.util.json;
 
 /**
- * Value that was read from JSON document. ("key" : value).
- * Value class has methods to return string, double or boolean value.
- * Derived class should throw exceptions if they can't convert value read from
- * JSON document to the requested one.
+ * Value that was read from JSON document. ("key" : value). Value class has
+ * methods to return string, double or boolean value. Derived class should throw
+ * exceptions if they can't convert value read from JSON document to the
+ * requested one.
+ * 
  * @author Ivan Mushketik
  */
-public interface  Value {
-  /**
-   * Get string value.
-   * @return string value read from JSON document
-   */
-  public String getString();
+public interface Value {
+	/**
+	 * Get string value.
+	 * 
+	 * @return string value read from JSON document
+	 */
+	public String getString();
 
-  /**
-   * Get double value.
-   * @return double value read from JSON document
-   */
-  public Double getDouble();
+	/**
+	 * Get double value.
+	 * 
+	 * @return double value read from JSON document
+	 */
+	public Double getDouble();
 
-  /**
-   * Get JSON object.
-   * @return JSON object value read from JSON document
-   */
-  public JSONObject getObject();
+	/**
+	 * Get JSON object.
+	 * 
+	 * @return JSON object value read from JSON document
+	 */
+	public JSONObject getObject();
 
-  /**
-   * Get array value.
-   * @return array value read from JSON document
-   */
-  public Value[] getArray();
+	/**
+	 * Get array value.
+	 * 
+	 * @return array value read from JSON document
+	 */
+	public Value[] getArray();
 
-  /**
-   * Get boolean value.
-   * @return boolean value read from JSON document.
-   */
-  public Boolean getBoolean();
+	/**
+	 * Get boolean value.
+	 * 
+	 * @return boolean value read from JSON document.
+	 */
+	public Boolean getBoolean();
 
 }

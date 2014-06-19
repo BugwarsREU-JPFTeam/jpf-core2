@@ -23,32 +23,33 @@ package gov.nasa.jpf.util;
  * encapsulates a listener-managed trace operation
  */
 public class TraceElement<T> {
-  T op;
-  
-  int stateId;
-  TraceElement<T> prevElement;
-  TraceElement<T> prevTransition;
-  
-  public TraceElement (T op){
-    this.op = op;
-  }
-  
-  public TraceElement<T> getPrevElement() {
-    return prevElement;
-  }
-  
-  public T getOp() {
-    return op;
-  }
-  
-  public TraceElement<T> clone() {
-    TraceElement<T> e = new TraceElement<T>(op);
-    e.stateId = stateId;
-    
-    // we don't clone the linkage
-    e.prevElement = null;
-    e.prevTransition = null;
-    
-    return e;
-  }
+	T op;
+
+	int stateId;
+	TraceElement<T> prevElement;
+	TraceElement<T> prevTransition;
+
+	public TraceElement(T op) {
+		this.op = op;
+	}
+
+	public TraceElement<T> getPrevElement() {
+		return prevElement;
+	}
+
+	public T getOp() {
+		return op;
+	}
+
+	@Override
+	public TraceElement<T> clone() {
+		TraceElement<T> e = new TraceElement<T>(op);
+		e.stateId = stateId;
+
+		// we don't clone the linkage
+		e.prevElement = null;
+		e.prevTransition = null;
+
+		return e;
+	}
 }

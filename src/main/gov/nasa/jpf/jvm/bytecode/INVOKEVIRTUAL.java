@@ -18,30 +18,32 @@
 //
 package gov.nasa.jpf.jvm.bytecode;
 
-
-
 /**
- * Invoke instance method; dispatch based on class
- * ..., objectref, [arg1, [arg2 ...]] => ...
+ * Invoke instance method; dispatch based on class ..., objectref, [arg1, [arg2
+ * ...]] => ...
  */
 public class INVOKEVIRTUAL extends VirtualInvocation {
-  public INVOKEVIRTUAL () {}
+	public INVOKEVIRTUAL() {
+	}
 
-  protected INVOKEVIRTUAL (String clsDescriptor, String methodName, String signature){
-    super(clsDescriptor, methodName, signature);
-  }
+	protected INVOKEVIRTUAL(String clsDescriptor, String methodName,
+			String signature) {
+		super(clsDescriptor, methodName, signature);
+	}
 
+	@Override
+	public int getByteCode() {
+		return 0xB6;
+	}
 
-  public int getByteCode () {
-    return 0xB6;
-  }
-  
-  public String toString() {
-    // methodInfo not set outside real call context (requires target object)
-    return "invokevirtual " + cname + '.' + mname;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public String toString() {
+		// methodInfo not set outside real call context (requires target object)
+		return "invokevirtual " + cname + '.' + mname;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

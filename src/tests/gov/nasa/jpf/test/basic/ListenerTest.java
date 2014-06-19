@@ -24,43 +24,43 @@ import gov.nasa.jpf.ListenerAdapter;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.util.test.TestJPF;
 import gov.nasa.jpf.vm.SingleProcessVM;
-import gov.nasa.jpf.vm.VM;
 import gov.nasa.jpf.vm.Verify;
 
 import org.junit.Test;
 
 public class ListenerTest extends TestJPF {
 
-  public static class Listener extends ListenerAdapter {
-    @Override
-    public void searchStarted (Search search){
-      System.out.println("-- listener got searchStarted() notification");
-      Verify.incrementCounter(0);
-    }
-  }
-  
-  public static class TestVM extends SingleProcessVM {
-    public TestVM (JPF jpf, Config config){
-      super(jpf, config);
-      
-      jpf.addListener( new Listener());
-    }
-  }
-  
-  @Test
-  public void testPendingListeners (){
-    if (!isJPFRun()){
-      Verify.resetCounter(0);
-    }
-    
-    if (verifyNoPropertyViolation("+vm.class=gov.nasa.jpf.test.basic.ListenerTest$TestVM")){
-      System.out.println("this is verified by JPF");
-    }
-    
-    if (!isJPFRun()){
-      assertTrue("init listener got no searchStarted() notification", Verify.getCounter(0) == 1);
-    }
-  }
-  
-  // <2do> ... and tons more to follow
+	public static class Listener extends ListenerAdapter {
+		@Override
+		public void searchStarted(Search search) {
+			System.out.println("-- listener got searchStarted() notification");
+			Verify.incrementCounter(0);
+		}
+	}
+
+	public static class TestVM extends SingleProcessVM {
+		public TestVM(JPF jpf, Config config) {
+			super(jpf, config);
+
+			jpf.addListener(new Listener());
+		}
+	}
+
+	@Test
+	public void testPendingListeners() {
+		if (!isJPFRun()) {
+			Verify.resetCounter(0);
+		}
+
+		if (verifyNoPropertyViolation("+vm.class=gov.nasa.jpf.test.basic.ListenerTest$TestVM")) {
+			System.out.println("this is verified by JPF");
+		}
+
+		if (!isJPFRun()) {
+			assertTrue("init listener got no searchStarted() notification",
+					Verify.getCounter(0) == 1);
+		}
+	}
+
+	// <2do> ... and tons more to follow
 }

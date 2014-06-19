@@ -24,24 +24,33 @@ package gov.nasa.jpf.util;
  */
 public interface FixedBitSet extends Cloneable {
 
-  void set (int i);
-  void set (int i, boolean val);
-  boolean get (int i);
-  void clear (int i);
-  
-  int nextClearBit (int fromIndex);
-  int nextSetBit (int fromIndex);
+	void set(int i);
 
-  FixedBitSet clone();
+	void set(int i, boolean val);
 
-  boolean isEmpty();
-  int size();
-  int cardinality();
-  int length();
-  int capacity();
-  
-  void clear();
-  
-  int longSize();
-  long getLong(int i);
+	boolean get(int i);
+
+	void clear(int i);
+
+	int nextClearBit(int fromIndex);
+
+	int nextSetBit(int fromIndex);
+
+	FixedBitSet clone();
+
+	boolean isEmpty();
+
+	int size();
+
+	int cardinality();
+
+	int length();
+
+	int capacity();
+
+	void clear();
+
+	int longSize();
+
+	long getLong(int i);
 }

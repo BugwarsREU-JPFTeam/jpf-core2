@@ -19,11 +19,11 @@
 package gov.nasa.jpf.util;
 
 /**
- * this is a helper to enable deep copy of generic containers, where the
- * element types are generic type parameters and therefore can't be
- * created via ctor or clone. In this case, we have to pass in a cloner
- * object that knows about the concrete element types
+ * this is a helper to enable deep copy of generic containers, where the element
+ * types are generic type parameters and therefore can't be created via ctor or
+ * clone. In this case, we have to pass in a cloner object that knows about the
+ * concrete element types
  */
 public interface Cloner<E> {
-  E clone (E other);
+	E clone(E other);
 }

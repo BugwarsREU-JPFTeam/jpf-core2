@@ -20,72 +20,70 @@ package gov.nasa.jpf.util;
 
 import java.util.ArrayList;
 
-
 /**
  * data structure used to do hash collapsing. All the major state components
- * (fields, Monitors, StackFrames, uThreadData) are stored in pools to
- * determine if they are new. Only the pool index values are used to
- * compute hash values.
+ * (fields, Monitors, StackFrames, uThreadData) are stored in pools to determine
+ * if they are new. Only the pool index values are used to compute hash values.
  * <p>
  * 2006-06-14 - major rewrite by pcd
  */
 public final class HashPool<V> {
-  private IntTable<V> pool;
-  private ArrayList<V> vect;
-  
-  public HashPool() {
-    this(8); // default to 256 slots
-  }
-  
-  public HashPool(int pow) {
-    pool = new IntTable<V>(pow);
-    vect = new ArrayList<V>(1 << pow);
-  }
+	private IntTable<V> pool;
+	private ArrayList<V> vect;
 
-  /** optionally called only once after creation to link null to 0. */ 
-  public HashPool<V> addNull() {
-    if (size() == 0) {
-      pool.add(null, 0);
-      vect.add(null);
-      return this;
-    } else {
-      throw new IllegalStateException();
-    }
-  }
-  
-  public IntTable.Entry<V> getEntry (V o) {
-    int sz = pool.size(); // == vect.size();
-    
-    IntTable.Entry<V> e = pool.pool(o);
-    if (e.val == sz) {
-      vect.add(o);
-    }
-    return e;
-  }
+	public HashPool() {
+		this(8); // default to 256 slots
+	}
 
-  public int getIndex (V o) {
-    return getEntry(o).val;
-  }
+	public HashPool(int pow) {
+		pool = new IntTable<V>(pow);
+		vect = new ArrayList<V>(1 << pow);
+	}
 
-  public V get (V o) {
-    return getEntry(o).key;
-  }
+	/** optionally called only once after creation to link null to 0. */
+	public HashPool<V> addNull() {
+		if (size() == 0) {
+			pool.add(null, 0);
+			vect.add(null);
+			return this;
+		} else {
+			throw new IllegalStateException();
+		}
+	}
 
-  public V getObject (int idx) {
-    return vect.get(idx);
-  }
+	public IntTable.Entry<V> getEntry(V o) {
+		int sz = pool.size(); // == vect.size();
 
-  public void print () {
-    System.out.println("{");
+		IntTable.Entry<V> e = pool.pool(o);
+		if (e.val == sz) {
+			vect.add(o);
+		}
+		return e;
+	}
 
-    for (IntTable.Entry<V> entry : pool) {
-      System.out.println("\t" + entry);
-    }
+	public int getIndex(V o) {
+		return getEntry(o).val;
+	}
 
-    System.out.println("}");
-  }
+	public V get(V o) {
+		return getEntry(o).key;
+	}
 
-  public int size () {
-    return pool.size();
-  }
+	public V getObject(int idx) {
+		return vect.get(idx);
+	}
+
+	public void print() {
+		System.out.println("{");
+
+		for (IntTable.Entry<V> entry : pool) {
+			System.out.println("\t" + entry);
+		}
+
+		System.out.println("}");
+	}
+
+	public int size() {
+		return pool.size();
+	}
 }

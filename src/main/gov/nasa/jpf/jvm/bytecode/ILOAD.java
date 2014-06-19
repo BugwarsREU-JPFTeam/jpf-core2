@@ -22,50 +22,56 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Load int from local variable
- * ... => ..., value
+ * Load int from local variable ... => ..., value
  */
 public class ILOAD extends LocalVariableInstruction {
 
-  public ILOAD(int localVarIndex){
-    super(localVarIndex);
-  }
+	public ILOAD(int localVarIndex) {
+		super(localVarIndex);
+	}
 
-  @Override
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
-    
-    frame.pushLocal(index);
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    return getNext(ti);
-  }
+		frame.pushLocal(index);
 
-  public int getLength() {
-    if (index > 3){
-      return 2; // opcode, index
-    } else {
-      return 1;
-    }
-  }
-  
-  public int getByteCode () {
-    switch (index) {
-      case 0: return 0x1a;
-      case 1: return 0x1b;
-      case 2: return 0x1c;
-      case 3: return 0x1d;
-    }
+		return getNext(ti);
+	}
 
-    return 0x15; // ?? wide
-  }
-  
-  public String getBaseMnemonic() {
-    return "iload";
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public int getLength() {
+		if (index > 3) {
+			return 2; // opcode, index
+		} else {
+			return 1;
+		}
+	}
+
+	@Override
+	public int getByteCode() {
+		switch (index) {
+		case 0:
+			return 0x1a;
+		case 1:
+			return 0x1b;
+		case 2:
+			return 0x1c;
+		case 3:
+			return 0x1d;
+		}
+
+		return 0x15; // ?? wide
+	}
+
+	@Override
+	public String getBaseMnemonic() {
+		return "iload";
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

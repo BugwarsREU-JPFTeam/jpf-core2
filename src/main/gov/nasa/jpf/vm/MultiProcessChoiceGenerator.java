@@ -26,5 +26,5 @@ package gov.nasa.jpf.vm;
  */
 public interface MultiProcessChoiceGenerator {
 
-  boolean isGlobal();
+	boolean isGlobal();
 }

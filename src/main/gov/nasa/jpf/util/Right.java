@@ -21,26 +21,26 @@ package gov.nasa.jpf.util;
 import java.util.Arrays;
 
 /**
- * right justified output
- * <2do> this is not worth a class! use a general TextFormatter
+ * right justified output <2do> this is not worth a class! use a general
+ * TextFormatter
  */
 
 public class Right {
-  public static String format (String value, int spaces, char ch) {
-    int vlen = value.length();
-    int newLen = Math.max(spaces, vlen);
-    char[] result = new char[newLen];
-    int pivot = newLen - vlen;
-    value.getChars(0, vlen, result, pivot);
-    Arrays.fill(result, 0, pivot, ch);
-    return new String(result);
-  }
+	public static String format(String value, int spaces, char ch) {
+		int vlen = value.length();
+		int newLen = Math.max(spaces, vlen);
+		char[] result = new char[newLen];
+		int pivot = newLen - vlen;
+		value.getChars(0, vlen, result, pivot);
+		Arrays.fill(result, 0, pivot, ch);
+		return new String(result);
+	}
 
-  public static String format (String value, int spaces) {
-    return format(value, spaces, ' ');
-  }
+	public static String format(String value, int spaces) {
+		return format(value, spaces, ' ');
+	}
 
-  public static String format (int value, int digits) {
-    return format(Integer.toString(value),digits,' ');
-  }
+	public static String format(int value, int digits) {
+		return format(Integer.toString(value), digits, ' ');
+	}
 }

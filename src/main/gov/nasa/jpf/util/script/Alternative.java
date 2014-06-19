@@ -21,21 +21,23 @@ package gov.nasa.jpf.util.script;
 
 /**
  * ScriptElement that represents an alternative between choices. At runtime,
- * this usually gets translated into a ChoiceGenerator instance, to specify
- * an event context that should facilitate state space exploration
+ * this usually gets translated into a ChoiceGenerator instance, to specify an
+ * event context that should facilitate state space exploration
  */
 public class Alternative extends ScriptElementContainer {
 
-  Alternative (ScriptElement parent, int line) {
-    super(parent, line);
-  }
+	Alternative(ScriptElement parent, int line) {
+		super(parent, line);
+	}
 
-  public String toString() {
-    return toString("ANY");
-  }
+	@Override
+	public String toString() {
+		return toString("ANY");
+	}
 
-  public void process (ElementProcessor p) {
-    p.process(this);
-  }
+	@Override
+	public void process(ElementProcessor p) {
+		p.process(this);
+	}
 
 }

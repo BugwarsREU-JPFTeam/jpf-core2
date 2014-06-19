@@ -25,85 +25,83 @@ import gov.nasa.jpf.vm.MJIEnv;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
  * abstraction for all array load instructions
- *
+ * 
  * ..., array, index => ..., value
  */
 public abstract class ArrayLoadInstruction extends ArrayElementInstruction {
-  
-  @Override
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
 
-    // we need to get the object first, to check if it is shared
-    int aref = frame.peek(1); // ..,arrayRef,idx
-    if (aref == MJIEnv.NULL) {
-      return ti.createAndThrowException("java.lang.NullPointerException");
-    }
-    
-    ElementInfo e = ti.getElementInfoWithUpdatedSharedness(aref);
-    if (isNewPorBoundary(e, ti)) {
-      if (createAndSetArrayCG(e,ti, aref,peekIndex(ti),true)) {
-        return this;
-      }
-    }
-    
-    index = frame.pop();
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    // we should not set 'arrayRef' before the CG check
-    // (this would kill the CG loop optimization)
-    arrayRef = frame.pop();
-    
-    try {
-      push(frame, e, index);
+		// we need to get the object first, to check if it is shared
+		int aref = frame.peek(1); // ..,arrayRef,idx
+		if (aref == MJIEnv.NULL) {
+			return ti.createAndThrowException("java.lang.NullPointerException");
+		}
 
-      Object attr = e.getElementAttr(index);
-      if (attr != null) {
-        if (getElementSize() == 1) {
-          frame.setOperandAttr(attr);
-        } else {
-          frame.setLongOperandAttr(attr);
-        }
-      }
-      
-      return getNext(ti);
-    } catch (ArrayIndexOutOfBoundsExecutiveException ex) {
-      return ex.getInstruction();
-    }
-  }
+		ElementInfo e = ti.getElementInfoWithUpdatedSharedness(aref);
+		if (isNewPorBoundary(e, ti)) {
+			if (createAndSetArrayCG(e, ti, aref, peekIndex(ti), true)) {
+				return this;
+			}
+		}
 
-  protected boolean isReference () {
-    return false;
-  }
+		index = frame.pop();
 
-  /**
-   * only makes sense pre-exec
-   */
-  @Override
-  public int peekArrayRef (ThreadInfo ti){
-    return ti.getTopFrame().peek(1);
-  }
+		// we should not set 'arrayRef' before the CG check
+		// (this would kill the CG loop optimization)
+		arrayRef = frame.pop();
 
-  // wouldn't really be required for loads, but this is a general
-  // ArrayInstruction API
-  @Override
-  public int peekIndex (ThreadInfo ti){
-    return ti.getTopFrame().peek();
-  }
+		try {
+			push(frame, e, index);
 
-  protected abstract void push (StackFrame frame, ElementInfo e, int index)
-                throws ArrayIndexOutOfBoundsExecutiveException;
+			Object attr = e.getElementAttr(index);
+			if (attr != null) {
+				if (getElementSize() == 1) {
+					frame.setOperandAttr(attr);
+				} else {
+					frame.setLongOperandAttr(attr);
+				}
+			}
 
-  
-  @Override
-  public boolean isRead() {
-    return true;
-  }
-  
-  @Override
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
- }
+			return getNext(ti);
+		} catch (ArrayIndexOutOfBoundsExecutiveException ex) {
+			return ex.getInstruction();
+		}
+	}
+
+	protected boolean isReference() {
+		return false;
+	}
+
+	/**
+	 * only makes sense pre-exec
+	 */
+	@Override
+	public int peekArrayRef(ThreadInfo ti) {
+		return ti.getTopFrame().peek(1);
+	}
+
+	// wouldn't really be required for loads, but this is a general
+	// ArrayInstruction API
+	@Override
+	public int peekIndex(ThreadInfo ti) {
+		return ti.getTopFrame().peek();
+	}
+
+	protected abstract void push(StackFrame frame, ElementInfo e, int index)
+			throws ArrayIndexOutOfBoundsExecutiveException;
+
+	@Override
+	public boolean isRead() {
+		return true;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
+}

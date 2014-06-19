@@ -21,26 +21,25 @@ package gov.nasa.jpf.vm;
 
 /**
  * interface to create Memento objects for state storage/restore
- *
+ * 
  * this follows some sort of a visitor pattern
  */
 public interface MementoFactory {
 
-  Memento<KernelState> getMemento(KernelState ks);
+	Memento<KernelState> getMemento(KernelState ks);
 
+	Memento<ThreadList> getMemento(ThreadList tlist);
 
-  Memento<ThreadList> getMemento(ThreadList tlist);
+	Memento<ThreadInfo> getMemento(ThreadInfo ti);
 
-  Memento<ThreadInfo> getMemento(ThreadInfo ti);
+	Memento<ClassLoaderList> getMemento(ClassLoaderList cllist);
 
-  Memento<ClassLoaderList> getMemento(ClassLoaderList cllist);
+	Memento<ClassLoaderInfo> getMemento(ClassLoaderInfo cl);
 
-  Memento<ClassLoaderInfo> getMemento(ClassLoaderInfo cl);
+	Memento<ClassPath> getMemento(ClassPath cp);
 
-  Memento<ClassPath> getMemento (ClassPath cp);
+	Memento<Heap> getMemento(Heap heap);
 
-  Memento<Heap> getMemento(Heap heap);
-
-  Memento<Statics> getMemento(Statics sa);
+	Memento<Statics> getMemento(Statics sa);
 
 }

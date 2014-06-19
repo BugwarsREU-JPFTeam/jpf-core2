@@ -21,61 +21,65 @@ package sun.misc;
 
 /**
  * this is a model class for sun.misc.Hashing, which is a Java 7 class we model
- * to make JPF compile under Java 6.
- * We provide a peer for this class since its highly repetitive bytecode
- * will otherwise cause arithmetic overflow, which is a condition we might check for.
- * The code would otherwise also lengthen traces, esp. during system initialization
+ * to make JPF compile under Java 6. We provide a peer for this class since its
+ * highly repetitive bytecode will otherwise cause arithmetic overflow, which is
+ * a condition we might check for. The code would otherwise also lengthen
+ * traces, esp. during system initialization
  */
 public class Hashing {
-  private Hashing(){
-    throw new Error("instantiation not allowed");
-  }
-  
-  //--- byte data
-  
-  public static int murmur3_32 (byte[] d) {
-    return murmur3_32( 0, d, 0, d.length);
-  }
+	private Hashing() {
+		throw new Error("instantiation not allowed");
+	}
 
-  public static int murmur3_32 (int seed, byte[] d) {
-    return murmur3_32( seed, d, 0, d.length);
-  }
-  
-  public static int murmur3_32 (int seed, byte[] d, int off, int len){
-    return 42; // intercepted by peer
-  }
-  
-  //--- int data
-  
-  public static int murmur3_32 (int[] d){
-    return murmur3_32( 0, d, 0, d.length);
-  }
-  public static int murmur3_32 (int seed, int[] d){
-    return murmur3_32( seed, d, 0, d.length);
-  } 
-  public static int murmur3_32 (int seed, int[] d, int off, int len){
-    return 42; // intercepted by peer    
-  }
-  
-  //--- char data
- 
-  public static int murmur3_32 (char[] d){
-    return murmur3_32( 0, d, 0, d.length);    
-  }
-  public static int murmur3_32 (int seed, char[] d){
-    return murmur3_32( seed, d, 0, d.length);    
-  }
-  public static int murmur3_32 (int seed, char[] d, int off, int len){
-    return 42; // intercepted by peer    
-  }
-  
-  //--- other types
-  
-  public static int stringHash32 (String s){
-    return 42; // intercepted by peer
-  }
-  
-  public static int randomHashSeed (Object o){
-    return 42; // intercepted by peer
-  }
+	// --- byte data
+
+	public static int murmur3_32(byte[] d) {
+		return murmur3_32(0, d, 0, d.length);
+	}
+
+	public static int murmur3_32(int seed, byte[] d) {
+		return murmur3_32(seed, d, 0, d.length);
+	}
+
+	public static int murmur3_32(int seed, byte[] d, int off, int len) {
+		return 42; // intercepted by peer
+	}
+
+	// --- int data
+
+	public static int murmur3_32(int[] d) {
+		return murmur3_32(0, d, 0, d.length);
+	}
+
+	public static int murmur3_32(int seed, int[] d) {
+		return murmur3_32(seed, d, 0, d.length);
+	}
+
+	public static int murmur3_32(int seed, int[] d, int off, int len) {
+		return 42; // intercepted by peer
+	}
+
+	// --- char data
+
+	public static int murmur3_32(char[] d) {
+		return murmur3_32(0, d, 0, d.length);
+	}
+
+	public static int murmur3_32(int seed, char[] d) {
+		return murmur3_32(seed, d, 0, d.length);
+	}
+
+	public static int murmur3_32(int seed, char[] d, int off, int len) {
+		return 42; // intercepted by peer
+	}
+
+	// --- other types
+
+	public static int stringHash32(String s) {
+		return 42; // intercepted by peer
+	}
+
+	public static int randomHashSeed(Object o) {
+		return 42; // intercepted by peer
+	}
 }

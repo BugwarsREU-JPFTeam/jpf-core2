@@ -26,89 +26,89 @@ import java.io.File;
 import java.util.ArrayList;
 
 /**
- * this is a lookup mechanism for class files that is based on an ordered
- * list of directory or jar entries
+ * this is a lookup mechanism for class files that is based on an ordered list
+ * of directory or jar entries
  */
-public class ClassPath implements Restorable<ClassPath>{
+public class ClassPath implements Restorable<ClassPath> {
 
-  static class CPMemento implements Memento<ClassPath> {
-    ClassPath cp;
-    ArrayList<ClassFileContainer> pathElements;
+	static class CPMemento implements Memento<ClassPath> {
+		ClassPath cp;
+		ArrayList<ClassFileContainer> pathElements;
 
-    CPMemento (ClassPath cp){
-      this.cp = cp;
-      this.pathElements = new ArrayList<ClassFileContainer>(cp.pathElements);
-    }
+		CPMemento(ClassPath cp) {
+			this.cp = cp;
+			this.pathElements = new ArrayList<ClassFileContainer>(
+					cp.pathElements);
+		}
 
-    @Override
-    public ClassPath restore (ClassPath ignored) {
-      cp.pathElements = this.pathElements;
-      return cp;
-    }
-  }
+		@Override
+		public ClassPath restore(ClassPath ignored) {
+			cp.pathElements = this.pathElements;
+			return cp;
+		}
+	}
 
-  
-  static JPFLogger logger = JPF.getLogger("gov.nasa.jpf.jvm.classfile");
-  
-  protected ArrayList<ClassFileContainer> pathElements;
+	static JPFLogger logger = JPF.getLogger("gov.nasa.jpf.jvm.classfile");
 
+	protected ArrayList<ClassFileContainer> pathElements;
 
-  public ClassPath(){
-    pathElements = new ArrayList<ClassFileContainer>();
-  }
-  
-  public Memento<ClassPath> getMemento (MementoFactory factory) {
-    return factory.getMemento(this);
-  }
+	public ClassPath() {
+		pathElements = new ArrayList<ClassFileContainer>();
+	}
 
-  public Memento<ClassPath> getMemento(){
-    return new CPMemento(this);
-  }
+	@Override
+	public Memento<ClassPath> getMemento(MementoFactory factory) {
+		return factory.getMemento(this);
+	}
 
-  public void addClassFileContainer (ClassFileContainer pathElement){
-    assert pathElement != null;
-    pathElements.add(pathElement);
-  }
+	public Memento<ClassPath> getMemento() {
+		return new CPMemento(this);
+	}
 
+	public void addClassFileContainer(ClassFileContainer pathElement) {
+		assert pathElement != null;
+		pathElements.add(pathElement);
+	}
 
-  public String[] getPathNames(){
-    String[] pn = new String[pathElements.size()];
+	public String[] getPathNames() {
+		String[] pn = new String[pathElements.size()];
 
-    for (int i=0; i<pn.length; i++){
-      pn[i] = pathElements.get(i).getName();
-    }
+		for (int i = 0; i < pn.length; i++) {
+			pn[i] = pathElements.get(i).getName();
+		}
 
-    return pn;
-  }
+		return pn;
+	}
 
-  public String toString(){
-    StringBuilder sb = new StringBuilder();
-    int len = pathElements.size();
-    int i=0;
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		int len = pathElements.size();
+		int i = 0;
 
-    for (ClassFileContainer e : pathElements){
-      sb.append(e.getName());
-      if (++i < len){
-        sb.append(File.pathSeparator);
-      }
-    }
-    return sb.toString();
-  }
+		for (ClassFileContainer e : pathElements) {
+			sb.append(e.getName());
+			if (++i < len) {
+				sb.append(File.pathSeparator);
+			}
+		}
+		return sb.toString();
+	}
 
-  protected static void error(String msg) throws ClassParseException {
-    throw new ClassParseException(msg);
-  }
+	protected static void error(String msg) throws ClassParseException {
+		throw new ClassParseException(msg);
+	}
 
-  public ClassFileMatch findMatch (String clsName) throws ClassParseException {
-    for (ClassFileContainer container : pathElements){
-      ClassFileMatch match = container.getMatch(clsName);
-      if (match != null){
-        logger.fine("found ", clsName, " in ", container.getName());
-        return match;
-      }
-    }
+	public ClassFileMatch findMatch(String clsName) throws ClassParseException {
+		for (ClassFileContainer container : pathElements) {
+			ClassFileMatch match = container.getMatch(clsName);
+			if (match != null) {
+				logger.fine("found ", clsName, " in ", container.getName());
+				return match;
+			}
+		}
 
-    return null;    
-  }
+		return null;
+	}
 
 }

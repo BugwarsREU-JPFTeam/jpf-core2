@@ -23,5 +23,5 @@ package gov.nasa.jpf.util;
  * an ObjectSet that uses reference comparison (identity) for inclusion checks
  */
 public interface IdentityObjectSet<E> extends ObjectSet<E>, Iterable<E> {
-  // no new methods, just different inclusion checks
+	// no new methods, just different inclusion checks
 }

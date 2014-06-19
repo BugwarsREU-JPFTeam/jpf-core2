@@ -25,5 +25,5 @@ import java.io.OutputStream;
  */
 public interface DebugStateSerializer extends StateSerializer {
 
-  void setOutputStream (OutputStream os);
+	void setOutputStream(OutputStream os);
 }

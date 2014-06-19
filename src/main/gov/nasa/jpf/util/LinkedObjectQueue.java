@@ -27,157 +27,173 @@ import java.util.NoSuchElementException;
  */
 public class LinkedObjectQueue<E> implements ObjectQueue<E> {
 
-  static class Entry {
-    Entry next; // single linked list
-    Object obj;  // referenced object
-  }
+	static class Entry {
+		Entry next; // single linked list
+		Object obj; // referenced object
+	}
 
-  protected Entry last;
-  protected Entry first;
+	protected Entry last;
+	protected Entry first;
 
-  protected int size;
-  
-  protected int maxCache;
-  protected int nFree;
-  protected Entry free;
+	protected int size;
 
-  class FIFOIterator implements Iterator<E> {
-    Entry e = first;
+	protected int maxCache;
+	protected int nFree;
+	protected Entry free;
 
-    public boolean hasNext() {
-      return e != null;
-    }
+	class FIFOIterator implements Iterator<E> {
+		Entry e = first;
 
-    public E next() {
-      if (e == null){
-        throw new NoSuchElementException();
-      } else {
-        E obj = (E)e.obj;
-        e = e.next;
-        return obj;
-      }
-    }
+		@Override
+		public boolean hasNext() {
+			return e != null;
+		}
 
-    public void remove() {
-      throw new UnsupportedOperationException("arbitrary remove from queue not supported");
-    }
-  }
-  
-  public LinkedObjectQueue (){
-    maxCache = 256;
-  }
-  
-  public LinkedObjectQueue (int maxCache){
-    this.maxCache = maxCache;
-  }
-  
-  public int size() {
-    return size;
-  }
-  
-  public boolean add(E obj) {
-    Entry e;
+		@Override
+		public E next() {
+			if (e == null) {
+				throw new NoSuchElementException();
+			} else {
+				E obj = (E) e.obj;
+				e = e.next;
+				return obj;
+			}
+		}
 
-    if (nFree > 0){ // reuse a cached Entry object
-      e = free;
-      free = e.next;
-      nFree--;
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException(
+					"arbitrary remove from queue not supported");
+		}
+	}
 
-    } else {
-      e = new Entry();
-    }
+	public LinkedObjectQueue() {
+		maxCache = 256;
+	}
 
-    e.obj = obj;
-    e.next = null;
+	public LinkedObjectQueue(int maxCache) {
+		this.maxCache = maxCache;
+	}
 
-    if (last != null) {
-      last.next = e;
-    } else {
-      first = e;
-    }
+	@Override
+	public int size() {
+		return size;
+	}
 
-    last = e;
-    
-    size++;
-    return true;
-  }
-  
-  public boolean offer( E obj){
-    return add(obj);
-  }
+	@Override
+	public boolean add(E obj) {
+		Entry e;
 
-  public boolean isEmpty(){
-    return size > 0;
-  }
-  
-  public E peek (){
-    if (size == 0){
-      return null;
-    } else {
-      return (E)first.obj;
-    }
-  }
-  
-  public E poll(){
-    if (size == 0){
-      return null;
-      
-    } else {
-      Entry e = first;
-      first = first.next;
-      size--;
-      
-      E obj = (E)e.obj;
-      
-      if (nFree < maxCache){
-        Entry next = e.next;
-        e.next = (nFree++ > 0) ? free : null;
-        e.obj = null;
-        free = e;
-      }
-      
-      return obj;
-    }
-  }
-  
-  public E remove() throws NoSuchElementException {
-    if (size == 0){
-      throw new NoSuchElementException();
-    } else {
-      return poll();
-    }
-  }
-  
-  public Iterator<E> iterator(){
-    return new FIFOIterator();
-  }
-  
-  public void process( Processor<E> proc) {
-    for (Entry e = first; e != null; ) {
-      proc.process( (E)e.obj);
+		if (nFree > 0) { // reuse a cached Entry object
+			e = free;
+			free = e.next;
+			nFree--;
 
-      e.obj = null; // avoid memory leaks
+		} else {
+			e = new Entry();
+		}
 
-      if (nFree < maxCache){
-        // recycle to save some allocation and a lot of shortliving garbage
-        Entry next = e.next;
-        e.next = (nFree++ > 0) ? free : null;
-        free = e;
-        e = next;
+		e.obj = obj;
+		e.next = null;
 
-      } else {
-        e = e.next;
-      }
-    }
-    clear();
-  }
+		if (last != null) {
+			last.next = e;
+		} else {
+			first = e;
+		}
 
-  public void clear () {
-    first = null;
-    last = null;
-    size = 0;
+		last = e;
 
-    // don't reset nFree and free since we limit the memory size of our cache
-    // and the Entry object do not reference anything
-  }
+		size++;
+		return true;
+	}
+
+	@Override
+	public boolean offer(E obj) {
+		return add(obj);
+	}
+
+	@Override
+	public boolean isEmpty() {
+		return size > 0;
+	}
+
+	@Override
+	public E peek() {
+		if (size == 0) {
+			return null;
+		} else {
+			return (E) first.obj;
+		}
+	}
+
+	@Override
+	public E poll() {
+		if (size == 0) {
+			return null;
+
+		} else {
+			Entry e = first;
+			first = first.next;
+			size--;
+
+			E obj = (E) e.obj;
+
+			if (nFree < maxCache) {
+				Entry next = e.next;
+				e.next = (nFree++ > 0) ? free : null;
+				e.obj = null;
+				free = e;
+			}
+
+			return obj;
+		}
+	}
+
+	@Override
+	public E remove() throws NoSuchElementException {
+		if (size == 0) {
+			throw new NoSuchElementException();
+		} else {
+			return poll();
+		}
+	}
+
+	@Override
+	public Iterator<E> iterator() {
+		return new FIFOIterator();
+	}
+
+	@Override
+	public void process(Processor<E> proc) {
+		for (Entry e = first; e != null;) {
+			proc.process((E) e.obj);
+
+			e.obj = null; // avoid memory leaks
+
+			if (nFree < maxCache) {
+				// recycle to save some allocation and a lot of shortliving
+				// garbage
+				Entry next = e.next;
+				e.next = (nFree++ > 0) ? free : null;
+				free = e;
+				e = next;
+
+			} else {
+				e = e.next;
+			}
+		}
+		clear();
+	}
+
+	@Override
+	public void clear() {
+		first = null;
+		last = null;
+		size = 0;
+
+		// don't reset nFree and free since we limit the memory size of our
+		// cache
+		// and the Entry object do not reference anything
+	}
 }

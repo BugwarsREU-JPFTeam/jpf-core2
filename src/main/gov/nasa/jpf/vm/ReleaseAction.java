@@ -19,17 +19,17 @@
 package gov.nasa.jpf.vm;
 
 /**
- * interface for actions to be taken when gc'ing objects that are no longer 
- * reachable. 
+ * interface for actions to be taken when gc'ing objects that are no longer
+ * reachable.
  * 
- * This is meant to be used for types that have native companion objects
- * which need to be cleaned up. We can't use Object.finalize() for this because
- * this can be overridden in user code, and actually can make objects live again
+ * This is meant to be used for types that have native companion objects which
+ * need to be cleaned up. We can't use Object.finalize() for this because this
+ * can be overridden in user code, and actually can make objects live again
  */
 public interface ReleaseAction {
-  
-  /**
-   * object is about to be terminally released (no more finalization etc.)
-   */
-  public void release (ElementInfo ei);
+
+	/**
+	 * object is about to be terminally released (no more finalization etc.)
+	 */
+	public void release(ElementInfo ei);
 }

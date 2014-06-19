@@ -22,59 +22,63 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
- * utility class for JPF internal linked lists that are tail-immutable 
+ * utility class for JPF internal linked lists that are tail-immutable
  */
 public class ImmutableList<E> implements Iterable<E> {
 
-  static class IteratorImpl<E> implements Iterator<E> {
+	static class IteratorImpl<E> implements Iterator<E> {
 
-    private ImmutableList<E> next;
-    
-    private IteratorImpl(ImmutableList<E> list){
-      next = list;
-    }
-    
-    public boolean hasNext() {
-      return (next != null);
-    }
+		private ImmutableList<E> next;
 
-    public E next() {
-      if (next != null){
-        E elem = next.head;
-        next = next.tail;
-        return elem;
-        
-      } else {
-        throw new NoSuchElementException();
-      }
-    }
+		private IteratorImpl(ImmutableList<E> list) {
+			next = list;
+		}
 
-    public void remove() {
-      throw new UnsupportedOperationException("can't remove elements from ImmutableList");
-    }
-    
-  }
-  
-  public final E head;
-  public final ImmutableList<E> tail;
-  
-  
-  public ImmutableList(E data, ImmutableList<E> tail) {
-    this.head = data;
-    this.tail = tail;
-  }
-  
-  public Iterator<E> iterator() {
-    return new IteratorImpl(this);
-  }
-  
-  public boolean contains (E object){
-    for (E e : this){
-      if (e.equals(object)){
-        return true;
-      }
-    }
-    
-    return false;
-  }
+		@Override
+		public boolean hasNext() {
+			return (next != null);
+		}
+
+		@Override
+		public E next() {
+			if (next != null) {
+				E elem = next.head;
+				next = next.tail;
+				return elem;
+
+			} else {
+				throw new NoSuchElementException();
+			}
+		}
+
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException(
+					"can't remove elements from ImmutableList");
+		}
+
+	}
+
+	public final E head;
+	public final ImmutableList<E> tail;
+
+	public ImmutableList(E data, ImmutableList<E> tail) {
+		this.head = data;
+		this.tail = tail;
+	}
+
+	@Override
+	public Iterator<E> iterator() {
+		return new IteratorImpl(this);
+	}
+
+	public boolean contains(E object) {
+		for (E e : this) {
+			if (e.equals(object)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 }

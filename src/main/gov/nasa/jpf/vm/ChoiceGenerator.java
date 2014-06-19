@@ -27,160 +27,159 @@ import java.util.Comparator;
  */
 public interface ChoiceGenerator<T> extends Cloneable {
 
-  //--- the basic ChoiceGenerator interface, mostly used by SystemState
+	// --- the basic ChoiceGenerator interface, mostly used by SystemState
 
-  T getNextChoice();
+	T getNextChoice();
 
-  Class<T> getChoiceType();
+	Class<T> getChoiceType();
 
-  boolean hasMoreChoices();
+	boolean hasMoreChoices();
 
-  /**
-   * advance to the next choice. This is the only method that really
-   * advances our enumeration
-   */
-  void advance();
+	/**
+	 * advance to the next choice. This is the only method that really advances
+	 * our enumeration
+	 */
+	void advance();
 
-  void advance(int nChoices);
+	void advance(int nChoices);
 
-  void select(int nChoice);
+	void select(int nChoice);
 
-  boolean isDone();
+	boolean isDone();
 
-  void setDone();
+	void setDone();
 
-  boolean isProcessed();
+	boolean isProcessed();
 
-  /**
-   *  this has to reset the CG to its initial state, which includes resetting
-   * 'isDone'
-   */
-  void reset();
+	/**
+	 * this has to reset the CG to its initial state, which includes resetting
+	 * 'isDone'
+	 */
+	void reset();
 
-  int getTotalNumberOfChoices();
+	int getTotalNumberOfChoices();
 
-  int getProcessedNumberOfChoices();
+	int getProcessedNumberOfChoices();
 
-  ChoiceGenerator<?> getPreviousChoiceGenerator();
+	ChoiceGenerator<?> getPreviousChoiceGenerator();
 
-  /**
-   * turn the order of choices random (if it isn't already). Only
-   * drawback of this generic method (which might be a decorator
-   * factory) is that our type layer (e.g. IntChoiceGenerator)
-   * has to guarantee type safety. But hey - this is the first case where
-   * we can use covariant return types!
-   *
-   * NOTES:
-   * - this method may alter this ChoiceGenerator and return that or return
-   * a new "decorated" version.
-   * - random data can be read from the "Random random" field in this class.
-   */
-  ChoiceGenerator<T> randomize();
+	/**
+	 * turn the order of choices random (if it isn't already). Only drawback of
+	 * this generic method (which might be a decorator factory) is that our type
+	 * layer (e.g. IntChoiceGenerator) has to guarantee type safety. But hey -
+	 * this is the first case where we can use covariant return types!
+	 * 
+	 * NOTES: - this method may alter this ChoiceGenerator and return that or
+	 * return a new "decorated" version. - random data can be read from the
+	 * "Random random" field in this class.
+	 */
+	ChoiceGenerator<T> randomize();
 
-  ChoiceGenerator<?> clone() throws CloneNotSupportedException;
+	ChoiceGenerator<?> clone() throws CloneNotSupportedException;
 
-  ChoiceGenerator<?> deepClone() throws CloneNotSupportedException; 
-  
-  String getId();
+	ChoiceGenerator<?> deepClone() throws CloneNotSupportedException;
 
-  int getIdRef();
+	String getId();
 
-  void setIdRef(int idRef);
+	int getIdRef();
 
-  void setId(String id);
+	void setIdRef(int idRef);
 
-  boolean isSchedulingPoint();
+	void setId(String id);
 
-  //--- the getters and setters for the CG creation info
-  void setThreadInfo(ThreadInfo ti);
+	boolean isSchedulingPoint();
 
-  ThreadInfo getThreadInfo();
+	// --- the getters and setters for the CG creation info
+	void setThreadInfo(ThreadInfo ti);
 
-  void setInsn(Instruction insn);
+	ThreadInfo getThreadInfo();
 
-  Instruction getInsn();
+	void setInsn(Instruction insn);
 
-  void setContext(ThreadInfo tiCreator);
+	Instruction getInsn();
 
-  String getSourceLocation();
+	void setContext(ThreadInfo tiCreator);
 
-  boolean supportsReordering();
-  
-  /**
-   * reorder according to a user provided comparator
-   * @returns instance to reordered CG of same choice type, 
-   * null if not supported by particular CG subclass
-   * 
-   * Note: this should only be called before the first advance, since it
-   * can reset the CG enumeration status
-   */
-  ChoiceGenerator<T> reorder (Comparator<T> comparator);
-  
-  void setPreviousChoiceGenerator(ChoiceGenerator<?> cg);
+	String getSourceLocation();
 
-  
-  void setCascaded();
+	boolean supportsReordering();
 
-  boolean isCascaded();
+	/**
+	 * reorder according to a user provided comparator
+	 * 
+	 * @returns instance to reordered CG of same choice type, null if not
+	 *          supported by particular CG subclass
+	 * 
+	 *          Note: this should only be called before the first advance, since
+	 *          it can reset the CG enumeration status
+	 */
+	ChoiceGenerator<T> reorder(Comparator<T> comparator);
 
-  <T extends ChoiceGenerator<?>> T getPreviousChoiceGeneratorOfType(Class<T> cls);
+	void setPreviousChoiceGenerator(ChoiceGenerator<?> cg);
 
-  /**
-   * returns the prev CG if it was registered for the same insn
-   */
-  ChoiceGenerator<?> getCascadedParent();
+	void setCascaded();
 
-  /**
-   * return array with all cascaded parents and this CG, in registration order
-   */
-  ChoiceGenerator<?>[] getCascade();
+	boolean isCascaded();
 
-  /**
-   * return array with all parents and this CG, in registration order
-   */
-  ChoiceGenerator<?>[] getAll();
+	<T extends ChoiceGenerator<?>> T getPreviousChoiceGeneratorOfType(
+			Class<T> cls);
 
-  /**
-   * return array with all CGs (including this one) of given 'cgType', in registration order
-   */
-  <C extends ChoiceGenerator<?>> C[] getAllOfType(Class<C> cgType);
+	/**
+	 * returns the prev CG if it was registered for the same insn
+	 */
+	ChoiceGenerator<?> getCascadedParent();
 
+	/**
+	 * return array with all cascaded parents and this CG, in registration order
+	 */
+	ChoiceGenerator<?>[] getCascade();
 
-  //--- the generic attribute API
-  boolean hasAttr();
+	/**
+	 * return array with all parents and this CG, in registration order
+	 */
+	ChoiceGenerator<?>[] getAll();
 
-  boolean hasAttr(Class<?> attrType);
+	/**
+	 * return array with all CGs (including this one) of given 'cgType', in
+	 * registration order
+	 */
+	<C extends ChoiceGenerator<?>> C[] getAllOfType(Class<C> cgType);
 
-  /**
-   * this returns all of them - use either if you know there will be only
-   * one attribute at a time, or check/process result with ObjectList
-   */
-  Object getAttr();
+	// --- the generic attribute API
+	boolean hasAttr();
 
-  /**
-   * this replaces all of them - use only if you know 
-   *  - there will be only one attribute at a time
-   *  - you obtained the value you set by a previous getXAttr()
-   *  - you constructed a multi value list with ObjectList.createList()
-   */
-  void setAttr(Object a);
+	boolean hasAttr(Class<?> attrType);
 
-  void addAttr(Object a);
+	/**
+	 * this returns all of them - use either if you know there will be only one
+	 * attribute at a time, or check/process result with ObjectList
+	 */
+	Object getAttr();
 
-  void removeAttr(Object a);
+	/**
+	 * this replaces all of them - use only if you know - there will be only one
+	 * attribute at a time - you obtained the value you set by a previous
+	 * getXAttr() - you constructed a multi value list with
+	 * ObjectList.createList()
+	 */
+	void setAttr(Object a);
 
-  void replaceAttr(Object oldAttr, Object newAttr);
+	void addAttr(Object a);
 
-  /**
-   * this only returns the first attr of this type, there can be more
-   * if you don't use client private types or the provided type is too general
-   */
-  <A> A getAttr(Class<A> attrType);
+	void removeAttr(Object a);
 
-  <A> A getNextAttr(Class<A> attrType, Object prev);
+	void replaceAttr(Object oldAttr, Object newAttr);
 
-  ObjectList.Iterator attrIterator();
+	/**
+	 * this only returns the first attr of this type, there can be more if you
+	 * don't use client private types or the provided type is too general
+	 */
+	<A> A getAttr(Class<A> attrType);
 
-  <A> ObjectList.TypedIterator<A> attrIterator(Class<A> attrType);
+	<A> A getNextAttr(Class<A> attrType, Object prev);
+
+	ObjectList.Iterator attrIterator();
+
+	<A> ObjectList.TypedIterator<A> attrIterator(Class<A> attrType);
 
 }

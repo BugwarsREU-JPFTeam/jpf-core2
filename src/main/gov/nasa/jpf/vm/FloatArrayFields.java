@@ -22,86 +22,95 @@ import gov.nasa.jpf.util.HashData;
 import gov.nasa.jpf.util.IntVector;
 
 import java.io.PrintStream;
-import java.io.PrintWriter;
 
 /**
  * element values for float[] objects
  */
 public class FloatArrayFields extends ArrayFields {
 
-  float[] values;
+	float[] values;
 
-  public FloatArrayFields (int length) {
-    values = new float[length];
-  }
+	public FloatArrayFields(int length) {
+		values = new float[length];
+	}
 
-  public float[] asFloatArray() {
-    return values;
-  }
+	@Override
+	public float[] asFloatArray() {
+		return values;
+	}
 
-  protected void printValue(PrintStream ps, int idx){
-    ps.print(values[idx]);
-  }
-  
-  public Object getValues(){
-    return values;
-  }
+	@Override
+	protected void printValue(PrintStream ps, int idx) {
+		ps.print(values[idx]);
+	}
 
-  public int arrayLength() {
-    return values.length;
-  }
+	@Override
+	public Object getValues() {
+		return values;
+	}
 
-  public int getHeapSize() {  // in bytes
-    return values.length * 4;
-  }
+	@Override
+	public int arrayLength() {
+		return values.length;
+	}
 
-  public void appendTo (IntVector v) {
-    v.appendRawBits(values);
-  }
+	@Override
+	public int getHeapSize() { // in bytes
+		return values.length * 4;
+	}
 
-  public FloatArrayFields clone(){
-    FloatArrayFields f = (FloatArrayFields)cloneFields();
-    f.values = values.clone();
-    return f;
-  }
+	@Override
+	public void appendTo(IntVector v) {
+		v.appendRawBits(values);
+	}
 
-  public boolean equals (Object o) {
-    if (o instanceof FloatArrayFields) {
-      FloatArrayFields other = (FloatArrayFields)o;
+	@Override
+	public FloatArrayFields clone() {
+		FloatArrayFields f = (FloatArrayFields) cloneFields();
+		f.values = values.clone();
+		return f;
+	}
 
-      float[] v = values;
-      float[] vOther = other.values;
-      if (v.length != vOther.length) {
-        return false;
-      }
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof FloatArrayFields) {
+			FloatArrayFields other = (FloatArrayFields) o;
 
-      for (int i=0; i<v.length; i++) {
-        if (v[i] != vOther[i]) {
-          return false;
-        }
-      }
+			float[] v = values;
+			float[] vOther = other.values;
+			if (v.length != vOther.length) {
+				return false;
+			}
 
-      return compareAttrs(other);
+			for (int i = 0; i < v.length; i++) {
+				if (v[i] != vOther[i]) {
+					return false;
+				}
+			}
 
-    } else {
-      return false;
-    }
-  }
+			return compareAttrs(other);
 
-  public void setFloatValue (int pos, float newValue) {
-    values[pos] = newValue;
-  }
+		} else {
+			return false;
+		}
+	}
 
-  public float getFloatValue (int pos) {
-    return values[pos];
-  }
+	@Override
+	public void setFloatValue(int pos, float newValue) {
+		values[pos] = newValue;
+	}
 
+	@Override
+	public float getFloatValue(int pos) {
+		return values[pos];
+	}
 
-  public void hash(HashData hd) {
-    float[] v = values;
-    for (int i=0; i < v.length; i++) {
-      hd.add(v[i]);
-    }
-  }
+	@Override
+	public void hash(HashData hd) {
+		float[] v = values;
+		for (int i = 0; i < v.length; i++) {
+			hd.add(v[i]);
+		}
+	}
 
 }

@@ -24,36 +24,36 @@ import gov.nasa.jpf.vm.MJIEnv;
 import gov.nasa.jpf.vm.NativePeer;
 
 /**
- * we are not really interested in model checking this, so we intercept
- * and ignore
- * <2do> at some point we should probably do proper decoding/encoding,
- * but the java.lang.StringCoding class is unfortunately not public,
- * and it would be a pain to work around the access restrictions
+ * we are not really interested in model checking this, so we intercept and
+ * ignore <2do> at some point we should probably do proper decoding/encoding,
+ * but the java.lang.StringCoding class is unfortunately not public, and it
+ * would be a pain to work around the access restrictions
  */
 public class JPF_java_lang_StringCoding extends NativePeer {
 
-  @MJI
-  public int decode___3BII___3C (MJIEnv env, int clsObjRef,
-      int bref, int off, int len) {
+	@MJI
+	public int decode___3BII___3C(MJIEnv env, int clsObjRef, int bref, int off,
+			int len) {
 
-    
-    int cref = env.newCharArray(len);
-    for (int i=0,j=off; i<len; i++,j++) {
-      env.setCharArrayElement(cref, i, (char)env.getByteArrayElement(bref,j));
-    }
-    
-    return cref;
-  }
-  
-  @MJI
-  public int encode___3CII___3B (MJIEnv env, int clsObjRef,
-      int cref, int off, int len) {
+		int cref = env.newCharArray(len);
+		for (int i = 0, j = off; i < len; i++, j++) {
+			env.setCharArrayElement(cref, i,
+					(char) env.getByteArrayElement(bref, j));
+		}
 
-    int bref = env.newByteArray(len);
-    for (int i=0,j=off; i<len; i++,j++) {
-      env.setByteArrayElement(bref, i, (byte)env.getCharArrayElement(cref,j));
-    }
+		return cref;
+	}
 
-    return bref; 
-  }
+	@MJI
+	public int encode___3CII___3B(MJIEnv env, int clsObjRef, int cref, int off,
+			int len) {
+
+		int bref = env.newByteArray(len);
+		for (int i = 0, j = off; i < len; i++, j++) {
+			env.setByteArrayElement(bref, i,
+					(byte) env.getCharArrayElement(cref, j));
+		}
+
+		return bref;
+	}
 }

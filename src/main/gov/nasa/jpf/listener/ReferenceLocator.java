@@ -32,76 +32,83 @@ import java.io.PrintWriter;
 import java.util.Arrays;
 
 /**
- * tiny utility listener that can be used to find out where a certain
- * object (specified by reference) gets allocated or accessed (call or field),
- * and when it gets gc'ed
+ * tiny utility listener that can be used to find out where a certain object
+ * (specified by reference) gets allocated or accessed (call or field), and when
+ * it gets gc'ed
  */
 public class ReferenceLocator extends ListenerAdapter {
-  
-  PrintWriter pw;
-  int[] createRefs;
-  int[] releaseRefs;
-  int[] useRefs;
-  
-  public ReferenceLocator (Config conf){
-    createRefs = sort( conf.getIntArray("refloc.create"));
-    releaseRefs = sort( conf.getIntArray("refloc.release"));
-    useRefs = sort( conf.getIntArray("refloc.use"));
-    
-    // <2do> we might want to configure output destination
-    pw = new PrintWriter(System.out, true);
-  }
-  
-  protected int[] sort(int[] a){
-    if (a != null){
-      Arrays.sort(a);
-    }
-    return a;
-  }
-  
-  protected void printLocation(String msg, ThreadInfo ti){
-    pw.println(msg);
-    for (StackFrame frame : ti) {
-      pw.print("\tat ");
-      pw.println(frame.getStackTraceInfo());
-    }
 
-    pw.println();
-  }
-  
-  @Override
-  public void objectCreated (VM vm, ThreadInfo ti, ElementInfo ei){
-    int ref = ei.getObjectRef();
-    
-    if (createRefs != null && Arrays.binarySearch(createRefs, ref) >= 0){    
-      printLocation("[ReferenceLocator] object " + ei + " created at:", ti);
-    } 
-  }
-  
-  @Override
-  public void objectReleased (VM vm, ThreadInfo ti, ElementInfo ei){
-    int ref = ei.getObjectRef();
-    
-    if (releaseRefs != null && Arrays.binarySearch(releaseRefs, ref) >= 0){
-      pw.println("[ReferenceLocator] object " + ei + " released");
-    }
-  }
-  
-  @Override
-  public void instructionExecuted (VM vm, ThreadInfo ti, Instruction nextInsn, Instruction executedInsn){
-    
-    if (useRefs != null){
-      if (executedInsn instanceof InstanceInvocation) {
-        int ref = ((InstanceInvocation)executedInsn).getCalleeThis(ti);
-        if (Arrays.binarySearch(useRefs, ref) >= 0){
-          printLocation("[ReferenceLocator] call on object " + ti.getElementInfo(ref) + " at:", ti);
-        }
-      } else if (executedInsn instanceof InstanceFieldInstruction){
-        int ref = ((InstanceFieldInstruction)executedInsn).getLastThis();
-        if (Arrays.binarySearch(useRefs, ref) >= 0){
-          printLocation("[ReferenceLocator] field access of " + ti.getElementInfo(ref) + " at:", ti);          
-        }
-      }
-    }
-  }
+	PrintWriter pw;
+	int[] createRefs;
+	int[] releaseRefs;
+	int[] useRefs;
+
+	public ReferenceLocator(Config conf) {
+		createRefs = sort(conf.getIntArray("refloc.create"));
+		releaseRefs = sort(conf.getIntArray("refloc.release"));
+		useRefs = sort(conf.getIntArray("refloc.use"));
+
+		// <2do> we might want to configure output destination
+		pw = new PrintWriter(System.out, true);
+	}
+
+	protected int[] sort(int[] a) {
+		if (a != null) {
+			Arrays.sort(a);
+		}
+		return a;
+	}
+
+	protected void printLocation(String msg, ThreadInfo ti) {
+		pw.println(msg);
+		for (StackFrame frame : ti) {
+			pw.print("\tat ");
+			pw.println(frame.getStackTraceInfo());
+		}
+
+		pw.println();
+	}
+
+	@Override
+	public void objectCreated(VM vm, ThreadInfo ti, ElementInfo ei) {
+		int ref = ei.getObjectRef();
+
+		if (createRefs != null && Arrays.binarySearch(createRefs, ref) >= 0) {
+			printLocation("[ReferenceLocator] object " + ei + " created at:",
+					ti);
+		}
+	}
+
+	@Override
+	public void objectReleased(VM vm, ThreadInfo ti, ElementInfo ei) {
+		int ref = ei.getObjectRef();
+
+		if (releaseRefs != null && Arrays.binarySearch(releaseRefs, ref) >= 0) {
+			pw.println("[ReferenceLocator] object " + ei + " released");
+		}
+	}
+
+	@Override
+	public void instructionExecuted(VM vm, ThreadInfo ti, Instruction nextInsn,
+			Instruction executedInsn) {
+
+		if (useRefs != null) {
+			if (executedInsn instanceof InstanceInvocation) {
+				int ref = ((InstanceInvocation) executedInsn).getCalleeThis(ti);
+				if (Arrays.binarySearch(useRefs, ref) >= 0) {
+					printLocation(
+							"[ReferenceLocator] call on object "
+									+ ti.getElementInfo(ref) + " at:", ti);
+				}
+			} else if (executedInsn instanceof InstanceFieldInstruction) {
+				int ref = ((InstanceFieldInstruction) executedInsn)
+						.getLastThis();
+				if (Arrays.binarySearch(useRefs, ref) >= 0) {
+					printLocation(
+							"[ReferenceLocator] field access of "
+									+ ti.getElementInfo(ref) + " at:", ti);
+				}
+			}
+		}
+	}
 }

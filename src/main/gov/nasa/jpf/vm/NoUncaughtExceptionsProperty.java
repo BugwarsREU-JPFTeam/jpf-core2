@@ -25,49 +25,52 @@ import gov.nasa.jpf.search.Search;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-
 /**
  * property class to check for uncaught exceptions
  */
 public class NoUncaughtExceptionsProperty extends GenericProperty {
-  
-  ExceptionInfo uncaughtXi;
-  
-  public NoUncaughtExceptionsProperty (Config config) {
-    uncaughtXi = null;
-  }
-  
-  void setExceptionInfo (ExceptionInfo xi){
-    uncaughtXi = xi;
-  }
-  
-  public ExceptionInfo getUncaughtExceptionInfo() {
-	  return uncaughtXi;
-  }
-  
-  public String getExplanation () {
-    // that's pretty self explaining, isn't it?
-    return null;
-    //return "no uncaught exception";
-  }
 
-  public String getErrorMessage () {
-    if (uncaughtXi != null) {
-      StringWriter sw = new StringWriter();
-      uncaughtXi.printOn(new PrintWriter(sw));
-      return sw.toString();
-    }
-    
-    return null;
-  }
-  
-  public void reset() {
-    uncaughtXi = null;
-  }
-  
-  public boolean check (Search search, VM vm) {
-    uncaughtXi = vm.getPendingException();
-    return (uncaughtXi == null);
-  }
+	ExceptionInfo uncaughtXi;
+
+	public NoUncaughtExceptionsProperty(Config config) {
+		uncaughtXi = null;
+	}
+
+	void setExceptionInfo(ExceptionInfo xi) {
+		uncaughtXi = xi;
+	}
+
+	public ExceptionInfo getUncaughtExceptionInfo() {
+		return uncaughtXi;
+	}
+
+	@Override
+	public String getExplanation() {
+		// that's pretty self explaining, isn't it?
+		return null;
+		// return "no uncaught exception";
+	}
+
+	@Override
+	public String getErrorMessage() {
+		if (uncaughtXi != null) {
+			StringWriter sw = new StringWriter();
+			uncaughtXi.printOn(new PrintWriter(sw));
+			return sw.toString();
+		}
+
+		return null;
+	}
+
+	@Override
+	public void reset() {
+		uncaughtXi = null;
+	}
+
+	@Override
+	public boolean check(Search search, VM vm) {
+		uncaughtXi = vm.getPendingException();
+		return (uncaughtXi == null);
+	}
 
 }

@@ -27,30 +27,32 @@ import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.NativePeer;
 
 public class JPF_java_io_ObjectStreamClass extends NativePeer {
-  @MJI
-  public void initNative____V (MJIEnv env, int clsObjRef) {
-    // cut off
-  }
-  
-  // why is this here??
-  @MJI
-  public boolean hasStaticInitializer__Ljava_lang_Class_2__Z (MJIEnv env, int objRef, int clsRef){
-    ClassInfo ci = env.getReferredClassInfo(clsRef);
-    MethodInfo mi = ci.getMethod("<clinit>()V", false);          
-    return (mi != null);
-  }
+	@MJI
+	public void initNative____V(MJIEnv env, int clsObjRef) {
+		// cut off
+	}
 
-  // just a little accelerator
-  @MJI
-  public int getDeclaredSUID__Ljava_lang_Class_2__Ljava_lang_Long_2 (MJIEnv env, int objRef, int clsRef){
-    ClassInfo ci = env.getReferredClassInfo(clsRef);
-    FieldInfo fi = ci.getDeclaredStaticField("serialVersionUID");
-    if (fi != null){
-      ElementInfo ei = ci.getStaticElementInfo();
-      long l = ei.getLongField(fi);
-      return env.newLong(l);
-    } else {
-      return MJIEnv.NULL;
-    }
-  }
+	// why is this here??
+	@MJI
+	public boolean hasStaticInitializer__Ljava_lang_Class_2__Z(MJIEnv env,
+			int objRef, int clsRef) {
+		ClassInfo ci = env.getReferredClassInfo(clsRef);
+		MethodInfo mi = ci.getMethod("<clinit>()V", false);
+		return (mi != null);
+	}
+
+	// just a little accelerator
+	@MJI
+	public int getDeclaredSUID__Ljava_lang_Class_2__Ljava_lang_Long_2(
+			MJIEnv env, int objRef, int clsRef) {
+		ClassInfo ci = env.getReferredClassInfo(clsRef);
+		FieldInfo fi = ci.getDeclaredStaticField("serialVersionUID");
+		if (fi != null) {
+			ElementInfo ei = ci.getStaticElementInfo();
+			long l = ei.getLongField(fi);
+			return env.newLong(l);
+		} else {
+			return MJIEnv.NULL;
+		}
+	}
 }

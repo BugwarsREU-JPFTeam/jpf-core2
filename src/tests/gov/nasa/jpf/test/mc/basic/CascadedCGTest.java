@@ -19,7 +19,6 @@
 
 package gov.nasa.jpf.test.mc.basic;
 
-
 import gov.nasa.jpf.ListenerAdapter;
 import gov.nasa.jpf.jvm.bytecode.EXECUTENATIVE;
 import gov.nasa.jpf.jvm.bytecode.GETFIELD;
@@ -43,174 +42,204 @@ import org.junit.Test;
  */
 public class CascadedCGTest extends TestJPF {
 
-  public static class IntChoiceCascader extends ListenerAdapter {
-    static int result;
+	public static class IntChoiceCascader extends ListenerAdapter {
+		static int result;
 
-    @Override
-    public void instructionExecuted(VM vm, ThreadInfo ti, Instruction nextInsn, Instruction executedInsn) {
-      SystemState ss = vm.getSystemState();
+		@Override
+		public void instructionExecuted(VM vm, ThreadInfo ti,
+				Instruction nextInsn, Instruction executedInsn) {
+			SystemState ss = vm.getSystemState();
 
-      if (executedInsn instanceof EXECUTENATIVE) { // break on native method exec
-        EXECUTENATIVE exec = (EXECUTENATIVE) executedInsn;
+			if (executedInsn instanceof EXECUTENATIVE) { // break on native
+															// method exec
+				EXECUTENATIVE exec = (EXECUTENATIVE) executedInsn;
 
-        if (exec.getExecutedMethodName().equals("getInt")){// this insn did create a CG
-          if (!ti.isFirstStepInsn()){
-            result = 0;
+				if (exec.getExecutedMethodName().equals("getInt")) {// this insn
+																	// did
+																	// create a
+																	// CG
+					if (!ti.isFirstStepInsn()) {
+						result = 0;
 
-            IntIntervalGenerator cg = new IntIntervalGenerator("listenerCG", 3,4);
-            ss.setNextChoiceGenerator(cg);
-            System.out.println("# listener registered " + cg);
+						IntIntervalGenerator cg = new IntIntervalGenerator(
+								"listenerCG", 3, 4);
+						ss.setNextChoiceGenerator(cg);
+						System.out.println("# listener registered " + cg);
 
-          } else { // reexecution
+					} else { // reexecution
 
-            ChoiceGenerator<?>[] curCGs = ss.getCurrentChoiceGenerators();
-            assert curCGs.length == 2;
+						ChoiceGenerator<?>[] curCGs = ss
+								.getCurrentChoiceGenerators();
+						assert curCGs.length == 2;
 
-            IntIntervalGenerator cg = ss.getCurrentChoiceGenerator("listenerCG", IntIntervalGenerator.class);
-            assert cg != null : "no 'listenerCG' IntIntervalGenerator found";
-            int i = cg.getNextChoice();
-            System.out.println("# current listener CG choice: " + i);
+						IntIntervalGenerator cg = ss.getCurrentChoiceGenerator(
+								"listenerCG", IntIntervalGenerator.class);
+						assert cg != null : "no 'listenerCG' IntIntervalGenerator found";
+						int i = cg.getNextChoice();
+						System.out
+								.println("# current listener CG choice: " + i);
 
-            cg = ss.getCurrentChoiceGenerator("verifyGetInt(II)", IntIntervalGenerator.class);
-            assert cg != null : "no 'verifyGetInt(II)' IntIntervalGenerator found";
-            int j = cg.getNextChoice();
-            System.out.println("# current insn CG choice: " + j);
+						cg = ss.getCurrentChoiceGenerator("verifyGetInt(II)",
+								IntIntervalGenerator.class);
+						assert cg != null : "no 'verifyGetInt(II)' IntIntervalGenerator found";
+						int j = cg.getNextChoice();
+						System.out.println("# current insn CG choice: " + j);
 
-            result += i * j;
-          }
-        }
-      }
-    }
-  }
+						result += i * j;
+					}
+				}
+			}
+		}
+	}
 
-  @Test
-  public void testCascadedIntIntervals () {
-    if (verifyNoPropertyViolation("+listener=.test.mc.basic.CascadedCGTest$IntChoiceCascader")){
-      int i = Verify.getInt( 1, 2);
-      System.out.print("i=");
-      System.out.println(i);
-    } else {
-      assert IntChoiceCascader.result == 21;
-    }
-  }
+	@Test
+	public void testCascadedIntIntervals() {
+		if (verifyNoPropertyViolation("+listener=.test.mc.basic.CascadedCGTest$IntChoiceCascader")) {
+			int i = Verify.getInt(1, 2);
+			System.out.print("i=");
+			System.out.println(i);
+		} else {
+			assert IntChoiceCascader.result == 21;
+		}
+	}
 
+	// --- mixed data and thread CG
 
-  //--- mixed data and thread CG
+	// this listener replaces all GETFIELD "mySharedField" results with
+	// configured
+	// choice values (i.e. it is a simplified field Perturbator).
+	// The demo point is that it is not aware of that such GETFIELDs might also
+	// be
+	// scheduling points because of shared object field access, and it should
+	// work
+	// the same no matter if there also was a ThreadChoice/context switch or not
 
-  // this listener replaces all GETFIELD "mySharedField" results with configured
-  // choice values (i.e. it is a simplified field Perturbator).
-  // The demo point is that it is not aware of that such GETFIELDs might also be
-  // scheduling points because of shared object field access, and it should work
-  // the same no matter if there also was a ThreadChoice/context switch or not
+	// NOTE: while the cascaded CG interface is easy to use (almost the same as
+	// the
+	// single CG interface), the context can be quite tricky because the
+	// cascaded
+	// CG (the scheduling point in this case) means the corresponding
+	// instruction
+	// is already rescheduled and might have been cut short in insn specific
+	// ways
+	// (in this case before pushing the field value on the operand stack). For
+	// this
+	// reason a simple ti.isFirstStepInsn() check is not sufficient. There might
+	// not
+	// have been a reschedule if there was only one thread, or even if this is
+	// the
+	// first step insn, the corresponding CG might have been not related to the
+	// getfield but some action in the preceeding thread (e.g. a terminate).
+	// In this case, the simple solution is based on that we want the data CG
+	// unconditionally, so we check if there is a corresponding current CG
+	// (which means this is not the first step insn)
 
-  // NOTE: while the cascaded CG interface is easy to use (almost the same as the
-  // single CG interface), the context can be quite tricky because the cascaded
-  // CG (the scheduling point in this case) means the corresponding instruction
-  // is already rescheduled and might have been cut short in insn specific ways
-  // (in this case before pushing the field value on the operand stack). For this
-  // reason a simple ti.isFirstStepInsn() check is not sufficient. There might not
-  // have been a reschedule if there was only one thread, or even if this is the
-  // first step insn, the corresponding CG might have been not related to the
-  // getfield but some action in the preceeding thread (e.g. a terminate).
-  // In this case, the simple solution is based on that we want the data CG
-  // unconditionally, so we check if there is a corresponding current CG
-  // (which means this is not the first step insn)
+	public static class FieldAccessCascader extends ListenerAdapter {
 
-  public static class FieldAccessCascader extends ListenerAdapter {
+		@Override
+		public void instructionExecuted(VM vm, ThreadInfo ti,
+				Instruction nextInsn, Instruction executedInsn) {
+			SystemState ss = vm.getSystemState();
 
-    @Override
-    public void instructionExecuted(VM vm, ThreadInfo ti, Instruction nextInsn, Instruction executedInsn) {
-      SystemState ss = vm.getSystemState();
+			if (executedInsn instanceof GETFIELD) {
+				GETFIELD getInsn = (GETFIELD) executedInsn;
+				FieldInfo fi = getInsn.getFieldInfo();
+				if (fi.getName().equals("mySharedField")) {
 
-      if (executedInsn instanceof GETFIELD){
-        GETFIELD getInsn = (GETFIELD) executedInsn;
-        FieldInfo fi = getInsn.getFieldInfo();
-        if (fi.getName().equals("mySharedField")){
+					IntChoiceFromSet cg = ss.getCurrentChoiceGenerator(
+							"fieldReplace", IntChoiceFromSet.class);
+					if (cg == null) {
 
-          IntChoiceFromSet cg = ss.getCurrentChoiceGenerator("fieldReplace", IntChoiceFromSet.class);
-          if (cg == null){
+						// we might get here after a preceding rescheduling
+						// exec, i.e.
+						// partial execution (with successive re-execution), or
+						// after
+						// non-rescheduling exec has been completed (only one
+						// runnable thread).
+						// In the first case we have to restore the operand
+						// stack so that
+						// we can reexecute
+						if (!ti.willReExecuteInstruction()) {
+							// restore old operand stack contents
+							StackFrame frame = ti.getModifiableTopFrame();
 
-            // we might get here after a preceding rescheduling exec, i.e.
-            // partial execution (with successive re-execution), or after
-            // non-rescheduling exec has been completed (only one runnable thread).
-            // In the first case we have to restore the operand stack so that
-            // we can reexecute
-            if (!ti.willReExecuteInstruction()){
-              // restore old operand stack contents
-              StackFrame frame = ti.getModifiableTopFrame();
+							frame.pop();
+							frame.pushRef(getInsn.getLastThis());
+						}
 
-              frame.pop();
-              frame.pushRef( getInsn.getLastThis());
-            }
+						cg = new IntChoiceFromSet("fieldReplace", 42, 43);
+						ss.setNextChoiceGenerator(cg);
+						ti.reExecuteInstruction();
 
-            cg = new IntChoiceFromSet("fieldReplace", 42, 43);
-            ss.setNextChoiceGenerator(cg);
-            ti.reExecuteInstruction();
+						System.out.println("# listener registered: " + cg);
 
-            System.out.println("# listener registered: " + cg);
+					} else {
+						StackFrame frame = ti.getModifiableTopFrame();
 
-          } else {
-            StackFrame frame = ti.getModifiableTopFrame();
+						int v = cg.getNextChoice();
+						int n = frame.pop();
+						frame.push(v);
 
-            int v = cg.getNextChoice();
-            int n = frame.pop();
-            frame.push(v);
+						System.out.println("# listener replacing " + n
+								+ " with " + v);
+					}
+				}
+			}
+		}
 
-            System.out.println("# listener replacing " + n + " with " + v);
-          }
-        }
-      }
-    }
+		// --- those are just for debugging purposes
+		@Override
+		public void stateBacktracked(Search search) {
+			System.out.println("#------ [" + search.getDepth()
+					+ "] backtrack: " + search.getStateId());
+		}
 
-    //--- those are just for debugging purposes
-    @Override
-    public void stateBacktracked(Search search) {
-      System.out.println("#------ [" + search.getDepth() + "] backtrack: " + search.getStateId());
-    }
-    
-    @Override
-    public void stateAdvanced(Search search){
-      System.out.println("#------ " + search.getStateId() + " isNew: " + search.isNewState() + ", isEnd: " + search.isEndState());
-    }
-    
-    @Override
-    public void threadScheduled(VM vm, ThreadInfo ti){
-      System.out.println("# running thread: " + ti);
-    }
-    
-    @Override
-    public void threadTerminated(VM vm, ThreadInfo ti){
-      System.out.println("# terminated thread: " + ti);
-    }
-    
-    @Override
-    public void threadStarted(VM vm, ThreadInfo ti){
-      System.out.println("# started thread: " + ti);
-    }
-    
-    @Override
-    public void choiceGeneratorAdvanced (VM vm, ChoiceGenerator<?> currentCG) {
-      System.out.println("# choice: " + currentCG);
-    }
-  }
+		@Override
+		public void stateAdvanced(Search search) {
+			System.out.println("#------ " + search.getStateId() + " isNew: "
+					+ search.isNewState() + ", isEnd: " + search.isEndState());
+		}
 
-  int mySharedField = -1;
+		@Override
+		public void threadScheduled(VM vm, ThreadInfo ti) {
+			System.out.println("# running thread: " + ti);
+		}
 
-  @Test
-  public void testMixedThreadDataCGs () {
-    if (verifyNoPropertyViolation("+listener=.test.mc.basic.CascadedCGTest$FieldAccessCascader")){
-      Thread t = new Thread(){
-        public void run() {
-          int n = mySharedField;
-          System.out.print("<thread> mySharedField read: ");
-          System.out.println( n);
-          assert n == 42 || n == 43; // regardless of main thread exec state
-        }
-      };
-      t.start();
+		@Override
+		public void threadTerminated(VM vm, ThreadInfo ti) {
+			System.out.println("# terminated thread: " + ti);
+		}
 
-      mySharedField = 7;
-      System.out.println("<main> mySharedField write: 7");
-    }
-  }
+		@Override
+		public void threadStarted(VM vm, ThreadInfo ti) {
+			System.out.println("# started thread: " + ti);
+		}
+
+		@Override
+		public void choiceGeneratorAdvanced(VM vm, ChoiceGenerator<?> currentCG) {
+			System.out.println("# choice: " + currentCG);
+		}
+	}
+
+	int mySharedField = -1;
+
+	@Test
+	public void testMixedThreadDataCGs() {
+		if (verifyNoPropertyViolation("+listener=.test.mc.basic.CascadedCGTest$FieldAccessCascader")) {
+			Thread t = new Thread() {
+				@Override
+				public void run() {
+					int n = mySharedField;
+					System.out.print("<thread> mySharedField read: ");
+					System.out.println(n);
+					assert n == 42 || n == 43; // regardless of main thread exec
+												// state
+				}
+			};
+			t.start();
+
+			mySharedField = 7;
+			System.out.println("<main> mySharedField write: 7");
+		}
+	}
 }

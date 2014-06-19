@@ -20,9 +20,8 @@
 package gov.nasa.jpf.vm;
 
 /**
- * Choice Generator that creates float value - this is only an interface
- * we can use for type checks of implementors that have their own
- * generic hierarchy
+ * Choice Generator that creates float value - this is only an interface we can
+ * use for type checks of implementors that have their own generic hierarchy
  */
 public interface FloatChoiceGenerator extends ChoiceGenerator<Float> {
 }

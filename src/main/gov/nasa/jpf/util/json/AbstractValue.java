@@ -22,37 +22,42 @@ import gov.nasa.jpf.JPFException;
 
 /**
  * Implementation of all Value methods. Classes that inherits this class should
- * only override methods they can handle. Other methods will throw exceptions with
- * error description.
- *
+ * only override methods they can handle. Other methods will throw exceptions
+ * with error description.
+ * 
  * @author Ivan Mushketik
  */
 public class AbstractValue implements Value {
 
-  String read;
+	String read;
 
-  protected AbstractValue(String read) {
-    this.read = read;
-  }
+	protected AbstractValue(String read) {
+		this.read = read;
+	}
 
-  public String getString() {
-    throw new JPFException("Can't convert '" + read + " to String");
-  }
+	@Override
+	public String getString() {
+		throw new JPFException("Can't convert '" + read + " to String");
+	}
 
-  public Double getDouble() {
-    throw new JPFException("Can't convert '" + read + "' to Double");
-  }
+	@Override
+	public Double getDouble() {
+		throw new JPFException("Can't convert '" + read + "' to Double");
+	}
 
-  public JSONObject getObject() {
-    throw new JPFException("Can't convert '" + read + "' to JSON object");
-  }
+	@Override
+	public JSONObject getObject() {
+		throw new JPFException("Can't convert '" + read + "' to JSON object");
+	}
 
-  public Value[] getArray() {
-    throw new JPFException("Can't convert '" + read + "' to Array");
-  }
+	@Override
+	public Value[] getArray() {
+		throw new JPFException("Can't convert '" + read + "' to Array");
+	}
 
-  public Boolean getBoolean() {
-    throw new JPFException("Can't convert '" + read + "' to Boolean");
-  }
+	@Override
+	public Boolean getBoolean() {
+		throw new JPFException("Can't convert '" + read + "' to Boolean");
+	}
 
 }

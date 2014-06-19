@@ -34,74 +34,79 @@ import org.junit.Test;
  */
 public class CGRemoverTest extends TestJPF {
 
-  static class R1 implements Runnable {
-    int data = 42;
+	static class R1 implements Runnable {
+		int data = 42;
 
-    public synchronized int getData() {
-      return data;
-    }
+		public synchronized int getData() {
+			return data;
+		}
 
-    public void run() {
-      int r = getData();  // should not cause CG  !! LINE USED IN LOCATIONSPEC
-    }
-  }
+		@Override
+		public void run() {
+			int r = getData(); // should not cause CG !! LINE USED IN
+								// LOCATIONSPEC
+		}
+	}
 
-  public static class R1Listener extends ListenerAdapter {
+	public static class R1Listener extends ListenerAdapter {
 
-    @Override
-    public void choiceGeneratorSet (VM vm, ChoiceGenerator<?> newCG){
-      Instruction insn = newCG.getInsn();
+		@Override
+		public void choiceGeneratorSet(VM vm, ChoiceGenerator<?> newCG) {
+			Instruction insn = newCG.getInsn();
 
-      if (insn instanceof InvokeInstruction){
-        MethodInfo mi = ((InvokeInstruction)insn).getInvokedMethod();
-        if (mi.getName().equals("getData")){
-          fail("CG should have been removed by CGRemover");
-        }
-      }
-    }
-  }
+			if (insn instanceof InvokeInstruction) {
+				MethodInfo mi = ((InvokeInstruction) insn).getInvokedMethod();
+				if (mi.getName().equals("getData")) {
+					fail("CG should have been removed by CGRemover");
+				}
+			}
+		}
+	}
 
-  // WATCH IT - THIS IS FRAGILE WRT SOURCE LINES
-  @Test
-  public void testSyncLocation() {
-    if (verifyNoPropertyViolation("+listener=.listener.CGRemover,.test.mc.basic.CGRemoverTest$R1Listener",
-            "+log.info=gov.nasa.jpf.CGRemover",
-            "+cgrm.sync.cg_class=gov.nasa.jpf.vm.ThreadChoiceGenerator",
-            "+cgrm.sync.locations=CGRemoverTest.java:45,CGRemoverTest.java:75")){
-      R1 o = new R1();
-      Thread t = new Thread(o);
-      t.start();   // from now on 'o' is shared
+	// WATCH IT - THIS IS FRAGILE WRT SOURCE LINES
+	@Test
+	public void testSyncLocation() {
+		if (verifyNoPropertyViolation(
+				"+listener=.listener.CGRemover,.test.mc.basic.CGRemoverTest$R1Listener",
+				"+log.info=gov.nasa.jpf.CGRemover",
+				"+cgrm.sync.cg_class=gov.nasa.jpf.vm.ThreadChoiceGenerator",
+				"+cgrm.sync.locations=CGRemoverTest.java:45,CGRemoverTest.java:75")) {
+			R1 o = new R1();
+			Thread t = new Thread(o);
+			t.start(); // from now on 'o' is shared
 
-      int r = o.getData(); // should not cause CG  !! LINE USED IN LocationSpec
-    }
-  }
+			int r = o.getData(); // should not cause CG !! LINE USED IN
+									// LocationSpec
+		}
+	}
 
+	@Test
+	public void testSyncCall() {
+		if (verifyNoPropertyViolation(
+				"+listener=.listener.CGRemover,.test.mc.basic.CGRemoverTest$R1Listener",
+				"+log.info=gov.nasa.jpf.CGRemover",
+				"+cgrm.sync.cg_class=gov.nasa.jpf.vm.ThreadChoiceGenerator",
+				"+cgrm.sync.method_calls=gov.nasa.jpf.test.mc.basic.CGRemoverTest$R1.getData()")) {
+			R1 o = new R1();
+			Thread t = new Thread(o);
+			t.start(); // from now on 'o' is shared
 
-  @Test
-  public void testSyncCall() {
-    if (verifyNoPropertyViolation("+listener=.listener.CGRemover,.test.mc.basic.CGRemoverTest$R1Listener",
-            "+log.info=gov.nasa.jpf.CGRemover",
-            "+cgrm.sync.cg_class=gov.nasa.jpf.vm.ThreadChoiceGenerator",
-            "+cgrm.sync.method_calls=gov.nasa.jpf.test.mc.basic.CGRemoverTest$R1.getData()")){
-      R1 o = new R1();
-      Thread t = new Thread(o);
-      t.start();   // from now on 'o' is shared
+			int r = o.getData(); // should not cause CG
+		}
+	}
 
-      int r = o.getData(); // should not cause CG
-    }
-  }
+	@Test
+	public void testSyncBody() {
+		if (verifyNoPropertyViolation(
+				"+listener=.listener.CGRemover,.test.mc.basic.CGRemoverTest$R1Listener",
+				"+log.info=gov.nasa.jpf.CGRemover",
+				"+cgrm.sync.cg_class=gov.nasa.jpf.vm.ThreadChoiceGenerator",
+				"+cgrm.sync.method_bodies=gov.nasa.jpf.test.mc.basic.CGRemoverTest$R1.run(),gov.nasa.jpf.test.mc.basic.CGRemoverTest.testSyncBody()")) {
+			R1 o = new R1();
+			Thread t = new Thread(o);
+			t.start(); // from now on 'o' is shared
 
-  @Test
-  public void testSyncBody() {
-    if (verifyNoPropertyViolation("+listener=.listener.CGRemover,.test.mc.basic.CGRemoverTest$R1Listener",
-            "+log.info=gov.nasa.jpf.CGRemover",
-            "+cgrm.sync.cg_class=gov.nasa.jpf.vm.ThreadChoiceGenerator",
-            "+cgrm.sync.method_bodies=gov.nasa.jpf.test.mc.basic.CGRemoverTest$R1.run(),gov.nasa.jpf.test.mc.basic.CGRemoverTest.testSyncBody()")){
-      R1 o = new R1();
-      Thread t = new Thread(o);
-      t.start();   // from now on 'o' is shared
-
-      int r = o.getData(); // should not cause CG
-    }
-  }
+			int r = o.getData(); // should not cause CG
+		}
+	}
 }

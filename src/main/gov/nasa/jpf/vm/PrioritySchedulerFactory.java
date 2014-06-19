@@ -23,67 +23,71 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.vm.choice.ThreadChoiceFromSet;
 
 /**
- * a scheduler policy which always runs one of the threads that
- * have equal top priority
+ * a scheduler policy which always runs one of the threads that have equal top
+ * priority
  */
 public class PrioritySchedulerFactory extends DefaultSchedulerFactory {
 
-  public PrioritySchedulerFactory (Config config, VM vm, SystemState ss) {
-    super(config, vm, ss);
-  }
-  
-  /**
-   * the private filter method to get the topmost prio threads out of the
-   * provided list. Not very effective, but it will do for now
-   */
-  protected ThreadInfo[] filter (ThreadInfo[] list) {
-    int top = Thread.MIN_PRIORITY;
-    int i, nTop = 0;
-    
-    if ((list == null) || (list.length <= 1)){ // nothing to filter
-      return list;
-    }
-    
-    for (i=0; i<list.length; i++) { // what is the top prio, and how many threads
-      int prio = list[i].getPriority();
-      if (prio > top) {
-        top = prio;
-        nTop = 1;
-      } else if (prio == top) {
-        nTop++;
-      }
-    }
-    
-    if (nTop == list.length) { // all have the same prio
-      return list;
-    } else { // Ok, shrink it
-      ThreadInfo[] topList = new ThreadInfo[nTop];
-      int j;
-      for (i=0, j=0; (i<list.length) && (j<nTop); i++) {
-        if (list[i].getPriority() == top) {
-          topList[j++] = list[i];
-        }
-      }
-      return topList;
-    }
-  }
-  
+	public PrioritySchedulerFactory(Config config, VM vm, SystemState ss) {
+		super(config, vm, ss);
+	}
 
-  /**************** as soon as a higher prio thread becomes runnable, we have to switch **/
-  public ChoiceGenerator<ThreadInfo> createThreadStartCG (ThreadInfo newThread) {
-    if (ss.isAtomic()) {
-      return null;
-    }
-    
-    return new ThreadChoiceFromSet("start",getRunnables(newThread), true);
-  }
-  
-  public ChoiceGenerator<ThreadInfo> createMonitorExitCG (ElementInfo ei, ThreadInfo ti) {
-    if (ss.isAtomic()) {
-      return null;
-    }
-    
-    return new ThreadChoiceFromSet("monitorExit",getRunnables(ti), true);
-  }
+	/**
+	 * the private filter method to get the topmost prio threads out of the
+	 * provided list. Not very effective, but it will do for now
+	 */
+	@Override
+	protected ThreadInfo[] filter(ThreadInfo[] list) {
+		int top = Thread.MIN_PRIORITY;
+		int i, nTop = 0;
+
+		if ((list == null) || (list.length <= 1)) { // nothing to filter
+			return list;
+		}
+
+		for (i = 0; i < list.length; i++) { // what is the top prio, and how
+											// many threads
+			int prio = list[i].getPriority();
+			if (prio > top) {
+				top = prio;
+				nTop = 1;
+			} else if (prio == top) {
+				nTop++;
+			}
+		}
+
+		if (nTop == list.length) { // all have the same prio
+			return list;
+		} else { // Ok, shrink it
+			ThreadInfo[] topList = new ThreadInfo[nTop];
+			int j;
+			for (i = 0, j = 0; (i < list.length) && (j < nTop); i++) {
+				if (list[i].getPriority() == top) {
+					topList[j++] = list[i];
+				}
+			}
+			return topList;
+		}
+	}
+
+	/**************** as soon as a higher prio thread becomes runnable, we have to switch **/
+	@Override
+	public ChoiceGenerator<ThreadInfo> createThreadStartCG(ThreadInfo newThread) {
+		if (ss.isAtomic()) {
+			return null;
+		}
+
+		return new ThreadChoiceFromSet("start", getRunnables(newThread), true);
+	}
+
+	@Override
+	public ChoiceGenerator<ThreadInfo> createMonitorExitCG(ElementInfo ei,
+			ThreadInfo ti) {
+		if (ss.isAtomic()) {
+			return null;
+		}
+
+		return new ThreadChoiceFromSet("monitorExit", getRunnables(ti), true);
+	}
 
 }

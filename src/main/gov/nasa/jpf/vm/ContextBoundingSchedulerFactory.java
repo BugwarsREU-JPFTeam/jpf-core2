@@ -24,8 +24,8 @@ import gov.nasa.jpf.vm.choice.ThreadChoiceFromSet;
 /**
  * <p>
  * SchedulerFactory that limits the search by imposing a maximum number of
- * thread preemptions (i.e., preempting context switches) that can occur per execution
- * path. This factory internally creates
+ * thread preemptions (i.e., preempting context switches) that can occur per
+ * execution path. This factory internally creates
  * <code>ContextBoundingThreadChoiceFromSet</code> choice generators.
  * </p>
  * <p>
@@ -60,164 +60,181 @@ import gov.nasa.jpf.vm.choice.ThreadChoiceFromSet;
 
 public class ContextBoundingSchedulerFactory extends DefaultSchedulerFactory {
 
-  private boolean isPossibleToPreempt;
+	private boolean isPossibleToPreempt;
 
-  private int numOfPreemptions;
+	private int numOfPreemptions;
 
-  private int maxNumOfPreemptions;
+	private int maxNumOfPreemptions;
 
-  public ContextBoundingSchedulerFactory(Config config, VM vm, SystemState ss) {
-    super(config, vm, ss);
-    if (config.containsKey("cg.max_number_of_preemptions"))
-      maxNumOfPreemptions = config.getInt("cg.max_number_of_preemptions");
-    else
-      maxNumOfPreemptions = -1;
-  }
+	public ContextBoundingSchedulerFactory(Config config, VM vm, SystemState ss) {
+		super(config, vm, ss);
+		if (config.containsKey("cg.max_number_of_preemptions"))
+			maxNumOfPreemptions = config.getInt("cg.max_number_of_preemptions");
+		else
+			maxNumOfPreemptions = -1;
+	}
 
-  protected ThreadInfo[] filter(ThreadInfo[] list) {
-    if (maxNumOfPreemptions == -1)
-      return list;
+	@Override
+	protected ThreadInfo[] filter(ThreadInfo[] list) {
+		if (maxNumOfPreemptions == -1)
+			return list;
 
-    SystemState ss = VM.getVM().getSystemState();
-    ContextBoundingThreadChoiceFromSet previousCG = (ContextBoundingThreadChoiceFromSet) 
-        ss.getLastChoiceGeneratorOfType(ContextBoundingThreadChoiceFromSet.class);
-    if (previousCG != null) {
-      numOfPreemptions = previousCG.getNumOfPreemptions();
-      if (previousCG.hasPreemptionOccured())
-        numOfPreemptions++;
-    } else {
-      numOfPreemptions = 0;
-    }
-    ThreadInfo currentThread = ThreadInfo.getCurrentThread();
-    isPossibleToPreempt = false;
-    for (ThreadInfo ti : list) {
-      if (ti.equals(currentThread)) {
-        isPossibleToPreempt = true;
-        break;
-      }
-    }
-    return (isPossibleToPreempt && numOfPreemptions >= maxNumOfPreemptions) ? new ThreadInfo[] { currentThread } : list;
-  }
+		SystemState ss = VM.getVM().getSystemState();
+		ContextBoundingThreadChoiceFromSet previousCG = ss
+				.getLastChoiceGeneratorOfType(ContextBoundingThreadChoiceFromSet.class);
+		if (previousCG != null) {
+			numOfPreemptions = previousCG.getNumOfPreemptions();
+			if (previousCG.hasPreemptionOccured())
+				numOfPreemptions++;
+		} else {
+			numOfPreemptions = 0;
+		}
+		ThreadInfo currentThread = ThreadInfo.getCurrentThread();
+		isPossibleToPreempt = false;
+		for (ThreadInfo ti : list) {
+			if (ti.equals(currentThread)) {
+				isPossibleToPreempt = true;
+				break;
+			}
+		}
+		return (isPossibleToPreempt && numOfPreemptions >= maxNumOfPreemptions) ? new ThreadInfo[] { currentThread }
+				: list;
+	}
 
-  protected ChoiceGenerator<ThreadInfo> getRunnableCG(String id, ThreadInfo ti) {
-    ThreadInfo[] choices = getRunnablesIfChoices(ti);
-    if (choices != null) {
-      return createContextBoundingThreadChoiceFromSet(id, choices, true);
-    } else {
-      return null;
-    }
-  }
+	@Override
+	protected ChoiceGenerator<ThreadInfo> getRunnableCG(String id, ThreadInfo ti) {
+		ThreadInfo[] choices = getRunnablesIfChoices(ti);
+		if (choices != null) {
+			return createContextBoundingThreadChoiceFromSet(id, choices, true);
+		} else {
+			return null;
+		}
+	}
 
-  public ChoiceGenerator<ThreadInfo> createMonitorEnterCG(ElementInfo ei,
-      ThreadInfo ti) {
-    if (ti.isBlocked()) { // we have to return something
-      if (ss.isAtomic()) {
-        ss.setBlockedInAtomicSection();
-      }
+	@Override
+	public ChoiceGenerator<ThreadInfo> createMonitorEnterCG(ElementInfo ei,
+			ThreadInfo ti) {
+		if (ti.isBlocked()) { // we have to return something
+			if (ss.isAtomic()) {
+				ss.setBlockedInAtomicSection();
+			}
 
-      return createContextBoundingThreadChoiceFromSet("monitorEnter", getRunnables(ti), true);
+			return createContextBoundingThreadChoiceFromSet("monitorEnter",
+					getRunnables(ti), true);
 
-    } else {
-      if (ss.isAtomic()) {
-        return null;
-      }
+		} else {
+			if (ss.isAtomic()) {
+				return null;
+			}
 
-      return getSyncCG("monitorEnter", ei, ti);
-    }
-  }
+			return getSyncCG("monitorEnter", ei, ti);
+		}
+	}
 
-  public ChoiceGenerator<ThreadInfo> createWaitCG(ElementInfo ei,
-      ThreadInfo ti, long timeOut) {
-    if (ss.isAtomic()) {
-      ss.setBlockedInAtomicSection();
-    }
+	@Override
+	public ChoiceGenerator<ThreadInfo> createWaitCG(ElementInfo ei,
+			ThreadInfo ti, long timeOut) {
+		if (ss.isAtomic()) {
+			ss.setBlockedInAtomicSection();
+		}
 
-    return createContextBoundingThreadChoiceFromSet("wait",getRunnables(ti), true);
-  }
+		return createContextBoundingThreadChoiceFromSet("wait",
+				getRunnables(ti), true);
+	}
 
-  public ChoiceGenerator<ThreadInfo> createNotifyCG(ElementInfo ei,
-      ThreadInfo ti) {
-    if (ss.isAtomic()) {
-      return null;
-    }
+	@Override
+	public ChoiceGenerator<ThreadInfo> createNotifyCG(ElementInfo ei,
+			ThreadInfo ti) {
+		if (ss.isAtomic()) {
+			return null;
+		}
 
-    ThreadInfo[] waiters = ei.getWaitingThreads();
-    if (waiters.length < 2) {
-      // if there are less than 2 threads waiting, there is no nondeterminism
-      return null;
-    } else {
-      return createContextBoundingThreadChoiceFromSet("notify",waiters, false);
-    }
-  }
+		ThreadInfo[] waiters = ei.getWaitingThreads();
+		if (waiters.length < 2) {
+			// if there are less than 2 threads waiting, there is no
+			// nondeterminism
+			return null;
+		} else {
+			return createContextBoundingThreadChoiceFromSet("notify", waiters,
+					false);
+		}
+	}
 
-  public ChoiceGenerator<ThreadInfo> createThreadTerminateCG(
-      ThreadInfo terminateThread) {
-    // terminateThread is already TERMINATED at this point
-    ThreadList tl = vm.getThreadList();
-    if (tl.getMatchingCount(vm.getTimedoutRunnablePredicate()) > 0) {
-      return createContextBoundingThreadChoiceFromSet( "terminate", getRunnablesWithout(terminateThread), true);
-    } else {
-      return null;
-    }
-  }
+	@Override
+	public ChoiceGenerator<ThreadInfo> createThreadTerminateCG(
+			ThreadInfo terminateThread) {
+		// terminateThread is already TERMINATED at this point
+		ThreadList tl = vm.getThreadList();
+		if (tl.getMatchingCount(vm.getTimedoutRunnablePredicate()) > 0) {
+			return createContextBoundingThreadChoiceFromSet("terminate",
+					getRunnablesWithout(terminateThread), true);
+		} else {
+			return null;
+		}
+	}
 
-  private ContextBoundingThreadChoiceFromSet createContextBoundingThreadChoiceFromSet(String id, ThreadInfo[] ti, boolean isSchedulingPoint) {
-    ContextBoundingThreadChoiceFromSet tcg = new ContextBoundingThreadChoiceFromSet( id, ti, isSchedulingPoint);
-    tcg.setPossibleToPreempt(isPossibleToPreempt);
-    tcg.setNumOfPreemptions(numOfPreemptions);
-    return tcg;
-  }
+	private ContextBoundingThreadChoiceFromSet createContextBoundingThreadChoiceFromSet(
+			String id, ThreadInfo[] ti, boolean isSchedulingPoint) {
+		ContextBoundingThreadChoiceFromSet tcg = new ContextBoundingThreadChoiceFromSet(
+				id, ti, isSchedulingPoint);
+		tcg.setPossibleToPreempt(isPossibleToPreempt);
+		tcg.setNumOfPreemptions(numOfPreemptions);
+		return tcg;
+	}
 
-  static class ContextBoundingThreadChoiceFromSet extends ThreadChoiceFromSet {
+	static class ContextBoundingThreadChoiceFromSet extends ThreadChoiceFromSet {
 
-    private ThreadInfo currentThread;
+		private ThreadInfo currentThread;
 
-    private boolean isPossibleToPreempt;
+		private boolean isPossibleToPreempt;
 
-    private int numOfPreemptions;
+		private int numOfPreemptions;
 
-    private boolean hasPreemptionOccured;
+		private boolean hasPreemptionOccured;
 
-    public ContextBoundingThreadChoiceFromSet( String id, ThreadInfo[] set, boolean isSchedulingPoint) {
-      super(id, set, isSchedulingPoint);
-      this.currentThread = ThreadInfo.getCurrentThread();
-    }
+		public ContextBoundingThreadChoiceFromSet(String id, ThreadInfo[] set,
+				boolean isSchedulingPoint) {
+			super(id, set, isSchedulingPoint);
+			this.currentThread = ThreadInfo.getCurrentThread();
+		}
 
-    public boolean isPossibleToPreempt() {
-      return isPossibleToPreempt;
-    }
+		public boolean isPossibleToPreempt() {
+			return isPossibleToPreempt;
+		}
 
-    public void setPossibleToPreempt(boolean isPossibleToPreempt) {
-      this.isPossibleToPreempt = isPossibleToPreempt;
-    }
+		public void setPossibleToPreempt(boolean isPossibleToPreempt) {
+			this.isPossibleToPreempt = isPossibleToPreempt;
+		}
 
-    public boolean hasPreemptionOccured() {
-      return hasPreemptionOccured;
-    }
+		public boolean hasPreemptionOccured() {
+			return hasPreemptionOccured;
+		}
 
-    public void setPreemptionOccured(boolean hasPreemptionOccured) {
-      this.hasPreemptionOccured = hasPreemptionOccured;
-    }
+		public void setPreemptionOccured(boolean hasPreemptionOccured) {
+			this.hasPreemptionOccured = hasPreemptionOccured;
+		}
 
-    public int getNumOfPreemptions() {
-      return numOfPreemptions;
-    }
+		public int getNumOfPreemptions() {
+			return numOfPreemptions;
+		}
 
-    public void setNumOfPreemptions(int numOfPreemptions) {
-      this.numOfPreemptions = numOfPreemptions;
-    }
+		public void setNumOfPreemptions(int numOfPreemptions) {
+			this.numOfPreemptions = numOfPreemptions;
+		}
 
-    public ThreadInfo getNextChoice() {
-      if ((count >= 0) && (count < values.length)) {
-        hasPreemptionOccured = isPossibleToPreempt
-            && !currentThread.equals(values[count]);
-        return values[count];
-      } else {
-        // we don't raise an exception here because this might be (mis)used
-        // from a listener, which shouldn't produce JPFExceptions
-        return null;
-      }
-    }
-  }
+		@Override
+		public ThreadInfo getNextChoice() {
+			if ((count >= 0) && (count < values.length)) {
+				hasPreemptionOccured = isPossibleToPreempt
+						&& !currentThread.equals(values[count]);
+				return values[count];
+			} else {
+				// we don't raise an exception here because this might be
+				// (mis)used
+				// from a listener, which shouldn't produce JPFExceptions
+				return null;
+			}
+		}
+	}
 
 }

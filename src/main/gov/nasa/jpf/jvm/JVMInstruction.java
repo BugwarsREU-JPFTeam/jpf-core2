@@ -23,9 +23,10 @@ import gov.nasa.jpf.jvm.bytecode.InstructionVisitorAcceptor;
 import gov.nasa.jpf.vm.Instruction;
 
 /**
- * an Instruction class that implements an InstructionVisitorAcceptor
- * This is the common root class for all Java bytecodes
+ * an Instruction class that implements an InstructionVisitorAcceptor This is
+ * the common root class for all Java bytecodes
  */
-public abstract class JVMInstruction extends Instruction implements InstructionVisitorAcceptor {
-  // nothing in here
+public abstract class JVMInstruction extends Instruction implements
+		InstructionVisitorAcceptor {
+	// nothing in here
 }

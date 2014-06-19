@@ -20,33 +20,54 @@
 package java.util.concurrent.atomic;
 
 /**
- * model class for the AtomicIntegerFieldUpdater
- * in reality it's an abstract class, but this here is merely a stub anyways
+ * model class for the AtomicIntegerFieldUpdater in reality it's an abstract
+ * class, but this here is merely a stub anyways
  */
 public class AtomicIntegerFieldUpdater<T> {
 
-  int fieldId;
+	int fieldId;
 
-  public static <O> AtomicIntegerFieldUpdater<O> newUpdater (Class<O> objClass, String fieldName) {
-    return new AtomicIntegerFieldUpdater<O>(objClass, fieldName);
-  }
+	public static <O> AtomicIntegerFieldUpdater<O> newUpdater(
+			Class<O> objClass, String fieldName) {
+		return new AtomicIntegerFieldUpdater<O>(objClass, fieldName);
+	}
 
-  protected AtomicIntegerFieldUpdater(Class<T> objClass, String fieldName){
-    // direct Object subclass, so we can directly intercept the ctor
-    // w/o having to call a parent ctor
-  }
+	protected AtomicIntegerFieldUpdater(Class<T> objClass, String fieldName) {
+		// direct Object subclass, so we can directly intercept the ctor
+		// w/o having to call a parent ctor
+	}
 
-  public native boolean compareAndSet(T obj, int expect, int update);
-  public native int     get(T obj);
-  public native int     getAndAdd(T obj, int delta);
-  public native int     getAndSet(T obj, int newValue);
-  public native void    lazySet(T obj, int newValue);
-  public native void    set(T obj, int newValue);
-  public native boolean weakCompareAndSet(T obj, int expect, int update);
+	public native boolean compareAndSet(T obj, int expect, int update);
 
-  public        int     addAndGet(T obj, int delta)  {return(getAndAdd(obj, delta) + delta);}
-  public        int     decrementAndGet(T obj)       {return(addAndGet(obj, -1));}
-  public        int     getAndDecrement(T obj)       {return(getAndAdd(obj, -1));}
-  public        int     getAndIncrement(T obj)       {return(getAndAdd(obj, 1));}
-  public        int     incrementAndGet(T obj)       {return(addAndGet(obj, 1));}
+	public native int get(T obj);
+
+	public native int getAndAdd(T obj, int delta);
+
+	public native int getAndSet(T obj, int newValue);
+
+	public native void lazySet(T obj, int newValue);
+
+	public native void set(T obj, int newValue);
+
+	public native boolean weakCompareAndSet(T obj, int expect, int update);
+
+	public int addAndGet(T obj, int delta) {
+		return (getAndAdd(obj, delta) + delta);
+	}
+
+	public int decrementAndGet(T obj) {
+		return (addAndGet(obj, -1));
+	}
+
+	public int getAndDecrement(T obj) {
+		return (getAndAdd(obj, -1));
+	}
+
+	public int getAndIncrement(T obj) {
+		return (getAndAdd(obj, 1));
+	}
+
+	public int incrementAndGet(T obj) {
+		return (addAndGet(obj, 1));
+	}
 }

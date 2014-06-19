@@ -28,80 +28,85 @@ import gov.nasa.jpf.util.JPFLogger;
 /**
  * @author Nastaran Shafiei <nastaran.shafiei@gmail.com>
  * 
- * Native peer for java.net.URLClassLoader
+ *         Native peer for java.net.URLClassLoader
  */
-public class JPF_java_net_URLClassLoader extends JPF_java_lang_ClassLoader{
+public class JPF_java_net_URLClassLoader extends JPF_java_lang_ClassLoader {
 
-  static JPFLogger log = JPF.getLogger("class");
-  
-  @MJI
-  public void addURL0__Ljava_lang_String_2__V (MJIEnv env, int objRef, int urlRef) throws MalformedURLException {
-    ClassLoaderInfo cl = env.getClassLoaderInfo(objRef);
-    String url = env.getStringObject(urlRef);
+	static JPFLogger log = JPF.getLogger("class");
 
-    String path = null;
-    URL u = new URL(url);
-    String protocol = u.getProtocol();
-    if(protocol.equals("file")) {
-      path = u.getFile();
-    } else if(protocol.equals("jar")){
-      path = url.substring(url.lastIndexOf(':')+1, url.indexOf('!'));
-    } else {
-      // we don't support other protocols for now!
-      log.warning("unknown path element specification: ", url);
-      return;
-    }
+	@MJI
+	public void addURL0__Ljava_lang_String_2__V(MJIEnv env, int objRef,
+			int urlRef) throws MalformedURLException {
+		ClassLoaderInfo cl = env.getClassLoaderInfo(objRef);
+		String url = env.getStringObject(urlRef);
 
-    cl.addClassPathElement(path);
-  }
+		String path = null;
+		URL u = new URL(url);
+		String protocol = u.getProtocol();
+		if (protocol.equals("file")) {
+			path = u.getFile();
+		} else if (protocol.equals("jar")) {
+			path = url.substring(url.lastIndexOf(':') + 1, url.indexOf('!'));
+		} else {
+			// we don't support other protocols for now!
+			log.warning("unknown path element specification: ", url);
+			return;
+		}
 
-  @MJI
-  public int findClass__Ljava_lang_String_2__Ljava_lang_Class_2 (MJIEnv env, int objRef, int nameRef) {
-    String typeName = env.getStringObject(nameRef);
-    ClassLoaderInfo cl = env.getClassLoaderInfo(objRef);
-    ThreadInfo ti = env.getThreadInfo();
+		cl.addClassPathElement(path);
+	}
 
-    try {
-      ClassInfo ci = cl.getResolvedClassInfo( typeName);
-      if(!ci.isRegistered()) {
-        ci.registerClass(env.getThreadInfo());
-      }
-      // note that we don't initialize yet
-      return ci.getClassObjectRef();
-          
-    } catch (LoadOnJPFRequired rre) { // this classloader has a overridden loadClass 
-      env.repeatInvocation();
-      return MJIEnv.NULL;
-      
-    } catch (ClassInfoException cix){
-      if (cix.getCause() instanceof ClassParseException){
-        env.throwException("java.lang.ClassFormatError", typeName);
-      } else {
-        env.throwException("java.lang.ClassNotFoundException", typeName);
-      }
-      return MJIEnv.NULL;      
-    }
-  }
+	@MJI
+	public int findClass__Ljava_lang_String_2__Ljava_lang_Class_2(MJIEnv env,
+			int objRef, int nameRef) {
+		String typeName = env.getStringObject(nameRef);
+		ClassLoaderInfo cl = env.getClassLoaderInfo(objRef);
+		ThreadInfo ti = env.getThreadInfo();
 
-  @MJI
-  public int findResource0__Ljava_lang_String_2__Ljava_lang_String_2 (MJIEnv env, int objRef, int resRef){
-    String rname = env.getStringObject(resRef);
+		try {
+			ClassInfo ci = cl.getResolvedClassInfo(typeName);
+			if (!ci.isRegistered()) {
+				ci.registerClass(env.getThreadInfo());
+			}
+			// note that we don't initialize yet
+			return ci.getClassObjectRef();
 
-    ClassLoaderInfo cl = env.getClassLoaderInfo(objRef);
+		} catch (LoadOnJPFRequired rre) { // this classloader has a overridden
+											// loadClass
+			env.repeatInvocation();
+			return MJIEnv.NULL;
 
-    String resourcePath = cl.findResource(rname);
+		} catch (ClassInfoException cix) {
+			if (cix.getCause() instanceof ClassParseException) {
+				env.throwException("java.lang.ClassFormatError", typeName);
+			} else {
+				env.throwException("java.lang.ClassNotFoundException", typeName);
+			}
+			return MJIEnv.NULL;
+		}
+	}
 
-    return env.newString(resourcePath);
-  }
+	@MJI
+	public int findResource0__Ljava_lang_String_2__Ljava_lang_String_2(
+			MJIEnv env, int objRef, int resRef) {
+		String rname = env.getStringObject(resRef);
 
-  @MJI
-  public int findResources0__Ljava_lang_String_2___3Ljava_lang_String_2 (MJIEnv env, int objRef, int resRef) {
-    String rname = env.getStringObject(resRef);
+		ClassLoaderInfo cl = env.getClassLoaderInfo(objRef);
 
-    ClassLoaderInfo cl = env.getClassLoaderInfo(objRef);
+		String resourcePath = cl.findResource(rname);
 
-    String[] resources = cl.findResources(rname);
+		return env.newString(resourcePath);
+	}
 
-    return env.newStringArray(resources);
-  }
+	@MJI
+	public int findResources0__Ljava_lang_String_2___3Ljava_lang_String_2(
+			MJIEnv env, int objRef, int resRef) {
+		String rname = env.getStringObject(resRef);
+
+		ClassLoaderInfo cl = env.getClassLoaderInfo(objRef);
+
+		String[] resources = cl.findResources(rname);
+
+		return env.newStringArray(resources);
+	}
 }

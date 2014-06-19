@@ -26,73 +26,77 @@ import java.util.Arrays;
  * model class for AtomicReferenceArray
  */
 public class AtomicReferenceArray<E> implements Serializable {
-  private static final long serialVersionUID = -6209656149925076980L;
+	private static final long serialVersionUID = -6209656149925076980L;
 
-  private final Object[] array;
+	private final Object[] array;
 
-  public AtomicReferenceArray(int length) {
-    array = new Object[length];
-    // <2do> need a volatile write in order to conform to JMM  // Does this really matter in JPF?
-  }
+	public AtomicReferenceArray(int length) {
+		array = new Object[length];
+		// <2do> need a volatile write in order to conform to JMM // Does this
+		// really matter in JPF?
+	}
 
-  public AtomicReferenceArray(E[] array) {
-    if (array == null)
-      throw new NullPointerException();
+	public AtomicReferenceArray(E[] array) {
+		if (array == null)
+			throw new NullPointerException();
 
-    int length = array.length;
-    this.array = new Object[length];
+		int length = array.length;
+		this.array = new Object[length];
 
-    for (int i = 0; i < length; ++i)
-      this.array[i] = array[i];
+		for (int i = 0; i < length; ++i)
+			this.array[i] = array[i];
 
-    // <2do> need a volatile write in order to conform to JMM  // Does this really matter in JPF?
-  }
+		// <2do> need a volatile write in order to conform to JMM // Does this
+		// really matter in JPF?
+	}
 
-  public final int length() {
-    return(array.length);
-  }
+	public final int length() {
+		return (array.length);
+	}
 
-  public final E get(int i) {
-    checkIndex(i);
-    return(getNative(i));
-  }
+	public final E get(int i) {
+		checkIndex(i);
+		return (getNative(i));
+	}
 
-  private final native E getNative(int i);
+	private final native E getNative(int i);
 
-  public final boolean compareAndSet(int i, E expect, E update) {
-    checkIndex(i);
-    return(compareAndSetNative(i, expect, update));
-  }
+	public final boolean compareAndSet(int i, E expect, E update) {
+		checkIndex(i);
+		return (compareAndSetNative(i, expect, update));
+	}
 
-  private final native boolean compareAndSetNative(int i, E expect, E update);
+	private final native boolean compareAndSetNative(int i, E expect, E update);
 
-  public final boolean weakCompareAndSet(int i, E expect, E update) {
-    return(compareAndSet(i, expect, update));
-  }
+	public final boolean weakCompareAndSet(int i, E expect, E update) {
+		return (compareAndSet(i, expect, update));
+	}
 
-  public final E getAndSet(int i, E newValue) {
-    while (true) {
-      E current = get(i);
-      if (compareAndSet(i, current, newValue))
-        return(current);
-    }
-  }
+	public final E getAndSet(int i, E newValue) {
+		while (true) {
+			E current = get(i);
+			if (compareAndSet(i, current, newValue))
+				return (current);
+		}
+	}
 
-  public final void set(int i, E newValue) {
-    getAndSet(i, newValue);
-  }
+	public final void set(int i, E newValue) {
+		getAndSet(i, newValue);
+	}
 
-  public final void lazySet(int i, E newValue) {
-    set(i, newValue);
-  }
+	public final void lazySet(int i, E newValue) {
+		set(i, newValue);
+	}
 
-  public String toString() {
-    // <2do> need a volatile read in order to conform to JMM  // Does this really matter in JPF?
-    return(Arrays.toString(array));
-  }
+	@Override
+	public String toString() {
+		// <2do> need a volatile read in order to conform to JMM // Does this
+		// really matter in JPF?
+		return (Arrays.toString(array));
+	}
 
-  private void checkIndex(int i) {
-    if (i < 0 || i >= array.length)
-      throw new IndexOutOfBoundsException("index " + i);
-  }
+	private void checkIndex(int i) {
+		if (i < 0 || i >= array.length)
+			throw new IndexOutOfBoundsException("index " + i);
+	}
 }

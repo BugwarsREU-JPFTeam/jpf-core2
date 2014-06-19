@@ -24,74 +24,88 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Return void from method
- *   ...  [empty]
+ * Return void from method ... [empty]
  */
 public class RETURN extends ReturnInstruction {
 
-  public Instruction execute (ThreadInfo ti) {
+	@Override
+	public Instruction execute(ThreadInfo ti) {
 
-    // Constructors don't return anything so this is the only instruction that can be used to return from a constructor.
+		// Constructors don't return anything so this is the only instruction
+		// that can be used to return from a constructor.
 
-    //MethodInfo mi = ti.getMethod();  // Get the current method being executed (e.g. returned from).
+		// MethodInfo mi = ti.getMethod(); // Get the current method being
+		// executed (e.g. returned from).
 
-    if (mi.isInit()) {  // Check to see if this method is a constructor.
+		if (mi.isInit()) { // Check to see if this method is a constructor.
 
-      int objref = ti.getThis();
-      ElementInfo ei = ti.getElementInfo(objref); // Get the object.
+			int objref = ti.getThis();
+			ElementInfo ei = ti.getElementInfo(objref); // Get the object.
 
-      if (!ei.isConstructed()) {  // Don't bother doing the following work if the object is already constructed.
+			if (!ei.isConstructed()) { // Don't bother doing the following work
+										// if the object is already constructed.
 
-        ClassInfo ei_ci = ei.getClassInfo();  // Get the object's class.
-        ClassInfo mi_ci = mi.getClassInfo();  // Get the method's class.
+				ClassInfo ei_ci = ei.getClassInfo(); // Get the object's class.
+				ClassInfo mi_ci = mi.getClassInfo(); // Get the method's class.
 
-        if (ei_ci == mi_ci) { // If the object's class and the method's class are equal, then the thread is returning from the object's constructor.
-          ei = ei.getModifiableInstance();
-          ei.setConstructed();
-        }
-      }
-    }
+				if (ei_ci == mi_ci) { // If the object's class and the method's
+										// class are equal, then the thread is
+										// returning from the object's
+										// constructor.
+					ei = ei.getModifiableInstance();
+					ei.setConstructed();
+				}
+			}
+		}
 
-    return super.execute(ti);
-  }
+		return super.execute(ti);
+	}
 
-  public int getReturnTypeSize() {
-    return 0;
-  }
-  
-  protected Object getReturnedOperandAttr (StackFrame frame) {
-    return null;
-  }
+	@Override
+	public int getReturnTypeSize() {
+		return 0;
+	}
 
-  
-  public Object getReturnAttr (ThreadInfo ti){
-    return null; // no return value
-  }
+	@Override
+	protected Object getReturnedOperandAttr(StackFrame frame) {
+		return null;
+	}
 
-  protected void getAndSaveReturnValue (StackFrame frame) {
-    // we don't have any
-  }
+	@Override
+	public Object getReturnAttr(ThreadInfo ti) {
+		return null; // no return value
+	}
 
-  protected void pushReturnValue (StackFrame frame) {
-    // nothing to do
-  }
+	@Override
+	protected void getAndSaveReturnValue(StackFrame frame) {
+		// we don't have any
+	}
 
-  public Object getReturnValue(ThreadInfo ti) {
-    //return Void.class; // Hmm, not sure if this is right, but we have to distinguish from ARETURN <null>
-    return null;
-  }
+	@Override
+	protected void pushReturnValue(StackFrame frame) {
+		// nothing to do
+	}
 
-  public String toString() {
-    return "return  " + mi.getFullName();
-  }
+	@Override
+	public Object getReturnValue(ThreadInfo ti) {
+		// return Void.class; // Hmm, not sure if this is right, but we have to
+		// distinguish from ARETURN <null>
+		return null;
+	}
 
-  public int getByteCode () {
-    return 0xB1;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public String toString() {
+		return "return  " + mi.getFullName();
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0xB1;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

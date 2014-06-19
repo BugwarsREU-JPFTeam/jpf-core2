@@ -25,30 +25,42 @@ import gov.nasa.jpf.JPFException;
  */
 public class DefaultFieldsFactory implements FieldsFactory {
 
-  public Fields createInstanceFields (ClassInfo ci) {
-    return new NamedFields(ci.getInstanceDataSize());
-  }
+	@Override
+	public Fields createInstanceFields(ClassInfo ci) {
+		return new NamedFields(ci.getInstanceDataSize());
+	}
 
-  public Fields createStaticFields (ClassInfo ci) {
-    return new NamedFields(ci.getStaticDataSize());
-  }
+	@Override
+	public Fields createStaticFields(ClassInfo ci) {
+		return new NamedFields(ci.getStaticDataSize());
+	}
 
-  public Fields createArrayFields (String type, ClassInfo ci, int nElements, int typeSize, boolean isReferenceArray) {
-    char t = type.charAt(1);
-    switch (t){
-      case 'Z': return new BooleanArrayFields(nElements);
-      case 'B': return new ByteArrayFields(nElements);
-      case 'C': return new CharArrayFields(nElements);
-      case 'S': return new ShortArrayFields(nElements);
-      case 'I': return new IntArrayFields(nElements);
-      case 'J': return new LongArrayFields(nElements);
-      case 'F': return new FloatArrayFields(nElements);
-      case 'D': return new DoubleArrayFields(nElements);
-      case 'L':
-      case '[':
-        return new ReferenceArrayFields(nElements);
-      default:
-        throw new JPFException("unknown array type: " + type);
-    }
-  }
+	@Override
+	public Fields createArrayFields(String type, ClassInfo ci, int nElements,
+			int typeSize, boolean isReferenceArray) {
+		char t = type.charAt(1);
+		switch (t) {
+		case 'Z':
+			return new BooleanArrayFields(nElements);
+		case 'B':
+			return new ByteArrayFields(nElements);
+		case 'C':
+			return new CharArrayFields(nElements);
+		case 'S':
+			return new ShortArrayFields(nElements);
+		case 'I':
+			return new IntArrayFields(nElements);
+		case 'J':
+			return new LongArrayFields(nElements);
+		case 'F':
+			return new FloatArrayFields(nElements);
+		case 'D':
+			return new DoubleArrayFields(nElements);
+		case 'L':
+		case '[':
+			return new ReferenceArrayFields(nElements);
+		default:
+			throw new JPFException("unknown array type: " + type);
+		}
+	}
 }

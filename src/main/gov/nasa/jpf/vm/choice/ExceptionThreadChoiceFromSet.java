@@ -30,74 +30,77 @@ import java.util.Comparator;
  */
 public class ExceptionThreadChoiceFromSet extends ThreadChoiceFromSet {
 
-  protected ThreadInfo exceptionThread;
-  protected String[] exceptions;
-  
-  public ExceptionThreadChoiceFromSet (String id, ThreadInfo[] runnables, ThreadInfo exceptionThread, String[] exceptionClsNames){
-    super(id);
-    
-    this.exceptionThread = exceptionThread;
-    
-    values = new ThreadInfo[runnables.length + exceptionClsNames.length];
-    exceptions = new String[values.length];
-    
-    System.arraycopy(runnables, 0, values, 0, runnables.length);
-    for (int i=0, j=runnables.length; i<exceptionClsNames.length; i++, j++){
-      values[j] = exceptionThread;
-      exceptions[j] = exceptionClsNames[i];
-    }
-    
-    isSchedulingPoint = true; // not much use otherwise
-  }
-  
-  public String getExceptionForCurrentChoice(){
-    if ((count >= 0) && (count < values.length)) {
-      return exceptions[count];
-    } else {
-      return null;
-    }
-  }
-  
-  @Override
-  public ThreadChoiceGenerator reorder (Comparator<ThreadInfo> comparator){
-    ThreadInfo[] newValues = values.clone();
-    Arrays.sort(newValues, comparator);
-    
-    // we don't really reorder occurrences of the exceptionThread, but since the Comparator 
-    // only knows ThreadInfos that shouldn't matter
-    String[] newExceptions = new String[exceptions.length];
-    for (int i=0, j=-1; i<newValues.length; i++){
-      if (newValues[i] == exceptionThread){
-        for (j++; exceptions[j] == null; j++);
-        newExceptions[i] = exceptions[j];
-      }
-    }
+	protected ThreadInfo exceptionThread;
+	protected String[] exceptions;
 
-    try {
-      ExceptionThreadChoiceFromSet reorderedCG = (ExceptionThreadChoiceFromSet)clone();
-      reorderedCG.values = newValues;
-      reorderedCG.exceptions = newExceptions;
-      reorderedCG.count = -1;
-      
-      return reorderedCG;
-      
-    } catch (CloneNotSupportedException cnsx){
-      throw new JPFException("clone of ExceptionalThreadChoice failed");
-    }
-  }
-  
-  @Override
-  public ThreadChoiceFromSet randomize () {
-    for (int i = values.length - 1; i > 0; i--) {
-      int j = random.nextInt(i + 1);
-      ThreadInfo tmp = values[i];
-      values[i] = values[j];
-      values[j] = tmp;
-      
-      String tmpX = exceptions[i];
-      exceptions[i] = exceptions[j];
-      exceptions[j] = tmpX;
-    }
-    return this;
-  }
+	public ExceptionThreadChoiceFromSet(String id, ThreadInfo[] runnables,
+			ThreadInfo exceptionThread, String[] exceptionClsNames) {
+		super(id);
+
+		this.exceptionThread = exceptionThread;
+
+		values = new ThreadInfo[runnables.length + exceptionClsNames.length];
+		exceptions = new String[values.length];
+
+		System.arraycopy(runnables, 0, values, 0, runnables.length);
+		for (int i = 0, j = runnables.length; i < exceptionClsNames.length; i++, j++) {
+			values[j] = exceptionThread;
+			exceptions[j] = exceptionClsNames[i];
+		}
+
+		isSchedulingPoint = true; // not much use otherwise
+	}
+
+	public String getExceptionForCurrentChoice() {
+		if ((count >= 0) && (count < values.length)) {
+			return exceptions[count];
+		} else {
+			return null;
+		}
+	}
+
+	@Override
+	public ThreadChoiceGenerator reorder(Comparator<ThreadInfo> comparator) {
+		ThreadInfo[] newValues = values.clone();
+		Arrays.sort(newValues, comparator);
+
+		// we don't really reorder occurrences of the exceptionThread, but since
+		// the Comparator
+		// only knows ThreadInfos that shouldn't matter
+		String[] newExceptions = new String[exceptions.length];
+		for (int i = 0, j = -1; i < newValues.length; i++) {
+			if (newValues[i] == exceptionThread) {
+				for (j++; exceptions[j] == null; j++)
+					;
+				newExceptions[i] = exceptions[j];
+			}
+		}
+
+		try {
+			ExceptionThreadChoiceFromSet reorderedCG = (ExceptionThreadChoiceFromSet) clone();
+			reorderedCG.values = newValues;
+			reorderedCG.exceptions = newExceptions;
+			reorderedCG.count = -1;
+
+			return reorderedCG;
+
+		} catch (CloneNotSupportedException cnsx) {
+			throw new JPFException("clone of ExceptionalThreadChoice failed");
+		}
+	}
+
+	@Override
+	public ThreadChoiceFromSet randomize() {
+		for (int i = values.length - 1; i > 0; i--) {
+			int j = random.nextInt(i + 1);
+			ThreadInfo tmp = values[i];
+			values[i] = values[j];
+			values[j] = tmp;
+
+			String tmpX = exceptions[i];
+			exceptions[i] = exceptions[j];
+			exceptions[j] = tmpX;
+		}
+		return this;
+	}
 }

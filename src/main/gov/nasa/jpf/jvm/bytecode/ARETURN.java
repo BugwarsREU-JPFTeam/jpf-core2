@@ -22,57 +22,63 @@ import gov.nasa.jpf.vm.MJIEnv;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Return reference from method
- * ..., objectref  => [empty]
+ * Return reference from method ..., objectref => [empty]
  */
 public class ARETURN extends ReturnInstruction {
-  int ret;
-  
-  public int getReturnTypeSize() {
-    return 1;
-  }
-  
-  protected Object getReturnedOperandAttr (StackFrame frame) {
-    return frame.getOperandAttr();
-  }
-  
-  protected void getAndSaveReturnValue (StackFrame frame) {
-    ret = frame.pop();
-  }
-  
-  protected void pushReturnValue (StackFrame frame) {
-    frame.pushRef(ret);
-  }
+	int ret;
 
-  public int getReturnValue () {
-    return ret;
-  }
-  
-  public Object getReturnValue(ThreadInfo ti) {
-    if (!isCompleted(ti)) { // we have to pull it from the operand stack
-      StackFrame frame = ti.getTopFrame();
-      ret = frame.peek();
-    }
-    
-    if (ret == MJIEnv.NULL) {
-      return null;
-    } else {
-      return ti.getElementInfo(ret);
-    }
-  }
-  
-  public int getByteCode () {
-    return 0xB0;
-  }
-  
-  public String toString() {
-    return "areturn " + mi.getFullName();
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public int getReturnTypeSize() {
+		return 1;
+	}
+
+	@Override
+	protected Object getReturnedOperandAttr(StackFrame frame) {
+		return frame.getOperandAttr();
+	}
+
+	@Override
+	protected void getAndSaveReturnValue(StackFrame frame) {
+		ret = frame.pop();
+	}
+
+	@Override
+	protected void pushReturnValue(StackFrame frame) {
+		frame.pushRef(ret);
+	}
+
+	public int getReturnValue() {
+		return ret;
+	}
+
+	@Override
+	public Object getReturnValue(ThreadInfo ti) {
+		if (!isCompleted(ti)) { // we have to pull it from the operand stack
+			StackFrame frame = ti.getTopFrame();
+			ret = frame.peek();
+		}
+
+		if (ret == MJIEnv.NULL) {
+			return null;
+		} else {
+			return ti.getElementInfo(ret);
+		}
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0xB0;
+	}
+
+	@Override
+	public String toString() {
+		return "areturn " + mi.getFullName();
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 
 }

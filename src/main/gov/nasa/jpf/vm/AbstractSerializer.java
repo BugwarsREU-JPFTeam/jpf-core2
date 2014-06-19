@@ -18,38 +18,37 @@
 //
 package gov.nasa.jpf.vm;
 
+public abstract class AbstractSerializer implements StateSerializer,
+		KernelState.ChangeListener {
+	// INVARIANT: non-null iff registered for changes to KernelState
+	protected int[] cached = null;
 
+	protected VM vm;
+	protected KernelState ks = null;
 
-public abstract class AbstractSerializer
-implements StateSerializer, KernelState.ChangeListener {
-  // INVARIANT: non-null iff registered for changes to KernelState
-  protected int[] cached = null;
+	@Override
+	public void attach(VM vm) {
+		this.vm = vm;
+		this.ks = vm.getKernelState();
+	}
 
-  protected VM vm;
-  protected KernelState ks = null;
+	public int getCurrentStateVectorLength() {
+		return cached.length;
+	}
 
+	@Override
+	public int[] getStoringData() {
+		if (cached == null) {
+			cached = computeStoringData();
+			ks.pushChangeListener(this);
+		}
+		return cached;
+	}
 
-  public void attach(VM vm) {
-    this.vm = vm;
-    this.ks = vm.getKernelState();
-  }
+	@Override
+	public void kernelStateChanged(KernelState same) {
+		cached = null;
+	}
 
-  public int getCurrentStateVectorLength() {
-    return cached.length;
-  }
-
-  public int[] getStoringData() {
-    if (cached == null) {
-      cached = computeStoringData();
-      ks.pushChangeListener(this);
-    }
-    return cached;
-  }
-
-  public void kernelStateChanged (KernelState same) {
-    cached = null;
-  }
-
-  
-  protected abstract int[] computeStoringData();
+	protected abstract int[] computeStoringData();
 }

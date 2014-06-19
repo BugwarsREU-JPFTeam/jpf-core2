@@ -56,465 +56,506 @@ import java.util.List;
  * @author Masoud Mansouri-Samani (Extended to also generate the gdf graph)
  */
 public class StateSpaceDot extends ListenerAdapter {
-  // NODE styles constants
-  static final int RECTANGLE = 1;
-  static final int ELLIPSE   = 2;
-  static final int ROUND_RECTANGLE = 3;
-  static final int RECTANGLE_WITH_TEXT = 4;
-  static final int ELLIPSE_WITH_TEXT = 5;
-  static final int ROUND_RECTANGLE_WITH_TEXT = 6;
+	// NODE styles constants
+	static final int RECTANGLE = 1;
+	static final int ELLIPSE = 2;
+	static final int ROUND_RECTANGLE = 3;
+	static final int RECTANGLE_WITH_TEXT = 4;
+	static final int ELLIPSE_WITH_TEXT = 5;
+	static final int ROUND_RECTANGLE_WITH_TEXT = 6;
 
-  private static final String DOT_EXT = "dot";
-  private static final String GDF_EXT = "gdf";
-  private static final String OUT_FILENAME_NO_EXT = "jpf-state-space";
+	private static final String DOT_EXT = "dot";
+	private static final String GDF_EXT = "gdf";
+	private static final String OUT_FILENAME_NO_EXT = "jpf-state-space";
 
-  // State and transition node styles used
-  private static final int state_node_style = ELLIPSE_WITH_TEXT;
-  private static final int transition_node_style = RECTANGLE_WITH_TEXT;
+	// State and transition node styles used
+	private static final int state_node_style = ELLIPSE_WITH_TEXT;
+	private static final int transition_node_style = RECTANGLE_WITH_TEXT;
 
-  // File formats supported
-  private static final int DOT_FORMAT=0;
-  private static final int GDF_FORMAT=1;
+	// File formats supported
+	private static final int DOT_FORMAT = 0;
+	private static final int GDF_FORMAT = 1;
 
-  private BufferedWriter graph = null;
-  private int edge_id = 0;
-  private static boolean transition_numbers=false;
-  private static boolean show_source=false;
-  private static int format=DOT_FORMAT;
-  private String out_filename = OUT_FILENAME_NO_EXT+"."+DOT_EXT;
-  private static boolean labelvisible=false;
-  private static boolean helpRequested=false;
+	private BufferedWriter graph = null;
+	private int edge_id = 0;
+	private static boolean transition_numbers = false;
+	private static boolean show_source = false;
+	private static int format = DOT_FORMAT;
+	private String out_filename = OUT_FILENAME_NO_EXT + "." + DOT_EXT;
+	private static boolean labelvisible = false;
+	private static boolean helpRequested = false;
 
+	/*
+	 * In gdf format all the edges must come after all the nodes of the graph
+	 * are generated. So we first output the nodes as we come across them but we
+	 * store the strings for edges in the gdfEdges list and output them when the
+	 * search ends.
+	 */
+	ArrayList<String> gdfEdges = new ArrayList<String>();
 
-  /* In gdf format all the edges must come after all the nodes of the graph
-   * are generated. So we first output the nodes as we come across them but
-   * we store the strings for edges in the gdfEdges list and output them when
-   * the search ends.
-   */
-  ArrayList<String> gdfEdges=new ArrayList<String>();
+	private StateInformation prev_state = null;
 
-  private StateInformation prev_state = null;
+	public StateSpaceDot(Config conf, JPF jpf) {
 
-  public StateSpaceDot(Config conf, JPF jpf) {
-
-    VM vm = jpf.getVM();
-    vm.recordSteps(true);
-  }
-
-  public void searchStarted(Search search) {
-    try {
-      beginGraph();
-    } catch (IOException e) {}
-  }
-
-  public void searchFinished(Search search) {
-    try {
-      endGraph();
-    } catch (IOException e) {}
-  }
-
-  public void stateAdvanced(Search search) {
-    int id = search.getStateId();
-    boolean has_next =search.hasNextState();
-    boolean is_new = search.isNewState();
-    try {
-      if (format==DOT_FORMAT) {
-        graph.write("/* searchAdvanced(" + id + ", " + makeDotLabel(search, id) +
-                    ", " + has_next + ") */");
-        graph.newLine();
-      }
-      if (prev_state != null) {
-        addEdge(prev_state.id, id, search);
-      } else {
-        prev_state = new StateInformation();
-      }
-      addNode(prev_state);
-      prev_state.reset(id, has_next, is_new);
-    } catch (IOException e) {}
-  }
-
-  public void stateRestored (Search search) {
-    prev_state.reset(search.getStateId(), false, false);
-  }
-
-  public void stateProcessed (Search search) {
-   // nothing to do
-  }
-
-  public void stateBacktracked(Search search) {
-    try {
-      addNode(prev_state);
-      prev_state.reset(search.getStateId(), false, false);
-      if (format==DOT_FORMAT) {
-        graph.write("/* searchBacktracked(" + prev_state + ") */");
-        graph.newLine();
-      }
-    } catch (IOException e) {}
-  }
-
-  public void searchConstraintHit(Search search) {
-    try {
-      if (format==DOT_FORMAT) {
-        graph.write("/* searchConstraintHit(" + search.getStateId() + ") */");
-        graph.newLine();
-      }
-    } catch (IOException e) {}
-  }
-
-  private String getErrorMsg(Search search) {
-    List<Error> errs = search.getErrors();
-    if (errs.isEmpty()) {
-      return null;
-    } else {
-      return errs.get(0).getDescription();
-    }
-  }
-
-  public void propertyViolated(Search search) {
-	try {
-	  prev_state.error = getErrorMsg(search);
-	  if (format==DOT_FORMAT) {
-	    graph.write("/* propertyViolated(" + search.getStateId() + ") */");
-	    graph.newLine();
-	  }
-	} catch (IOException e) {}
-  }
-
-  /**
-   * Put the header for the graph into the file.
-   */
-  private void beginGraph() throws IOException {
-	graph = new BufferedWriter(new FileWriter(out_filename));
-	if (format==GDF_FORMAT) {
-	  graph.write("nodedef>name,label,style,color");
-	} else { // dot
-	  graph.write("digraph jpf_state_space {");
+		VM vm = jpf.getVM();
+		vm.recordSteps(true);
 	}
-	graph.newLine();
-  }
 
-  /**
-   * In the case of the DOT graph it is just adding the final "}" at the end.
-   * In the case of GPF format we must output edge definition and all the
-   * edges that we have found.
-   */
-  private void endGraph() throws IOException {
-    if(prev_state != null)
-      addNode(prev_state);
-    if (format==GDF_FORMAT) {
-      graph.write("edgedef>node1,node2,label,labelvisible,directed,thread INT");
-      graph.newLine();
+	@Override
+	public void searchStarted(Search search) {
+		try {
+			beginGraph();
+		} catch (IOException e) {
+		}
+	}
 
-      // Output all the edges that we have accumulated so far
-      int size=gdfEdges.size();
-  	  for (int i=0; i<size; i++) {
-  		graph.write(gdfEdges.get(i));
-  	    graph.newLine();
-  	  }
-    } else {
-      graph.write("}");
-      graph.newLine();
-    }
-    graph.close();
-  }
+	@Override
+	public void searchFinished(Search search) {
+		try {
+			endGraph();
+		} catch (IOException e) {
+		}
+	}
 
-  /**
-   * Return the string that will be used to label this state for the user.
-   */
-  private String makeDotLabel(Search state, int my_id) {
-    Transition trans = state.getTransition();
-    if (trans == null) {
-      return "-init-";
-    }
-    Step last_trans_step = trans.getLastStep();
-    if (last_trans_step == null) {
-      return "?";
-    }
+	@Override
+	public void stateAdvanced(Search search) {
+		int id = search.getStateId();
+		boolean has_next = search.hasNextState();
+		boolean is_new = search.isNewState();
+		try {
+			if (format == DOT_FORMAT) {
+				graph.write("/* searchAdvanced(" + id + ", "
+						+ makeDotLabel(search, id) + ", " + has_next + ") */");
+				graph.newLine();
+			}
+			if (prev_state != null) {
+				addEdge(prev_state.id, id, search);
+			} else {
+				prev_state = new StateInformation();
+			}
+			addNode(prev_state);
+			prev_state.reset(id, has_next, is_new);
+		} catch (IOException e) {
+		}
+	}
 
-    StringBuilder result = new StringBuilder();
+	@Override
+	public void stateRestored(Search search) {
+		prev_state.reset(search.getStateId(), false, false);
+	}
 
-    if (transition_numbers) {
-      result.append(my_id);
-      result.append("\\n");
-    }
+	@Override
+	public void stateProcessed(Search search) {
+		// nothing to do
+	}
 
-    int thread = trans.getThreadIndex();
+	@Override
+	public void stateBacktracked(Search search) {
+		try {
+			addNode(prev_state);
+			prev_state.reset(search.getStateId(), false, false);
+			if (format == DOT_FORMAT) {
+				graph.write("/* searchBacktracked(" + prev_state + ") */");
+				graph.newLine();
+			}
+		} catch (IOException e) {
+		}
+	}
 
-    result.append("Thd");
-    result.append(thread);
-    result.append(':');
-    result.append(last_trans_step.toString());
+	@Override
+	public void searchConstraintHit(Search search) {
+		try {
+			if (format == DOT_FORMAT) {
+				graph.write("/* searchConstraintHit(" + search.getStateId()
+						+ ") */");
+				graph.newLine();
+			}
+		} catch (IOException e) {
+		}
+	}
 
-    if (show_source) {
-      String source_line=last_trans_step.getLineString();
-      if ((source_line != null) && !source_line.equals("")) {
-        result.append("\\n");
+	private String getErrorMsg(Search search) {
+		List<Error> errs = search.getErrors();
+		if (errs.isEmpty()) {
+			return null;
+		} else {
+			return errs.get(0).getDescription();
+		}
+	}
 
-        StringBuilder sb=new StringBuilder(source_line);
+	@Override
+	public void propertyViolated(Search search) {
+		try {
+			prev_state.error = getErrorMsg(search);
+			if (format == DOT_FORMAT) {
+				graph.write("/* propertyViolated(" + search.getStateId()
+						+ ") */");
+				graph.newLine();
+			}
+		} catch (IOException e) {
+		}
+	}
 
-        // We need to precede the dot-specific special characters which appear
-        // in the Java source line, such as ']' and '"', with the '\' escape
-        // characters and also to remove any new lines.
+	/**
+	 * Put the header for the graph into the file.
+	 */
+	private void beginGraph() throws IOException {
+		graph = new BufferedWriter(new FileWriter(out_filename));
+		if (format == GDF_FORMAT) {
+			graph.write("nodedef>name,label,style,color");
+		} else { // dot
+			graph.write("digraph jpf_state_space {");
+		}
+		graph.newLine();
+	}
 
-        replaceString(sb, "\n", "");
-        replaceString(sb, "]", "\\]");
-        replaceString(sb, "\"", "\\\"");
-        result.append(sb.toString());
-      }
-    }
+	/**
+	 * In the case of the DOT graph it is just adding the final "}" at the end.
+	 * In the case of GPF format we must output edge definition and all the
+	 * edges that we have found.
+	 */
+	private void endGraph() throws IOException {
+		if (prev_state != null)
+			addNode(prev_state);
+		if (format == GDF_FORMAT) {
+			graph.write("edgedef>node1,node2,label,labelvisible,directed,thread INT");
+			graph.newLine();
 
-    return result.toString();
-  }
+			// Output all the edges that we have accumulated so far
+			int size = gdfEdges.size();
+			for (int i = 0; i < size; i++) {
+				graph.write(gdfEdges.get(i));
+				graph.newLine();
+			}
+		} else {
+			graph.write("}");
+			graph.newLine();
+		}
+		graph.close();
+	}
 
-  /**
-   * Return the string that will be used to label this state in the GDF graph.
-   */
-  private String makeGdfLabel(Search state, int my_id) {
-    Transition trans = state.getTransition();
-    if (trans == null) {
-  	  return "-init-";
-  	}
+	/**
+	 * Return the string that will be used to label this state for the user.
+	 */
+	private String makeDotLabel(Search state, int my_id) {
+		Transition trans = state.getTransition();
+		if (trans == null) {
+			return "-init-";
+		}
+		Step last_trans_step = trans.getLastStep();
+		if (last_trans_step == null) {
+			return "?";
+		}
 
-  	StringBuilder result = new StringBuilder();
+		StringBuilder result = new StringBuilder();
 
-  	if (transition_numbers) {
-  	  result.append(my_id);
-  	  result.append(':');
-  	}
+		if (transition_numbers) {
+			result.append(my_id);
+			result.append("\\n");
+		}
 
-  	Step last_trans_step = trans.getLastStep();
-  	result.append(last_trans_step.toString());
+		int thread = trans.getThreadIndex();
 
-  	if (show_source) {
-  	  String source_line=last_trans_step.getLineString();
-  	  if ((source_line != null) && !source_line.equals("")) {
+		result.append("Thd");
+		result.append(thread);
+		result.append(':');
+		result.append(last_trans_step.toString());
 
-  	    // We need to deal with gdf-specific special characters which couls appear
-  	    // in the Java source line, such as '"'.
-  	    result.append(source_line);
-  	  	convertGdfSpecial(result);
-  	  }
-    }
-  	return result.toString();
-  }
+		if (show_source) {
+			String source_line = last_trans_step.getLineString();
+			if ((source_line != null) && !source_line.equals("")) {
+				result.append("\\n");
 
-  /**
-   * Locates and replaces all occurrences of a given string with another given
-   * string in an original string buffer. There seems to be a bug in Java
-   * String's replaceAll() method which does not allow us to use it to replace
-   * some special chars so here we use StringBuilder's replace method to do
-   * this.
-   * @param original The original string builder.
-   * @param from The replaced string.
-   * @param to The replacing string.
-   * @return The original string builder with the substring replaced
-   *         throughout.
-   */
-  private StringBuilder replaceString(StringBuilder original,
-                                      String from,
-                                      String to) {
-    int indexOfReplaced=0, lastIndexOfReplaced=0;
-    while (indexOfReplaced!=-1) {
-      indexOfReplaced=original.indexOf(from,lastIndexOfReplaced);
-      if (indexOfReplaced!=-1) {
-      	original.replace(indexOfReplaced, indexOfReplaced+1, to);
-        lastIndexOfReplaced=indexOfReplaced+to.length();
-      }
-    }
-    return original;
-  }
+				StringBuilder sb = new StringBuilder(source_line);
 
-  /**
-   * Locates and replaces all occurrences of a given string with another given
-   * string in an original string buffer.
-   * @param original The original string buffer.
-   * @param from The replaced string.
-   * @param to The replacing string.
-   * @return The original string buffer with the sub-string replaced
-   *         throughout.
-   */
-  private String replaceString(String original, String from, String to) {
-  	if ((original!=null) && (from!=null) && (to!=null)) {
-      return replaceString(new StringBuilder(original), from, to).toString();
-  	} else {
-      return original;
-  	}
-  }
+				// We need to precede the dot-specific special characters which
+				// appear
+				// in the Java source line, such as ']' and '"', with the '\'
+				// escape
+				// characters and also to remove any new lines.
 
-  /**
-   * Add a new node to the graph with the relevant properties.
-   */
-  private void addNode(StateInformation state) throws IOException {
-    if (state.is_new) {
-      if (format==GDF_FORMAT) {
-        graph.write("st" + state.id + ",\"" + state.id);
-        if (state.error != null) {
-          graph.write(":" + state.error);
-        }
-        graph.write("\","+state_node_style);
-        if (state.error != null) {
-            graph.write(",red");
-          } else if (state.has_next) {
-            graph.write(",black");
-          } else {
-            graph.write(",green");
-          }
-      } else { // The dot version
-        graph.write("  st" + state.id + " [label=\"" + state.id);
-        if (state.error != null) {
-          graph.write(":" + state.error);
-        }
-        graph.write("\",shape=");
-        if (state.error != null) {
-          graph.write("diamond,color=red");
-        } else if (state.has_next) {
-          graph.write("circle,color=black");
-        } else {
-          graph.write("egg,color=green");
-        }
-        graph.write("];");
-      }
-      graph.newLine();
-    }
-  }
+				replaceString(sb, "\n", "");
+				replaceString(sb, "]", "\\]");
+				replaceString(sb, "\"", "\\\"");
+				result.append(sb.toString());
+			}
+		}
 
-  private static class StateInformation {
-    public StateInformation() {}
-    public void reset(int id, boolean has_next, boolean is_new) {
-      this.id = id;
-      this.has_next = has_next;
-      this.error = null;
-      this.is_new = is_new;
-    }
-    int id = -1;
-    boolean has_next = true;
-    String error = null;
-    boolean is_new = false;
-  }
+		return result.toString();
+	}
 
-  /**
-   * Creates an GDF edge string.
-   */
-  private String makeGdfEdgeString(String from_id,
-  		                           String to_id,
-								   String label,
-								   int thread) {
-  	StringBuilder sb=new StringBuilder(from_id);
-  	sb.append(',').append(to_id).append(',').append('\"');
-  	if ((label!=null) && (!"".equals(label))) {
-  		sb.append(label);
-  	} else {
-  		sb.append('-');
-  	}
-  	sb.append('\"').append(',').append(labelvisible).append(',').append(true).
-	append(',').append(thread);
-  	replaceString(sb, "\n", "");
-  	return sb.toString();
-  }
+	/**
+	 * Return the string that will be used to label this state in the GDF graph.
+	 */
+	private String makeGdfLabel(Search state, int my_id) {
+		Transition trans = state.getTransition();
+		if (trans == null) {
+			return "-init-";
+		}
 
-  /**
-   * GUESS cannot deal with '\n' chars, so remove them. Also convert all '"'
-   * characters to "''".
-   * @param str The string to perform the conversion on.
-   * @return The converted string.
-   */
-  private String convertGdfSpecial(String str) {
-  	if ((str==null) || "".equals(str)) return "";
+		StringBuilder result = new StringBuilder();
 
-  	StringBuilder sb=new StringBuilder(str);
-  	convertGdfSpecial(sb);
-  	return sb.toString();
-  }
+		if (transition_numbers) {
+			result.append(my_id);
+			result.append(':');
+		}
 
-  /**
-   * GUESS cannot deal with '\n' chars, so replace them with a space. Also
-   * convert all '"' characters to "''".
-   * @param sb The string buffer to perform the conversion on.
-   */
-  private void convertGdfSpecial(StringBuilder sb) {
-  	replaceString(sb, "\"", "\'\'");
-  	replaceString(sb, "\n", " ");
-  }
+		Step last_trans_step = trans.getLastStep();
+		result.append(last_trans_step.toString());
 
-  /**
-   * Create an edge in the graph file from old_id to new_id.
-   */
-  private void addEdge(int old_id, int new_id, Search state) throws IOException {
-    int my_id = edge_id++;
-    if (format==GDF_FORMAT) {
-      Transition trans=state.getTransition();
-      int thread = trans.getThreadIndex();
+		if (show_source) {
+			String source_line = last_trans_step.getLineString();
+			if ((source_line != null) && !source_line.equals("")) {
 
-      // edgedef>node1,node2,label,labelvisible,directed,thread INT
+				// We need to deal with gdf-specific special characters which
+				// couls appear
+				// in the Java source line, such as '"'.
+				result.append(source_line);
+				convertGdfSpecial(result);
+			}
+		}
+		return result.toString();
+	}
 
-      // Old State -> Transition - labeled with the source info if any.
-      gdfEdges.add(
-      		makeGdfEdgeString("st"+old_id, "tr"+my_id,
-      				          makeGdfLabel(state, my_id),
-      				          thread));
+	/**
+	 * Locates and replaces all occurrences of a given string with another given
+	 * string in an original string buffer. There seems to be a bug in Java
+	 * String's replaceAll() method which does not allow us to use it to replace
+	 * some special chars so here we use StringBuilder's replace method to do
+	 * this.
+	 * 
+	 * @param original
+	 *            The original string builder.
+	 * @param from
+	 *            The replaced string.
+	 * @param to
+	 *            The replacing string.
+	 * @return The original string builder with the substring replaced
+	 *         throughout.
+	 */
+	private StringBuilder replaceString(StringBuilder original, String from,
+			String to) {
+		int indexOfReplaced = 0, lastIndexOfReplaced = 0;
+		while (indexOfReplaced != -1) {
+			indexOfReplaced = original.indexOf(from, lastIndexOfReplaced);
+			if (indexOfReplaced != -1) {
+				original.replace(indexOfReplaced, indexOfReplaced + 1, to);
+				lastIndexOfReplaced = indexOfReplaced + to.length();
+			}
+		}
+		return original;
+	}
 
-      // Transition node: name,label,style,color
-      graph.write("tr" + my_id + ",\"" +my_id+"\","+transition_node_style);
+	/**
+	 * Locates and replaces all occurrences of a given string with another given
+	 * string in an original string buffer.
+	 * 
+	 * @param original
+	 *            The original string buffer.
+	 * @param from
+	 *            The replaced string.
+	 * @param to
+	 *            The replacing string.
+	 * @return The original string buffer with the sub-string replaced
+	 *         throughout.
+	 */
+	private String replaceString(String original, String from, String to) {
+		if ((original != null) && (from != null) && (to != null)) {
+			return replaceString(new StringBuilder(original), from, to)
+					.toString();
+		} else {
+			return original;
+		}
+	}
 
-      graph.newLine();
-      // Transition -> New State - labeled with the last output if any.
+	/**
+	 * Add a new node to the graph with the relevant properties.
+	 */
+	private void addNode(StateInformation state) throws IOException {
+		if (state.is_new) {
+			if (format == GDF_FORMAT) {
+				graph.write("st" + state.id + ",\"" + state.id);
+				if (state.error != null) {
+					graph.write(":" + state.error);
+				}
+				graph.write("\"," + state_node_style);
+				if (state.error != null) {
+					graph.write(",red");
+				} else if (state.has_next) {
+					graph.write(",black");
+				} else {
+					graph.write(",green");
+				}
+			} else { // The dot version
+				graph.write("  st" + state.id + " [label=\"" + state.id);
+				if (state.error != null) {
+					graph.write(":" + state.error);
+				}
+				graph.write("\",shape=");
+				if (state.error != null) {
+					graph.write("diamond,color=red");
+				} else if (state.has_next) {
+					graph.write("circle,color=black");
+				} else {
+					graph.write("egg,color=green");
+				}
+				graph.write("];");
+			}
+			graph.newLine();
+		}
+	}
 
-      String lastOutputLabel=
-      	replaceString(convertGdfSpecial(trans.getOutput()), "\"", "\'\'");
-      gdfEdges.add(
-      	makeGdfEdgeString("tr"+my_id, "st"+new_id, lastOutputLabel, thread));
-    } else { // DOT
-      graph.write("  st" + old_id + " -> tr" + my_id + ";");
-      graph.newLine();
-      graph.write("  tr" + my_id + " [label=\"" + makeDotLabel(state, my_id) +
-                  "\",shape=box]");
-      graph.newLine();
-      graph.write("  tr" + my_id + " -> st" + new_id + ";");
-    }
-  }
+	private static class StateInformation {
+		public StateInformation() {
+		}
 
-  /**
-   * Show the usage message.
-   */
-  static void showUsage() {
-    System.out
-        .println("Usage: \"java [<vm-options>] gov.nasa.jpf.tools.StateSpaceDot [<graph-options>] [<jpf-options-and-args>]");
-    System.out.println("  <graph-options> : ");
-    System.out.println("    -gdf:                Generate the graph in GDF format. The default is DOT.");
-    System.out.println("    -transition-numbers: Include transition numbers in transition labels.");
-    System.out.println("    -show-source:        Include source lines in transition labels.");
-    System.out.println("    -labelvisible:       Indicates if the label on the transitions is visible (used only with the -gdf option)");
-    System.out.println("    -help:               Prints this help information and stops.");
-    System.out.println("  <jpf-options-and-args>:");
-    System.out.println("    Options and command line arguments passed directly to JPF.");
-    System.out.println("  Note: With -gdf option transition edges could also include program output ");
-    System.out.println("  but in order to enable this JPF's vm.path_output option must be set to ");
-    System.out.println("  true.");
-  }
+		public void reset(int id, boolean has_next, boolean is_new) {
+			this.id = id;
+			this.has_next = has_next;
+			this.error = null;
+			this.is_new = is_new;
+		}
 
-  void filterArgs (String[] args) {
-    for (int i=0; i<args.length; i++) {
-      if (args[i] != null){
-        String arg = args[i];
-        if ("-transition-numbers".equals(arg)) {
-          transition_numbers = true;
-          args[i] = null;
-        } else if ("-show-source".equals(arg)) {
-          show_source = true;
-          args[i] = null;
-        } else if ("-gdf".equals(arg)) {
-          format=GDF_FORMAT;
-          out_filename=OUT_FILENAME_NO_EXT+"."+GDF_EXT;
-          args[i] = null;
-        } else if ("-labelvisible".equals(arg)) {
-          labelvisible=true;
-          args[i] = null;
-        } else if  ("-help".equals(args[i])) {
-          showUsage();
-          helpRequested=true;
-        }
-      }
-    }
-  }
+		int id = -1;
+		boolean has_next = true;
+		String error = null;
+		boolean is_new = false;
+	}
+
+	/**
+	 * Creates an GDF edge string.
+	 */
+	private String makeGdfEdgeString(String from_id, String to_id,
+			String label, int thread) {
+		StringBuilder sb = new StringBuilder(from_id);
+		sb.append(',').append(to_id).append(',').append('\"');
+		if ((label != null) && (!"".equals(label))) {
+			sb.append(label);
+		} else {
+			sb.append('-');
+		}
+		sb.append('\"').append(',').append(labelvisible).append(',')
+				.append(true).append(',').append(thread);
+		replaceString(sb, "\n", "");
+		return sb.toString();
+	}
+
+	/**
+	 * GUESS cannot deal with '\n' chars, so remove them. Also convert all '"'
+	 * characters to "''".
+	 * 
+	 * @param str
+	 *            The string to perform the conversion on.
+	 * @return The converted string.
+	 */
+	private String convertGdfSpecial(String str) {
+		if ((str == null) || "".equals(str))
+			return "";
+
+		StringBuilder sb = new StringBuilder(str);
+		convertGdfSpecial(sb);
+		return sb.toString();
+	}
+
+	/**
+	 * GUESS cannot deal with '\n' chars, so replace them with a space. Also
+	 * convert all '"' characters to "''".
+	 * 
+	 * @param sb
+	 *            The string buffer to perform the conversion on.
+	 */
+	private void convertGdfSpecial(StringBuilder sb) {
+		replaceString(sb, "\"", "\'\'");
+		replaceString(sb, "\n", " ");
+	}
+
+	/**
+	 * Create an edge in the graph file from old_id to new_id.
+	 */
+	private void addEdge(int old_id, int new_id, Search state)
+			throws IOException {
+		int my_id = edge_id++;
+		if (format == GDF_FORMAT) {
+			Transition trans = state.getTransition();
+			int thread = trans.getThreadIndex();
+
+			// edgedef>node1,node2,label,labelvisible,directed,thread INT
+
+			// Old State -> Transition - labeled with the source info if any.
+			gdfEdges.add(makeGdfEdgeString("st" + old_id, "tr" + my_id,
+					makeGdfLabel(state, my_id), thread));
+
+			// Transition node: name,label,style,color
+			graph.write("tr" + my_id + ",\"" + my_id + "\","
+					+ transition_node_style);
+
+			graph.newLine();
+			// Transition -> New State - labeled with the last output if any.
+
+			String lastOutputLabel = replaceString(
+					convertGdfSpecial(trans.getOutput()), "\"", "\'\'");
+			gdfEdges.add(makeGdfEdgeString("tr" + my_id, "st" + new_id,
+					lastOutputLabel, thread));
+		} else { // DOT
+			graph.write("  st" + old_id + " -> tr" + my_id + ";");
+			graph.newLine();
+			graph.write("  tr" + my_id + " [label=\""
+					+ makeDotLabel(state, my_id) + "\",shape=box]");
+			graph.newLine();
+			graph.write("  tr" + my_id + " -> st" + new_id + ";");
+		}
+	}
+
+	/**
+	 * Show the usage message.
+	 */
+	static void showUsage() {
+		System.out
+				.println("Usage: \"java [<vm-options>] gov.nasa.jpf.tools.StateSpaceDot [<graph-options>] [<jpf-options-and-args>]");
+		System.out.println("  <graph-options> : ");
+		System.out
+				.println("    -gdf:                Generate the graph in GDF format. The default is DOT.");
+		System.out
+				.println("    -transition-numbers: Include transition numbers in transition labels.");
+		System.out
+				.println("    -show-source:        Include source lines in transition labels.");
+		System.out
+				.println("    -labelvisible:       Indicates if the label on the transitions is visible (used only with the -gdf option)");
+		System.out
+				.println("    -help:               Prints this help information and stops.");
+		System.out.println("  <jpf-options-and-args>:");
+		System.out
+				.println("    Options and command line arguments passed directly to JPF.");
+		System.out
+				.println("  Note: With -gdf option transition edges could also include program output ");
+		System.out
+				.println("  but in order to enable this JPF's vm.path_output option must be set to ");
+		System.out.println("  true.");
+	}
+
+	void filterArgs(String[] args) {
+		for (int i = 0; i < args.length; i++) {
+			if (args[i] != null) {
+				String arg = args[i];
+				if ("-transition-numbers".equals(arg)) {
+					transition_numbers = true;
+					args[i] = null;
+				} else if ("-show-source".equals(arg)) {
+					show_source = true;
+					args[i] = null;
+				} else if ("-gdf".equals(arg)) {
+					format = GDF_FORMAT;
+					out_filename = OUT_FILENAME_NO_EXT + "." + GDF_EXT;
+					args[i] = null;
+				} else if ("-labelvisible".equals(arg)) {
+					labelvisible = true;
+					args[i] = null;
+				} else if ("-help".equals(args[i])) {
+					showUsage();
+					helpRequested = true;
+				}
+			}
+		}
+	}
 
 }

@@ -24,7 +24,6 @@ import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.JPFListener;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.search.SearchListenerAdapter;
-import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.VM;
 import gov.nasa.jpf.vm.Path;
 
@@ -38,434 +37,438 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 /**
- * this is our default report generator, which is heavily configurable
- * via our standard properties. Note this gets instantiated and
- * registered automatically via JPF.addListeners(), so you don't
- * have to add it explicitly
+ * this is our default report generator, which is heavily configurable via our
+ * standard properties. Note this gets instantiated and registered automatically
+ * via JPF.addListeners(), so you don't have to add it explicitly
  */
 
 public class Reporter extends SearchListenerAdapter {
 
-  public static Logger log = JPF.getLogger("report");
+	public static Logger log = JPF.getLogger("report");
 
-  protected Config conf;
-  protected JPF jpf;
-  protected Search search;
-  protected VM vm;
+	protected Config conf;
+	protected JPF jpf;
+	protected Search search;
+	protected VM vm;
 
-  protected Date started, finished;
-  protected Statistics stat; // the object that collects statistics
-  protected List<Publisher> publishers = new ArrayList<Publisher>();
-  
-  protected Thread probeTimer;
-  
-  public Reporter (Config conf, JPF jpf) {
-    this.conf = conf;
-    this.jpf = jpf;
-    search = jpf.getSearch();
-    vm = jpf.getVM();
-    boolean reportStats = conf.getBoolean("report.statistics", false);
+	protected Date started, finished;
+	protected Statistics stat; // the object that collects statistics
+	protected List<Publisher> publishers = new ArrayList<Publisher>();
 
-    started = new Date();
+	protected Thread probeTimer;
 
-    addConfiguredPublishers(conf);
+	public Reporter(Config conf, JPF jpf) {
+		this.conf = conf;
+		this.jpf = jpf;
+		search = jpf.getSearch();
+		vm = jpf.getVM();
+		boolean reportStats = conf.getBoolean("report.statistics", false);
 
-    for (Publisher publisher : publishers) {
-      if (reportStats || publisher.hasToReportStatistics()) {
-        reportStats = true;
-      }
+		started = new Date();
 
-      if (publisher instanceof JPFListener) {
-        jpf.addListener((JPFListener)publisher);
-      }
-    }
+		addConfiguredPublishers(conf);
 
-    if (reportStats){
-      getRegisteredStatistics();
-    }
-    
-    int probeInterval = conf.getInt("report.probe_interval");
-    if (probeInterval > 0){
-      probeTimer = createProbeIntervalTimer(probeInterval);
-    }
-  }
+		for (Publisher publisher : publishers) {
+			if (reportStats || publisher.hasToReportStatistics()) {
+				reportStats = true;
+			}
 
-  protected Thread createProbeIntervalTimer (final int probeInterval){
-    Thread timer = new Thread( new Runnable(){
-        public void run(){
-          log.info("probe timer running");
-          while (!search.isDone()){
-            try {
-              Thread.sleep( probeInterval * 1000);
-              search.probeSearch(); // this is only a request
-            } catch (InterruptedException ix) {
-              // nothing
-            }
-          }
-          log.info("probe timer terminating");
-        }
-     }, "probe-timer");
-    timer.setDaemon(true);
-    
-    // we don't start before the Search is started
-    
-    return timer;
-  }
-  
-  /**
-   * called after the JPF run is finished. Shouldn't be public, but is called by JPF
-   */
-  public void cleanUp(){
-    // nothing yet
-  }
-  
-  public Statistics getRegisteredStatistics(){
-    
-    if (stat == null){ // none yet, initialize
-      // first, check if somebody registered one explicitly
-      stat = vm.getNextListenerOfType(Statistics.class, null);
-      if (stat == null){
-        stat = conf.getInstance("report.statistics.class@stat", Statistics.class);
-        if (stat == null) {
-          stat = new Statistics();
-        }
-        jpf.addListener(stat);
-      }
-    }
-    
-    return stat;
-  }
-  
-  
-  void addConfiguredPublishers (Config conf) {
-    String[] def = { "console" };
+			if (publisher instanceof JPFListener) {
+				jpf.addListener((JPFListener) publisher);
+			}
+		}
 
-    Class<?>[] argTypes = { Config.class, Reporter.class };
-    Object[] args = { conf, this };
+		if (reportStats) {
+			getRegisteredStatistics();
+		}
 
-    for (String id : conf.getStringArray("report.publisher", def)){
-      Publisher p = conf.getInstance("report." + id + ".class",
-                                     Publisher.class, argTypes, args);
-      if (p != null){
-        publishers.add(p);
-      } else {
-        log.warning("could not instantiate publisher class: " + id);
-      }
-    }
-  }
+		int probeInterval = conf.getInt("report.probe_interval");
+		if (probeInterval > 0) {
+			probeTimer = createProbeIntervalTimer(probeInterval);
+		}
+	}
 
-  public void addPublisher( Publisher newPublisher){
-    publishers.add(newPublisher);
-  }
-  
-  public List<Publisher> getPublishers() {
-    return publishers;
-  }
+	protected Thread createProbeIntervalTimer(final int probeInterval) {
+		Thread timer = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				log.info("probe timer running");
+				while (!search.isDone()) {
+					try {
+						Thread.sleep(probeInterval * 1000);
+						search.probeSearch(); // this is only a request
+					} catch (InterruptedException ix) {
+						// nothing
+					}
+				}
+				log.info("probe timer terminating");
+			}
+		}, "probe-timer");
+		timer.setDaemon(true);
 
-  public boolean hasToReportTrace() {
-    for (Publisher p : publishers) {
-      if (p.hasTopic("trace")) {
-        return true;
-      }
-    }
+		// we don't start before the Search is started
 
-    return false;
-  }
+		return timer;
+	}
 
-  public boolean hasToReportOutput() {
-    for (Publisher p : publishers) {
-      if (p.hasTopic("output")) {
-        return true;
-      }
-    }
+	/**
+	 * called after the JPF run is finished. Shouldn't be public, but is called
+	 * by JPF
+	 */
+	public void cleanUp() {
+		// nothing yet
+	}
 
-    return false;
-  }
+	public Statistics getRegisteredStatistics() {
 
+		if (stat == null) { // none yet, initialize
+			// first, check if somebody registered one explicitly
+			stat = vm.getNextListenerOfType(Statistics.class, null);
+			if (stat == null) {
+				stat = conf.getInstance("report.statistics.class@stat",
+						Statistics.class);
+				if (stat == null) {
+					stat = new Statistics();
+				}
+				jpf.addListener(stat);
+			}
+		}
 
-  public <T extends Publisher> boolean addPublisherExtension (Class<T> publisherCls, PublisherExtension e) {
-    boolean added = false;
-    for (Publisher p : publishers) {
-      Class<?> pCls = p.getClass();
-      if (publisherCls.isAssignableFrom(pCls)) {
-        p.addExtension(e);
-        added = true;
-      }
-    }
+		return stat;
+	}
 
-    return added;
-  }
+	void addConfiguredPublishers(Config conf) {
+		String[] def = { "console" };
 
-  public <T extends Publisher> void setPublisherItems (Class<T> publisherCls,
-                                                        int category, String[] topics){
-    for (Publisher p : publishers) {
-      if (publisherCls.isInstance(p)) {
-        p.setItems(category,topics);
-        return;
-      }
-    }
-  }
+		Class<?>[] argTypes = { Config.class, Reporter.class };
+		Object[] args = { conf, this };
 
-  boolean contains (String key, String[] list) {
-    for (String s : list) {
-      if (s.equalsIgnoreCase(key)){
-        return true;
-      }
-    }
-    return false;
-  }
+		for (String id : conf.getStringArray("report.publisher", def)) {
+			Publisher p = conf.getInstance("report." + id + ".class",
+					Publisher.class, argTypes, args);
+			if (p != null) {
+				publishers.add(p);
+			} else {
+				log.warning("could not instantiate publisher class: " + id);
+			}
+		}
+	}
 
+	public void addPublisher(Publisher newPublisher) {
+		publishers.add(newPublisher);
+	}
 
-  //--- the publishing phases
-  
-  protected void publishStart() {
-    for (Publisher publisher : publishers) {
-      publisher.openChannel();
-      publisher.publishProlog();
-      publisher.publishStart();
-    }
-  }
+	public List<Publisher> getPublishers() {
+		return publishers;
+	}
 
-  protected void publishTransition() {
-    for (Publisher publisher : publishers) {
-      publisher.publishTransition();
-    }
-  }
+	public boolean hasToReportTrace() {
+		for (Publisher p : publishers) {
+			if (p.hasTopic("trace")) {
+				return true;
+			}
+		}
 
-  protected void publishPropertyViolation() {
-    for (Publisher publisher : publishers) {
-      publisher.publishPropertyViolation();
-    }
-  }
+		return false;
+	}
 
-  protected void publishConstraintHit() {
-    for (Publisher publisher : publishers) {
-      publisher.publishConstraintHit();
-    }
-  }
+	public boolean hasToReportOutput() {
+		for (Publisher p : publishers) {
+			if (p.hasTopic("output")) {
+				return true;
+			}
+		}
 
-  protected void publishFinished() {
-    for (Publisher publisher : publishers) {
-      publisher.publishFinished();
-      publisher.publishEpilog();
-      publisher.closeChannel();
-    }
-  }
+		return false;
+	}
 
-  protected void publishProbe(){
-    for (Publisher publisher : publishers) {
-      publisher.publishProbe();
-    }    
-  }
-  
-  //--- the listener interface that drives report generation
+	public <T extends Publisher> boolean addPublisherExtension(
+			Class<T> publisherCls, PublisherExtension e) {
+		boolean added = false;
+		for (Publisher p : publishers) {
+			Class<?> pCls = p.getClass();
+			if (publisherCls.isAssignableFrom(pCls)) {
+				p.addExtension(e);
+				added = true;
+			}
+		}
 
-  public void searchStarted (Search search){
-    publishStart();
-    
-    if (probeTimer != null){
-      probeTimer.start();
-    }
-  }
+		return added;
+	}
 
-  public void stateAdvanced (Search search) {
-    publishTransition();
-  }
+	public <T extends Publisher> void setPublisherItems(Class<T> publisherCls,
+			int category, String[] topics) {
+		for (Publisher p : publishers) {
+			if (publisherCls.isInstance(p)) {
+				p.setItems(category, topics);
+				return;
+			}
+		}
+	}
 
-  public void searchConstraintHit(Search search) {
-    publishConstraintHit();
-  }
+	boolean contains(String key, String[] list) {
+		for (String s : list) {
+			if (s.equalsIgnoreCase(key)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
-  public void searchProbed (Search search){
-    publishProbe();
-  }
+	// --- the publishing phases
 
-  public void propertyViolated (Search search) {
-    publishPropertyViolation();
-  }
+	protected void publishStart() {
+		for (Publisher publisher : publishers) {
+			publisher.openChannel();
+			publisher.publishProlog();
+			publisher.publishStart();
+		}
+	}
 
-  public void searchFinished (Search search){
-    finished = new Date();
+	protected void publishTransition() {
+		for (Publisher publisher : publishers) {
+			publisher.publishTransition();
+		}
+	}
 
-    publishFinished();
-    
-    if (probeTimer != null){
-      // we could interrupt, but it's a daemon anyways
-      probeTimer = null;
-    }
-  }
+	protected void publishPropertyViolation() {
+		for (Publisher publisher : publishers) {
+			publisher.publishPropertyViolation();
+		}
+	}
 
+	protected void publishConstraintHit() {
+		for (Publisher publisher : publishers) {
+			publisher.publishConstraintHit();
+		}
+	}
 
-  //--- various getters
-  
-  public Date getStartDate() {
-    return started;
-  }
+	protected void publishFinished() {
+		for (Publisher publisher : publishers) {
+			publisher.publishFinished();
+			publisher.publishEpilog();
+			publisher.closeChannel();
+		}
+	}
 
-  public Date getFinishedDate () {
-    return finished;
-  }
-    
-  public VM getVM() {
-    return vm;
-  }
+	protected void publishProbe() {
+		for (Publisher publisher : publishers) {
+			publisher.publishProbe();
+		}
+	}
 
-  public Search getSearch() {
-    return search;
-  }
+	// --- the listener interface that drives report generation
 
-  public List<Error> getErrors () {
-    return search.getErrors();
-  }
+	@Override
+	public void searchStarted(Search search) {
+		publishStart();
 
-  public Error getCurrentError () {
-    return search.getCurrentError();
-  }
+		if (probeTimer != null) {
+			probeTimer.start();
+		}
+	}
 
-  public String getLastSearchConstraint () {
-    return search.getLastSearchConstraint();
-  }
+	@Override
+	public void stateAdvanced(Search search) {
+		publishTransition();
+	}
 
-  public String getCurrentErrorId () {
-    Error e = getCurrentError();
-    if (e != null) {
-      return "#" + e.getId();
-    } else {
-      return "";
-    }
-  }
+	@Override
+	public void searchConstraintHit(Search search) {
+		publishConstraintHit();
+	}
 
-  public int getNumberOfErrors() {
-    return search.getErrors().size();
-  }
+	@Override
+	public void searchProbed(Search search) {
+		publishProbe();
+	}
 
-  public Statistics getStatistics() {
-    return stat;
-  }
+	@Override
+	public void propertyViolated(Search search) {
+		publishPropertyViolation();
+	}
 
-  public Statistics getStatisticsSnapshot () {
-    return stat.clone();
-  }
-  
-  /**
-   * in ms
-   */
-  public long getElapsedTime () {
-    Date d = (finished != null) ? finished : new Date();
-    long t = d.getTime() - started.getTime();
-    return t;
-  }
+	@Override
+	public void searchFinished(Search search) {
+		finished = new Date();
 
-  public Path getPath (){
-    return vm.getClonedPath();
-  }
+		publishFinished();
 
-  public String getJPFBanner () {
-    StringBuilder sb = new StringBuilder();
-    
-    sb.append("JavaPathfinder v");
-    sb.append(JPF.VERSION);
-    
-    String rev = getRevision();
-    if (rev != null){
-      sb.append(" (rev ");
-      sb.append(rev);
-      sb.append(')');
-    }
-    
-    sb.append(" - (C) RIACS/NASA Ames Research Center");
-    
-    if (conf.getBoolean("report.show_repository", false)) {
-      String repInfo =  getRepositoryInfo();
-      if (repInfo != null) {
-        sb.append( repInfo);
-      }
-    }
-    
-    return sb.toString();
-  }
+		if (probeTimer != null) {
+			// we could interrupt, but it's a daemon anyways
+			probeTimer = null;
+		}
+	}
 
+	// --- various getters
 
-  protected String getRevision() {
-    try {
-      InputStream is = JPF.class.getResourceAsStream(".version");
-      if (is != null){
-        int len = is.available();
-        byte[] data = new byte[len];
-        is.read(data);
-        is.close();
-        return new String(data).trim();
-        
-      } else {
-        return null;
-      }
-      
-    } catch (Throwable t){
-      return null;
-    }
-  }
-  
-  protected String getRepositoryInfo() {
-    try {
-      InputStream is = JPF.class.getResourceAsStream("build.properties");
-      if (is != null){
-        Properties revInfo = new Properties();
-        revInfo.load(is);
+	public Date getStartDate() {
+		return started;
+	}
 
-        StringBuffer sb = new StringBuffer();
-        String date = revInfo.getProperty("date");
-        String author = revInfo.getProperty("author");
-        String rev = revInfo.getProperty("rev");
-        String machine = revInfo.getProperty("hostname");
-        String loc = revInfo.getProperty("location");
-        String upstream = revInfo.getProperty("upstream");
+	public Date getFinishedDate() {
+		return finished;
+	}
 
-        return String.format("%s %s %s %s %s", date,author,rev,machine,loc);
-      }
-    } catch (IOException iox) {
-      return null;
-    }
+	public VM getVM() {
+		return vm;
+	}
 
-    return null;
-  }
+	public Search getSearch() {
+		return search;
+	}
 
-  
-  public String getHostName () {
-    try {
-      InetAddress in = InetAddress.getLocalHost();
-      String hostName = in.getHostName();
-      return hostName;
-    } catch (Throwable t) {
-      return "localhost";
-    }
-  }
+	public List<Error> getErrors() {
+		return search.getErrors();
+	}
 
-  public String getUser() {
-    return System.getProperty("user.name");
-  }
+	public Error getCurrentError() {
+		return search.getCurrentError();
+	}
 
-  public String getSuT() {
-    return vm.getSUTDescription();
-  }
-  
-  public String getJava (){
-    String vendor = System.getProperty("java.vendor");
-    String version = System.getProperty("java.version");
-    return vendor + "/" + version;
-  }
+	public String getLastSearchConstraint() {
+		return search.getLastSearchConstraint();
+	}
 
-  public String getArch () {
-    String arch = System.getProperty("os.arch");
-    Runtime rt = Runtime.getRuntime();
-    String type = arch + "/" + rt.availableProcessors();
+	public String getCurrentErrorId() {
+		Error e = getCurrentError();
+		if (e != null) {
+			return "#" + e.getId();
+		} else {
+			return "";
+		}
+	}
 
-    return type;
-  }
+	public int getNumberOfErrors() {
+		return search.getErrors().size();
+	}
 
-  public String getOS () {
-    String name = System.getProperty("os.name");
-    String version = System.getProperty("os.version");
-    return name + "/" + version;
-  }
+	public Statistics getStatistics() {
+		return stat;
+	}
+
+	public Statistics getStatisticsSnapshot() {
+		return stat.clone();
+	}
+
+	/**
+	 * in ms
+	 */
+	public long getElapsedTime() {
+		Date d = (finished != null) ? finished : new Date();
+		long t = d.getTime() - started.getTime();
+		return t;
+	}
+
+	public Path getPath() {
+		return vm.getClonedPath();
+	}
+
+	public String getJPFBanner() {
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("JavaPathfinder v");
+		sb.append(JPF.VERSION);
+
+		String rev = getRevision();
+		if (rev != null) {
+			sb.append(" (rev ");
+			sb.append(rev);
+			sb.append(')');
+		}
+
+		sb.append(" - (C) RIACS/NASA Ames Research Center");
+
+		if (conf.getBoolean("report.show_repository", false)) {
+			String repInfo = getRepositoryInfo();
+			if (repInfo != null) {
+				sb.append(repInfo);
+			}
+		}
+
+		return sb.toString();
+	}
+
+	protected String getRevision() {
+		try {
+			InputStream is = JPF.class.getResourceAsStream(".version");
+			if (is != null) {
+				int len = is.available();
+				byte[] data = new byte[len];
+				is.read(data);
+				is.close();
+				return new String(data).trim();
+
+			} else {
+				return null;
+			}
+
+		} catch (Throwable t) {
+			return null;
+		}
+	}
+
+	protected String getRepositoryInfo() {
+		try {
+			InputStream is = JPF.class.getResourceAsStream("build.properties");
+			if (is != null) {
+				Properties revInfo = new Properties();
+				revInfo.load(is);
+
+				StringBuffer sb = new StringBuffer();
+				String date = revInfo.getProperty("date");
+				String author = revInfo.getProperty("author");
+				String rev = revInfo.getProperty("rev");
+				String machine = revInfo.getProperty("hostname");
+				String loc = revInfo.getProperty("location");
+				String upstream = revInfo.getProperty("upstream");
+
+				return String.format("%s %s %s %s %s", date, author, rev,
+						machine, loc);
+			}
+		} catch (IOException iox) {
+			return null;
+		}
+
+		return null;
+	}
+
+	public String getHostName() {
+		try {
+			InetAddress in = InetAddress.getLocalHost();
+			String hostName = in.getHostName();
+			return hostName;
+		} catch (Throwable t) {
+			return "localhost";
+		}
+	}
+
+	public String getUser() {
+		return System.getProperty("user.name");
+	}
+
+	public String getSuT() {
+		return vm.getSUTDescription();
+	}
+
+	public String getJava() {
+		String vendor = System.getProperty("java.vendor");
+		String version = System.getProperty("java.version");
+		return vendor + "/" + version;
+	}
+
+	public String getArch() {
+		String arch = System.getProperty("os.arch");
+		Runtime rt = Runtime.getRuntime();
+		String type = arch + "/" + rt.availableProcessors();
+
+		return type;
+	}
+
+	public String getOS() {
+		String name = System.getProperty("os.name");
+		String version = System.getProperty("os.version");
+		return name + "/" + version;
+	}
 
 }

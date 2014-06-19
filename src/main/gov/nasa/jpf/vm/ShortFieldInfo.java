@@ -21,49 +21,53 @@ package gov.nasa.jpf.vm;
 
 import gov.nasa.jpf.JPFException;
 
-
 /**
  * fieldinfo for slots holding booleans
  */
 public class ShortFieldInfo extends SingleSlotFieldInfo {
 
-  short init;
+	short init;
 
-  public ShortFieldInfo (String name, int modifiers) {
-    super(name, "S", modifiers);
-  }
+	public ShortFieldInfo(String name, int modifiers) {
+		super(name, "S", modifiers);
+	}
 
-  public void setConstantValue(Object constValue){
-    if (constValue instanceof Integer){
-      cv = constValue;
-      init = ((Integer)constValue).shortValue();
+	@Override
+	public void setConstantValue(Object constValue) {
+		if (constValue instanceof Integer) {
+			cv = constValue;
+			init = ((Integer) constValue).shortValue();
 
-    } else {
-      throw new JPFException("illegal short ConstValue=" + constValue);
-    }
-  }
+		} else {
+			throw new JPFException("illegal short ConstValue=" + constValue);
+		}
+	}
 
+	@Override
+	public void initialize(ElementInfo ei, ThreadInfo ti) {
+		ei.getFields().setShortValue(storageOffset, init);
+	}
 
-  public void initialize (ElementInfo ei, ThreadInfo ti) {
-    ei.getFields().setShortValue(storageOffset, init);
-  }
+	@Override
+	public boolean isShortField() {
+		return true;
+	}
 
-  public boolean isShortField() {
-    return true;
-  }
+	@Override
+	public boolean isNumericField() {
+		return true;
+	}
 
-  public boolean isNumericField(){
-    return true;
-  }
+	@Override
+	public Object getValueObject(Fields f) {
+		int i = f.getIntValue(storageOffset);
+		return new Short((short) i);
+	}
 
-  public Object getValueObject (Fields f){
-    int i = f.getIntValue(storageOffset);
-    return new Short((short)i);
-  }
-
-  public String valueToString (Fields f) {
-    short i = f.getShortValue(storageOffset);
-    return Short.toString(i);
-  }
+	@Override
+	public String valueToString(Fields f) {
+		short i = f.getShortValue(storageOffset);
+		return Short.toString(i);
+	}
 
 }

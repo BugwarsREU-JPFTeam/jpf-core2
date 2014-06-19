@@ -23,9 +23,10 @@ package gov.nasa.jpf.util;
  */
 public interface IndexIterator {
 
-  /**
-   * answer next index value in iteration
-   *  @returns -1 if no next index
-   */
-  int next();
+	/**
+	 * answer next index value in iteration
+	 * 
+	 * @returns -1 if no next index
+	 */
+	int next();
 }

@@ -24,30 +24,31 @@ import gov.nasa.jpf.vm.MJIEnv;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Throw exception or error
- * ..., objectref => objectref
+ * Throw exception or error ..., objectref => objectref
  */
 public class ATHROW extends JVMInstruction {
 
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-    int objref = frame.pop();
+		int objref = frame.pop();
 
-    if (objref == MJIEnv.NULL) {
-      return ti.createAndThrowException("java.lang.NullPointerException");
-    }
+		if (objref == MJIEnv.NULL) {
+			return ti.createAndThrowException("java.lang.NullPointerException");
+		}
 
-    return ti.throwException(objref);
-  }
+		return ti.throwException(objref);
+	}
 
-  public int getByteCode () {
-    return 0xBF;
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	public int getByteCode() {
+		return 0xBF;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

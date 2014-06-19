@@ -22,57 +22,63 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Load reference from local variable
- * ... => ..., objectref
+ * Load reference from local variable ... => ..., objectref
  */
 public class ALOAD extends LocalVariableInstruction {
 
-  public ALOAD(int index){
-    super(index);
-  }
+	public ALOAD(int index) {
+		super(index);
+	}
 
-  /**
-   * for explicit construction
-   */
-  public void setIndex (int index){
-    this.index = index;    
-  }
-  
-  @Override
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
-    
-    frame.pushLocal(index);
+	/**
+	 * for explicit construction
+	 */
+	public void setIndex(int index) {
+		this.index = index;
+	}
 
-    return getNext(ti);
-  }
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
 
-  public int getLength() {
-    if (index > 3){
-      return 2; // opcode, index
-    } else {
-      return 1; // immediate; opcode
-    }
-  }
-  
-  public int getByteCode () {
-    switch (index) {
-      case 0: return 0x2a;
-      case 1: return 0x2b;
-      case 2: return 0x2c;
-      case 3: return 0x2d;
-    }
+		frame.pushLocal(index);
 
-    return 0x19;  // ? wide versions
-  }
-  
-  public String getBaseMnemonic() {
-    return "aload";
-  }
-  
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+		return getNext(ti);
+	}
+
+	@Override
+	public int getLength() {
+		if (index > 3) {
+			return 2; // opcode, index
+		} else {
+			return 1; // immediate; opcode
+		}
+	}
+
+	@Override
+	public int getByteCode() {
+		switch (index) {
+		case 0:
+			return 0x2a;
+		case 1:
+			return 0x2b;
+		case 2:
+			return 0x2c;
+		case 3:
+			return 0x2d;
+		}
+
+		return 0x19; // ? wide versions
+	}
+
+	@Override
+	public String getBaseMnemonic() {
+		return "aload";
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

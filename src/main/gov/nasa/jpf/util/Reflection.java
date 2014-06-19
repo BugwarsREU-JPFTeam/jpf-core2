@@ -29,85 +29,89 @@ import java.lang.reflect.Modifier;
  */
 public class Reflection {
 
-  /**
-   * find callers class
-   *
-   * @param up levels upwards from our caller (NOT counting ourselves)
-   * @return caller class, null if illegal 'up' value
-   */
-  public static Class<?> getCallerClass(int up) {
-    int idx = up + 1; // don't count this stackframe
+	/**
+	 * find callers class
+	 * 
+	 * @param up
+	 *            levels upwards from our caller (NOT counting ourselves)
+	 * @return caller class, null if illegal 'up' value
+	 */
+	public static Class<?> getCallerClass(int up) {
+		int idx = up + 1; // don't count this stackframe
 
-    StackTraceElement[] st = (new Throwable()).getStackTrace();
-    if ((up < 0) || (idx >= st.length)) {
-      return null;
-    } else {
-      try {
-        return Class.forName(st[idx].getClassName());
-      } catch (Throwable t) {
-        return null;
-      }
-    }
-  }
+		StackTraceElement[] st = (new Throwable()).getStackTrace();
+		if ((up < 0) || (idx >= st.length)) {
+			return null;
+		} else {
+			try {
+				return Class.forName(st[idx].getClassName());
+			} catch (Throwable t) {
+				return null;
+			}
+		}
+	}
 
-  public static Class<?> getCallerClass () {
-    return getCallerClass(2);
-  }
+	public static Class<?> getCallerClass() {
+		return getCallerClass(2);
+	}
 
-  public static <T> Class<? extends T>  getCallerClass (Class<T> type){
-    Class<?> cls = getCallerClass(2);
+	public static <T> Class<? extends T> getCallerClass(Class<T> type) {
+		Class<?> cls = getCallerClass(2);
 
-    if (cls != null) {
-      if (type.isAssignableFrom(cls)) {
-        return cls.asSubclass(type);
-      } else {
-        throw new JPFException("caller class: " + cls.getName() + " not of type: " + type.getName());
-      }
-    }
-    return null;
-  }
+		if (cls != null) {
+			if (type.isAssignableFrom(cls)) {
+				return cls.asSubclass(type);
+			} else {
+				throw new JPFException("caller class: " + cls.getName()
+						+ " not of type: " + type.getName());
+			}
+		}
+		return null;
+	}
 
-  public static StackTraceElement getCallerElement (int up){
-    int idx = up + 1; // don't count this stackframe
+	public static StackTraceElement getCallerElement(int up) {
+		int idx = up + 1; // don't count this stackframe
 
-    StackTraceElement[] st = (new Throwable()).getStackTrace();
-    if ((up < 0) || (idx >= st.length)) {
-      return null;
-    } else {
-      return st[idx];
-    }
-  }
-  public static StackTraceElement getCallerElement () {
-    StackTraceElement[] st = (new Throwable()).getStackTrace();
-    if (st.length > 2){
-      return st[2]; // '0' is this method itself
-    } else {
-      return null;
-    }
-  }
+		StackTraceElement[] st = (new Throwable()).getStackTrace();
+		if ((up < 0) || (idx >= st.length)) {
+			return null;
+		} else {
+			return st[idx];
+		}
+	}
 
-  public static boolean tryCallMain(Class<?> cls, String[] args) throws InvocationTargetException {
-    try {
-      Method method = cls.getDeclaredMethod("main", String[].class);
-      int modifiers = method.getModifiers();
+	public static StackTraceElement getCallerElement() {
+		StackTraceElement[] st = (new Throwable()).getStackTrace();
+		if (st.length > 2) {
+			return st[2]; // '0' is this method itself
+		} else {
+			return null;
+		}
+	}
 
-      if ((modifiers & (Modifier.PUBLIC | Modifier.STATIC | Modifier.ABSTRACT)) == (Modifier.PUBLIC | Modifier.STATIC)) {
-        method.invoke(null, (Object)args);
-        return true;
-      }
+	public static boolean tryCallMain(Class<?> cls, String[] args)
+			throws InvocationTargetException {
+		try {
+			Method method = cls.getDeclaredMethod("main", String[].class);
+			int modifiers = method.getModifiers();
 
-    } catch (NoSuchMethodException nsmx) {
-      //System.out.println(nsmx);
-      // just return false
-    } catch (IllegalAccessException iax){
-      //System.out.println(iax);
-      // can't happen, we checked for it before invoking
-    } catch (IllegalArgumentException iargx){
-      //System.out.println(iargx);
-      // can't happen, we checked for it before invoking
-    }
+			if ((modifiers & (Modifier.PUBLIC | Modifier.STATIC | Modifier.ABSTRACT)) == (Modifier.PUBLIC | Modifier.STATIC)) {
+				method.invoke(null, (Object) args);
+				return true;
+			}
 
-    return false;
-  }
+		} catch (NoSuchMethodException nsmx) {
+			// System.out.println(nsmx);
+			// just return false
+		} catch (IllegalAccessException iax) {
+			// System.out.println(iax);
+			// can't happen, we checked for it before invoking
+		} catch (IllegalArgumentException iargx) {
+			// System.out.println(iargx);
+			// can't happen, we checked for it before invoking
+		}
+
+		return false;
+	}
 
 }

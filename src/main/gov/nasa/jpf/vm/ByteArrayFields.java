@@ -23,85 +23,95 @@ import gov.nasa.jpf.util.HashData;
 import gov.nasa.jpf.util.IntVector;
 
 import java.io.PrintStream;
-import java.io.PrintWriter;
 
 /**
  * element values for byte[] objects
  */
 public class ByteArrayFields extends ArrayFields {
 
-  byte[] values;
+	byte[] values;
 
-  public ByteArrayFields (int length) {
-    values = new byte[length];
-  }
+	public ByteArrayFields(int length) {
+		values = new byte[length];
+	}
 
-  public byte[] asByteArray() {
-    return values;
-  }
-  
-  protected void printValue(PrintStream ps, int idx){
-    ps.print(values[idx]);
-  }
-  
-  public Object getValues(){
-    return values;
-  }
+	@Override
+	public byte[] asByteArray() {
+		return values;
+	}
 
-  public int arrayLength() {
-    return values.length;
-  }
+	@Override
+	protected void printValue(PrintStream ps, int idx) {
+		ps.print(values[idx]);
+	}
 
-  public int getHeapSize() {
-    return values.length;
-  }
+	@Override
+	public Object getValues() {
+		return values;
+	}
 
-  public boolean equals (Object o) {
-    if (o instanceof ByteArrayFields) {
-      ByteArrayFields other = (ByteArrayFields)o;
+	@Override
+	public int arrayLength() {
+		return values.length;
+	}
 
-      byte[] v = values;
-      byte[] vOther = other.values;
-      if (v.length != vOther.length) {
-        return false;
-      }
+	@Override
+	public int getHeapSize() {
+		return values.length;
+	}
 
-      for (int i=0; i<v.length; i++) {
-        if (v[i] != vOther[i]) {
-          return false;
-        }
-      }
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof ByteArrayFields) {
+			ByteArrayFields other = (ByteArrayFields) o;
 
-      return compareAttrs(other);
+			byte[] v = values;
+			byte[] vOther = other.values;
+			if (v.length != vOther.length) {
+				return false;
+			}
 
-    } else {
-      return false;
-    }
-  }
+			for (int i = 0; i < v.length; i++) {
+				if (v[i] != vOther[i]) {
+					return false;
+				}
+			}
 
-  public ByteArrayFields clone(){
-    ByteArrayFields f = (ByteArrayFields)cloneFields();
-    f.values = values.clone();
-    return f;
-  }
+			return compareAttrs(other);
 
-  public void setByteValue (int pos, byte b) {
-    values[pos] = b;
-  }
+		} else {
+			return false;
+		}
+	}
 
-  public byte getByteValue (int pos) {
-    return values[pos];
-  }
+	@Override
+	public ByteArrayFields clone() {
+		ByteArrayFields f = (ByteArrayFields) cloneFields();
+		f.values = values.clone();
+		return f;
+	}
 
-  public void appendTo (IntVector v) {
-    v.appendPacked(values);
-  }
+	@Override
+	public void setByteValue(int pos, byte b) {
+		values[pos] = b;
+	}
 
-  public void hash(HashData hd) {
-    byte[] v = values;
-    for (int i=0; i < v.length; i++) {
-      hd.add(v[i]);
-    }
-  }
+	@Override
+	public byte getByteValue(int pos) {
+		return values[pos];
+	}
+
+	@Override
+	public void appendTo(IntVector v) {
+		v.appendPacked(values);
+	}
+
+	@Override
+	public void hash(HashData hd) {
+		byte[] v = values;
+		for (int i = 0; i < v.length; i++) {
+			hd.add(v[i]);
+		}
+	}
 
 }

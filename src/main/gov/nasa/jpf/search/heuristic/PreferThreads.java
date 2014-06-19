@@ -22,38 +22,39 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.vm.VM;
 import gov.nasa.jpf.vm.Transition;
 
-
 /**
- * a heuristic state prioritizer that favors certain threads (specified
- * by thread names during initialization)
+ * a heuristic state prioritizer that favors certain threads (specified by
+ * thread names during initialization)
  * 
- * <2do> for both efficiency and encapsulation reasons, this should be just
- * a Scheduler policy (so that we don't have to expand all children)
+ * <2do> for both efficiency and encapsulation reasons, this should be just a
+ * Scheduler policy (so that we don't have to expand all children)
  */
 public class PreferThreads extends SimplePriorityHeuristic {
-  String[] preferredThreads;
+	String[] preferredThreads;
 
-  public PreferThreads (Config config, VM vm) {
-    super(config,vm);
-    
-    preferredThreads = config.getStringArray("search.heuristic.preferredThreads");
-  }
+	public PreferThreads(Config config, VM vm) {
+		super(config, vm);
 
-  protected int computeHeuristicValue () {
-    Transition t = vm.getLastTransition();
+		preferredThreads = config
+				.getStringArray("search.heuristic.preferredThreads");
+	}
 
-    if (t == null) {
-      return 1;
-    }
+	@Override
+	protected int computeHeuristicValue() {
+		Transition t = vm.getLastTransition();
 
-    String tn = vm.getThreadName();
+		if (t == null) {
+			return 1;
+		}
 
-    for (int i = 0; i < preferredThreads.length; i++) {
-      if (tn.equals(preferredThreads[i])) {
-        return 0;
-      }
-    }
+		String tn = vm.getThreadName();
 
-    return 1;
-  }
+		for (int i = 0; i < preferredThreads.length; i++) {
+			if (tn.equals(preferredThreads[i])) {
+				return 0;
+			}
+		}
+
+		return 1;
+	}
 }

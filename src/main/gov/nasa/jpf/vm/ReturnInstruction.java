@@ -20,11 +20,11 @@ package gov.nasa.jpf.vm;
 
 /**
  * an empty (tag) interface to identify return instructions
- *
- * since .jvm so far does not use any specific feature of ReturnInstructions,
- * we just need an empty type to make .jvm independent of a specific
- * Instruction set
+ * 
+ * since .jvm so far does not use any specific feature of ReturnInstructions, we
+ * just need an empty type to make .jvm independent of a specific Instruction
+ * set
  */
 public interface ReturnInstruction {
-  // nothing in here yet
+	// nothing in here yet
 }

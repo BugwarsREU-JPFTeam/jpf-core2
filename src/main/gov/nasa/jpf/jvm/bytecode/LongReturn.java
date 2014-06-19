@@ -28,85 +28,102 @@ import java.util.Iterator;
  */
 public abstract class LongReturn extends ReturnInstruction {
 
-  protected long ret;
-  
-  public int getReturnTypeSize() {
-    return 2;
-  }
-  
-  protected Object getReturnedOperandAttr (StackFrame frame) {
-    return frame.getLongOperandAttr();
-  }
-  
-  protected void getAndSaveReturnValue (StackFrame frame) {
-    ret = frame.popLong();
-  }
+	protected long ret;
 
-  protected void pushReturnValue (StackFrame frame) {
-    frame.pushLong(ret);
-  }
+	@Override
+	public int getReturnTypeSize() {
+		return 2;
+	}
 
-  //--- attribute accessors 
-  
-  public boolean hasReturnAttr (ThreadInfo ti){
-    StackFrame frame = ti.getTopFrame();
-    return frame.hasLongOperandAttr();
-  }
-  public boolean hasReturnAttr (ThreadInfo ti, Class<?> type){
-    StackFrame frame = ti.getTopFrame();
-    return frame.hasLongOperandAttr(type);
-  }
-  
-  /**
-   * this returns all of them - use either if you know there will be only
-   * one attribute at a time, or check/process result with ObjectList
-   * 
-   * obviously, this only makes sense from an instructionExecuted(), since
-   * the value is pushed during the enter(). Use ObjectList to access values
-   */
-  public Object getReturnAttr (ThreadInfo ti){
-    StackFrame frame = ti.getTopFrame();
-    return frame.getLongOperandAttr();
-  }
-  
-  /**
-   * this replaces all of them - use only if you know 
-   *  - there will be only one attribute at a time
-   *  - you obtained the value you set by a previous getXAttr()
-   *  - you constructed a multi value list with ObjectList.createList()
-   * 
-   * we don't clone since pushing a return value already changed the caller frame
-   */
-  public void setReturnAttr (ThreadInfo ti, Object a){
-    StackFrame frame = ti.getModifiableTopFrame();
-    frame.setLongOperandAttr(a);
-  }
+	@Override
+	protected Object getReturnedOperandAttr(StackFrame frame) {
+		return frame.getLongOperandAttr();
+	}
 
-  /**
-   * this only returns the first attr of this type, there can be more
-   * if you don't use client private types or the provided type is too general
-   */
-  public <T> T getReturnAttr (ThreadInfo ti, Class<T> type){
-    StackFrame frame = ti.getTopFrame();
-    return frame.getLongOperandAttr(type);
-  }
-  public <T> T getNextReturnAttr (ThreadInfo ti, Class<T> type, Object prev){
-    StackFrame frame = ti.getTopFrame();
-    return frame.getNextLongOperandAttr(type, prev);
-  }
-  public Iterator returnAttrIterator (ThreadInfo ti){
-    StackFrame frame = ti.getTopFrame();
-    return frame.longOperandAttrIterator();
-  }
-  public <T> Iterator<T> returnAttrIterator (ThreadInfo ti, Class<T> type){
-    StackFrame frame = ti.getTopFrame();
-    return frame.longOperandAttrIterator(type);
-  }
-  
-  public void addReturnAttr (ThreadInfo ti, Object attr){
-    StackFrame frame = ti.getModifiableTopFrame();
-    frame.addLongOperandAttr(attr);
-  }
+	@Override
+	protected void getAndSaveReturnValue(StackFrame frame) {
+		ret = frame.popLong();
+	}
 
+	@Override
+	protected void pushReturnValue(StackFrame frame) {
+		frame.pushLong(ret);
+	}
+
+	// --- attribute accessors
+
+	@Override
+	public boolean hasReturnAttr(ThreadInfo ti) {
+		StackFrame frame = ti.getTopFrame();
+		return frame.hasLongOperandAttr();
+	}
+
+	@Override
+	public boolean hasReturnAttr(ThreadInfo ti, Class<?> type) {
+		StackFrame frame = ti.getTopFrame();
+		return frame.hasLongOperandAttr(type);
+	}
+
+	/**
+	 * this returns all of them - use either if you know there will be only one
+	 * attribute at a time, or check/process result with ObjectList
+	 * 
+	 * obviously, this only makes sense from an instructionExecuted(), since the
+	 * value is pushed during the enter(). Use ObjectList to access values
+	 */
+	@Override
+	public Object getReturnAttr(ThreadInfo ti) {
+		StackFrame frame = ti.getTopFrame();
+		return frame.getLongOperandAttr();
+	}
+
+	/**
+	 * this replaces all of them - use only if you know - there will be only one
+	 * attribute at a time - you obtained the value you set by a previous
+	 * getXAttr() - you constructed a multi value list with
+	 * ObjectList.createList()
+	 * 
+	 * we don't clone since pushing a return value already changed the caller
+	 * frame
+	 */
+	@Override
+	public void setReturnAttr(ThreadInfo ti, Object a) {
+		StackFrame frame = ti.getModifiableTopFrame();
+		frame.setLongOperandAttr(a);
+	}
+
+	/**
+	 * this only returns the first attr of this type, there can be more if you
+	 * don't use client private types or the provided type is too general
+	 */
+	@Override
+	public <T> T getReturnAttr(ThreadInfo ti, Class<T> type) {
+		StackFrame frame = ti.getTopFrame();
+		return frame.getLongOperandAttr(type);
+	}
+
+	@Override
+	public <T> T getNextReturnAttr(ThreadInfo ti, Class<T> type, Object prev) {
+		StackFrame frame = ti.getTopFrame();
+		return frame.getNextLongOperandAttr(type, prev);
+	}
+
+	@Override
+	public Iterator returnAttrIterator(ThreadInfo ti) {
+		StackFrame frame = ti.getTopFrame();
+		return frame.longOperandAttrIterator();
+	}
+
+	@Override
+	public <T> Iterator<T> returnAttrIterator(ThreadInfo ti, Class<T> type) {
+		StackFrame frame = ti.getTopFrame();
+		return frame.longOperandAttrIterator(type);
+	}
+
+	@Override
+	public void addReturnAttr(ThreadInfo ti, Object attr) {
+		StackFrame frame = ti.getModifiableTopFrame();
+		frame.addLongOperandAttr(attr);
+	}
 
 }

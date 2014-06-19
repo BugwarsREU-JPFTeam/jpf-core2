@@ -24,35 +24,43 @@ package gov.nasa.jpf.vm;
  */
 public class DefaultMementoRestorer extends MementoRestorer {
 
-  public Memento<KernelState> getMemento(KernelState ks) {
-    return ks.getMemento();
-  }
+	@Override
+	public Memento<KernelState> getMemento(KernelState ks) {
+		return ks.getMemento();
+	}
 
-  public Memento<ThreadList> getMemento(ThreadList tlist) {
-    return tlist.getMemento();
-  }
+	@Override
+	public Memento<ThreadList> getMemento(ThreadList tlist) {
+		return tlist.getMemento();
+	}
 
-  public Memento<ThreadInfo> getMemento(ThreadInfo ti) {
-    return ti.getMemento();
-  }
-  
-  public Memento<Heap> getMemento(Heap heap){
-    return heap.getMemento();
-  }
+	@Override
+	public Memento<ThreadInfo> getMemento(ThreadInfo ti) {
+		return ti.getMemento();
+	}
 
-  public Memento<Statics> getMemento(Statics statics){
-    return statics.getMemento();
-  }
-  
-  public Memento<ClassLoaderList> getMemento (ClassLoaderList cllist) {
-    return cllist.getMemento();
-  }
+	@Override
+	public Memento<Heap> getMemento(Heap heap) {
+		return heap.getMemento();
+	}
 
-  public Memento<ClassLoaderInfo> getMemento (ClassLoaderInfo cl) {
-    return cl.getMemento();
-  }
+	@Override
+	public Memento<Statics> getMemento(Statics statics) {
+		return statics.getMemento();
+	}
 
-  public Memento<ClassPath> getMemento (ClassPath cp) {
-    return cp.getMemento();
-  }
+	@Override
+	public Memento<ClassLoaderList> getMemento(ClassLoaderList cllist) {
+		return cllist.getMemento();
+	}
+
+	@Override
+	public Memento<ClassLoaderInfo> getMemento(ClassLoaderInfo cl) {
+		return cl.getMemento();
+	}
+
+	@Override
+	public Memento<ClassPath> getMemento(ClassPath cp) {
+		return cp.getMemento();
+	}
 }

@@ -17,7 +17,6 @@
 // DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE.
 //
 
-
 package gov.nasa.jpf.vm;
 
 import gov.nasa.jpf.util.HashData;
@@ -25,126 +24,135 @@ import gov.nasa.jpf.util.IntVector;
 import gov.nasa.jpf.util.PrintUtils;
 
 import java.io.PrintStream;
-import java.io.PrintWriter;
 
 /**
  * element values for char[] objects
  */
 public class CharArrayFields extends ArrayFields {
 
-  char[] values;
+	char[] values;
 
-  public CharArrayFields (int length) {
-    values = new char[length];
-  }
+	public CharArrayFields(int length) {
+		values = new char[length];
+	}
 
-  public char[] asCharArray(){
-    return values;
-  }
+	@Override
+	public char[] asCharArray() {
+		return values;
+	}
 
-  @Override
-  protected void printValue(PrintStream ps, int idx){
-    PrintUtils.printCharLiteral(ps, values[idx]);
-  }
-  
-  @Override
-  public void printElements( PrintStream ps, int max){
-    PrintUtils.printStringLiteral(ps, values, max);
-  }  
-  
-  public char[] asCharArray (int offset, int length) {
-    char[] result = new char[length];
-    System.arraycopy(values, offset, result, 0, length);
+	@Override
+	protected void printValue(PrintStream ps, int idx) {
+		PrintUtils.printCharLiteral(ps, values[idx]);
+	}
 
-    return result;
-  }
+	@Override
+	public void printElements(PrintStream ps, int max) {
+		PrintUtils.printStringLiteral(ps, values, max);
+	}
 
-  public Object getValues(){
-    return values;
-  }
+	@Override
+	public char[] asCharArray(int offset, int length) {
+		char[] result = new char[length];
+		System.arraycopy(values, offset, result, 0, length);
 
-  public int arrayLength() {
-    return values.length;
-  }
+		return result;
+	}
 
-  public int getHeapSize() {  // in bytes
-    return values.length * 2;
-  }
+	@Override
+	public Object getValues() {
+		return values;
+	}
 
-  public void appendTo (IntVector v) {
-    v.appendPacked(values);
-  }
+	@Override
+	public int arrayLength() {
+		return values.length;
+	}
 
-  public CharArrayFields clone(){
-    CharArrayFields f = (CharArrayFields)cloneFields();
-    f.values = values.clone();
-    return f;
-  }
+	@Override
+	public int getHeapSize() { // in bytes
+		return values.length * 2;
+	}
 
+	@Override
+	public void appendTo(IntVector v) {
+		v.appendPacked(values);
+	}
 
-  public boolean equals (Object o) {
-    if (o instanceof CharArrayFields) {
-      CharArrayFields other = (CharArrayFields)o;
+	@Override
+	public CharArrayFields clone() {
+		CharArrayFields f = (CharArrayFields) cloneFields();
+		f.values = values.clone();
+		return f;
+	}
 
-      char[] v = values;
-      char[] vOther = other.values;
-      if (v.length != vOther.length) {
-        return false;
-      }
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof CharArrayFields) {
+			CharArrayFields other = (CharArrayFields) o;
 
-      for (int i=0; i<v.length; i++) {
-        if (v[i] != vOther[i]) {
-          return false;
-        }
-      }
+			char[] v = values;
+			char[] vOther = other.values;
+			if (v.length != vOther.length) {
+				return false;
+			}
 
-      return compareAttrs(other);
+			for (int i = 0; i < v.length; i++) {
+				if (v[i] != vOther[i]) {
+					return false;
+				}
+			}
 
-    } else {
-      return false;
-    }
-  }
+			return compareAttrs(other);
 
-  public char getCharValue(int pos) {
-    return values[pos];
-  }
+		} else {
+			return false;
+		}
+	}
 
-  public void setCharValue(int pos, char newValue) {
-    values[pos] = newValue;
-  }
+	@Override
+	public char getCharValue(int pos) {
+		return values[pos];
+	}
 
-  public void setCharValues(char[] v){
-    System.arraycopy(v,0,values,0,v.length);
-  }
+	@Override
+	public void setCharValue(int pos, char newValue) {
+		values[pos] = newValue;
+	}
 
-  //--- some methods to ease native String operations
+	public void setCharValues(char[] v) {
+		System.arraycopy(v, 0, values, 0, v.length);
+	}
 
-  public String asString(int offset, int length) {
-    return new String(values, offset, length);
-  }
+	// --- some methods to ease native String operations
 
-  // a special string compare utility
-  public boolean equals (int offset, int length, String s) {
-    char[] v = values;
+	public String asString(int offset, int length) {
+		return new String(values, offset, length);
+	}
 
-    if (offset+length > v.length) {
-      return false;
-    }
+	// a special string compare utility
+	public boolean equals(int offset, int length, String s) {
+		char[] v = values;
 
-    for (int i=offset, j=0; j<length; i++, j++) {
-      if (v[i] != s.charAt(j)) {
-        return false;
-      }
-    }
+		if (offset + length > v.length) {
+			return false;
+		}
 
-    return true;
-  }
+		for (int i = offset, j = 0; j < length; i++, j++) {
+			if (v[i] != s.charAt(j)) {
+				return false;
+			}
+		}
 
-  public void hash(HashData hd) {
-    char[] v = values;
-    for (int i=0; i < v.length; i++) {
-      hd.add(v[i]);
-    }
-  }
+		return true;
+	}
+
+	@Override
+	public void hash(HashData hd) {
+		char[] v = values;
+		for (int i = 0; i < v.length; i++) {
+			hd.add(v[i]);
+		}
+	}
 
 }

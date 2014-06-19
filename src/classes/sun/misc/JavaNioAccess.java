@@ -22,13 +22,16 @@ package sun.misc;
  * <2do> this is not supported yet
  */
 public interface JavaNioAccess {
-  
-  interface BufferPool {
-    String getName();
-    long getCount();
-    long getTotalCapacity();
-    long getMemoryUsed();
-  }
 
-  BufferPool getDirectBufferPool();
+	interface BufferPool {
+		String getName();
+
+		long getCount();
+
+		long getTotalCapacity();
+
+		long getMemoryUsed();
+	}
+
+	BufferPool getDirectBufferPool();
 }

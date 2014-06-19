@@ -29,27 +29,28 @@ import org.junit.Test;
  */
 public class TypesTest extends TestJPF {
 
-  @Test public void testGetSignatureName () {
-    
-    String in  = "int foo(int,java.lang.String)";
-    String out = "foo(ILjava/lang/String;)I";    
-    String s = Types.getSignatureName(in);
-    System.out.println( in + " => " + s);
-    assert out.equals(s);
+	@Test
+	public void testGetSignatureName() {
 
-    in  = "double[] what_ever (char[], X )";
-    out = "what_ever([CLX;)[D";
-    s = Types.getSignatureName(in);
-    System.out.println( in + " => " + s);
-    assert out.equals(s);
+		String in = "int foo(int,java.lang.String)";
+		String out = "foo(ILjava/lang/String;)I";
+		String s = Types.getSignatureName(in);
+		System.out.println(in + " => " + s);
+		assert out.equals(s);
 
-    in  = "bar()";
-    out = "bar()";
-    s = Types.getSignatureName(in);
-    System.out.println( in + " => " + s);
-    assert out.equals(s);
+		in = "double[] what_ever (char[], X )";
+		out = "what_ever([CLX;)[D";
+		s = Types.getSignatureName(in);
+		System.out.println(in + " => " + s);
+		assert out.equals(s);
 
-  }
+		in = "bar()";
+		out = "bar()";
+		s = Types.getSignatureName(in);
+		System.out.println(in + " => " + s);
+		assert out.equals(s);
 
-  //... and many more to come
+	}
+
+	// ... and many more to come
 }

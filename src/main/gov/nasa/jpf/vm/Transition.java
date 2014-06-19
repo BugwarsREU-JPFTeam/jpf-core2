@@ -22,153 +22,160 @@ import java.util.Iterator;
 
 /**
  * concrete type to store execution paths. TrailInfo corresponds to Transition,
- * i.e. all instructions executed in the context of a vm.forward() leading
- * into a new state
+ * i.e. all instructions executed in the context of a vm.forward() leading into
+ * a new state
  */
 public class Transition implements Iterable<Step>, Cloneable {
 
-  ChoiceGenerator<?> cg;
-  ThreadInfo ti;
+	ChoiceGenerator<?> cg;
+	ThreadInfo ti;
 
-  private Step   first, last;
-  int nSteps;
+	private Step first, last;
+	int nSteps;
 
-  private Object annotation;
-  String         output;
+	private Object annotation;
+	String output;
 
-  private int stateId = StateSet.UNKNOWN_ID;
+	private int stateId = StateSet.UNKNOWN_ID;
 
-  public Transition (ChoiceGenerator<?> cg, ThreadInfo ti) {
-    this.cg = cg;
-    this.ti = ti;
-  }
+	public Transition(ChoiceGenerator<?> cg, ThreadInfo ti) {
+		this.cg = cg;
+		this.ti = ti;
+	}
 
-  public Object clone() {
-    try {
-      Transition t = (Transition)super.clone();
-      
-      // the deep copy references
-      t.cg = (ChoiceGenerator<?>)cg.clone();
-      t.ti = (ThreadInfo)ti.clone();
-      
-      return t;
-      
-    } catch (CloneNotSupportedException cnsx){
-      return null; // cannot happen
-    } 
-  }
-  
-  public String getLabel () {
-    if (last != null) {
-      return last.getLineString();
-    } else {
-      return "?";
-    }
-  }
+	@Override
+	public Object clone() {
+		try {
+			Transition t = (Transition) super.clone();
 
-  public int getStateId() {
-    return(stateId);
-  }
+			// the deep copy references
+			t.cg = cg.clone();
+			t.ti = (ThreadInfo) ti.clone();
 
-  public void setStateId(int id) {
-    stateId = id;
-  }
+			return t;
 
-  public void setOutput (String s) {
-    output = s;
-  }
+		} catch (CloneNotSupportedException cnsx) {
+			return null; // cannot happen
+		}
+	}
 
-  public void setAnnotation (Object o) {
-    annotation = o;
-  }
+	public String getLabel() {
+		if (last != null) {
+			return last.getLineString();
+		} else {
+			return "?";
+		}
+	}
 
-  public Object getAnnotation () {
-    return annotation;
-  }
+	public int getStateId() {
+		return (stateId);
+	}
 
-  public String getOutput () {
-    return output;
-  }
+	public void setStateId(int id) {
+		stateId = id;
+	}
 
-  // don't use this for step iteration - this is very inefficient
-  public Step getStep (int index) {
-    Step s = first;
-    for (int i=0; s != null && i < index; i++) s = s.next;
-    return s;
-  }
+	public void setOutput(String s) {
+		output = s;
+	}
 
-  public Step getLastStep () {
-    return last;
-  }
+	public void setAnnotation(Object o) {
+		annotation = o;
+	}
 
-  public int getStepCount () {
-    return nSteps;
-  }
+	public Object getAnnotation() {
+		return annotation;
+	}
 
-  public ThreadInfo getThreadInfo() {
-    return ti;
-  }
+	public String getOutput() {
+		return output;
+	}
 
-  public int getThreadIndex () {
-    return ti.getId();
-  }
+	// don't use this for step iteration - this is very inefficient
+	public Step getStep(int index) {
+		Step s = first;
+		for (int i = 0; s != null && i < index; i++)
+			s = s.next;
+		return s;
+	}
 
-  public ChoiceGenerator<?> getChoiceGenerator() {
-    return cg;
-  }
+	public Step getLastStep() {
+		return last;
+	}
 
-  public ChoiceGenerator<?>[] getChoiceGeneratorCascade(){
-    return cg.getCascade();
-  }
+	public int getStepCount() {
+		return nSteps;
+	}
 
-  public void incStepCount() {
-    nSteps++;
-  }
+	public ThreadInfo getThreadInfo() {
+		return ti;
+	}
 
-  void addStep (Step step) {
-    if (first == null) {
-      first = step;
-      last = step;
-    } else {
-      last.next = step;
-      last = step;
-    }
-    nSteps++;
-  }
+	public int getThreadIndex() {
+		return ti.getId();
+	}
 
-  public class StepIterator implements Iterator<Step> {
-    Step cur;
+	public ChoiceGenerator<?> getChoiceGenerator() {
+		return cg;
+	}
 
-    public boolean hasNext () {
-      return (cur != last);
-    }
+	public ChoiceGenerator<?>[] getChoiceGeneratorCascade() {
+		return cg.getCascade();
+	}
 
-    public Step next () {
-      if (cur == null) {
-        cur = first;
-      } else {
-        if (cur != last) {
-          cur = cur.next;
-        } else {
-          return null;
-        }
-      }
-      return cur;
-    }
+	public void incStepCount() {
+		nSteps++;
+	}
 
-    public void remove () {
-      if (cur == null) {
-        first = first.next;
-      } else {
-        Step s;
-        for (s = first; s.next != cur; s = s.next);
-        s.next = cur.next;
-        cur = cur.next;
-      }
-    }
-  }
+	void addStep(Step step) {
+		if (first == null) {
+			first = step;
+			last = step;
+		} else {
+			last.next = step;
+			last = step;
+		}
+		nSteps++;
+	}
 
-  public Iterator<Step> iterator () {
-    return new StepIterator();
-  }
+	public class StepIterator implements Iterator<Step> {
+		Step cur;
+
+		@Override
+		public boolean hasNext() {
+			return (cur != last);
+		}
+
+		@Override
+		public Step next() {
+			if (cur == null) {
+				cur = first;
+			} else {
+				if (cur != last) {
+					cur = cur.next;
+				} else {
+					return null;
+				}
+			}
+			return cur;
+		}
+
+		@Override
+		public void remove() {
+			if (cur == null) {
+				first = first.next;
+			} else {
+				Step s;
+				for (s = first; s.next != cur; s = s.next)
+					;
+				s.next = cur.next;
+				cur = cur.next;
+			}
+		}
+	}
+
+	@Override
+	public Iterator<Step> iterator() {
+		return new StepIterator();
+	}
 }

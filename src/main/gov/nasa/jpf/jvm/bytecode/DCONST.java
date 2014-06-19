@@ -23,39 +23,38 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-
 /**
- * Push double
- * ... => ..., <d>
+ * Push double ... => ..., <d>
  */
 public class DCONST extends JVMInstruction {
-  private double value;
+	private double value;
 
-  public DCONST() {} // this is going away
+	public DCONST() {
+	} // this is going away
 
-  public DCONST (double d){
-    value = d;
-  }
+	public DCONST(double d) {
+		value = d;
+	}
 
-  @Override
-  public Instruction execute (ThreadInfo ti) {
-    StackFrame frame = ti.getModifiableTopFrame();
-    frame.pushDouble(value);
+	@Override
+	public Instruction execute(ThreadInfo ti) {
+		StackFrame frame = ti.getModifiableTopFrame();
+		frame.pushDouble(value);
 
-    return getNext(ti);
-  }
-  
-  public double getValue(){
-	  return value;
-  }
+		return getNext(ti);
+	}
 
-  @Override
-  public int getByteCode () {
-    return 0x0E;  // ? DCONST_0 0x0E , DCONST_1 0x0F
-  }
-  
-  @Override
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	public double getValue() {
+		return value;
+	}
+
+	@Override
+	public int getByteCode() {
+		return 0x0E; // ? DCONST_0 0x0E , DCONST_1 0x0F
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

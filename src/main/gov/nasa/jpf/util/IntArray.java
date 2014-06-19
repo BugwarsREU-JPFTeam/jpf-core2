@@ -24,25 +24,29 @@ import java.util.Arrays;
  * Wrapper for int[] that provides proper equals() and hashCode() methods.
  */
 public class IntArray {
-  public final int[] data;
-  
-  public IntArray(int size) {
-    data = new int[size];
-  }
-  
-  public IntArray(int[] data) {
-    this.data = data;
-  }
-  
-  public int hashCode() {
-    return Arrays.hashCode(data);
-  }
-  
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (! (o instanceof IntArray)) return false;
-    int[] thatData = ((IntArray)o).data;
-    int[] thisData = this.data;
-    return Arrays.equals(thisData, thatData);
-  }
+	public final int[] data;
+
+	public IntArray(int size) {
+		data = new int[size];
+	}
+
+	public IntArray(int[] data) {
+		this.data = data;
+	}
+
+	@Override
+	public int hashCode() {
+		return Arrays.hashCode(data);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (!(o instanceof IntArray))
+			return false;
+		int[] thatData = ((IntArray) o).data;
+		int[] thisData = this.data;
+		return Arrays.equals(thisData, thatData);
+	}
 }

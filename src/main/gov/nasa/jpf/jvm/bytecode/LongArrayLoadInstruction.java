@@ -21,25 +21,26 @@ package gov.nasa.jpf.jvm.bytecode;
 import gov.nasa.jpf.vm.ArrayIndexOutOfBoundsExecutiveException;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.StackFrame;
-import gov.nasa.jpf.vm.ThreadInfo;
-
 
 /**
  * abstraction for long array loads
  */
 public abstract class LongArrayLoadInstruction extends ArrayLoadInstruction {
 
-  protected void push (StackFrame frame, ElementInfo e, int index)
-                throws ArrayIndexOutOfBoundsExecutiveException {
-    e.checkArrayBounds(index);
-    frame.pushLong(e.getLongElement(index));
-  }
-  
-  protected int getElementSize () {
-    return 2;
-  }
+	@Override
+	protected void push(StackFrame frame, ElementInfo e, int index)
+			throws ArrayIndexOutOfBoundsExecutiveException {
+		e.checkArrayBounds(index);
+		frame.pushLong(e.getLongElement(index));
+	}
 
-  public void accept(InstructionVisitor insVisitor) {
-	  insVisitor.visit(this);
-  }
+	@Override
+	protected int getElementSize() {
+		return 2;
+	}
+
+	@Override
+	public void accept(InstructionVisitor insVisitor) {
+		insVisitor.visit(this);
+	}
 }

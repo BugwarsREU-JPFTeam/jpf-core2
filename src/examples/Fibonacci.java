@@ -2,7 +2,7 @@
 import gov.nasa.jpf.vm.Verify;
 
 public class Fibonacci { //test comment for vincent pull (you guys suck) <--Steph added to this
-	
+						//chickens go cluck cluck... cows go moo
 	public static int ok_fib(int num)
 	{
 		if (num == 0)

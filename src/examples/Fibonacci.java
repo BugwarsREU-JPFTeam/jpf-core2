@@ -1,7 +1,7 @@
 
 import gov.nasa.jpf.vm.Verify;
 
-public class Fibonacci { //test comment for vincent pull (you guys suck)
+public class Fibonacci { //test comment for vincent pull (you guys suck) <--Steph added to this
 	
 	public static int ok_fib(int num)
 	{

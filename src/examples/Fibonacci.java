@@ -3,10 +3,16 @@ import gov.nasa.jpf.vm.Verify;
 
 public class Fibonacci {
 	
-	public static void dumb_fib(int num)
+	public static int dumb_fib(int num)
 	{
+		if (num == 0)
+			return 0;
+		
+		if (num == 1)
+			return 1;
 		
 		
+		return 0;
 	}
 	
 	public static int ok_fib(int num)
@@ -24,9 +30,8 @@ public class Fibonacci {
 		
 		numbers[0] = 0;
 		numbers[1] = 1;
-		numbers[2] = 1;
 		
-		int n = 3;
+		int n = 2;
 		while (n <= num)
 		{
 			numbers[n] = numbers[n-1] + numbers[n-2];
@@ -50,8 +55,15 @@ public class Fibonacci {
 	}
 	public static void main(String[] args)
 	{
-		int val = Verify.random(37);
-		System.out.println("Fibonacci #" + val + " = " + fib(val));
+		int val = Verify.random(15);
+		
+		//Only implement recursively if the value given is even
+		if ((val % 2) == 0)
+			System.out.println("Recursively, Fibonacci #" + val + " = " + fib(val));
+		else
+			System.out.println("Iteratively, Fibonacci #" + val + " = " + ok_fib(val));
+		
+		
 	}
 
 }

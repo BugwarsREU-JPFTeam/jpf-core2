@@ -1,19 +1,7 @@
 
 import gov.nasa.jpf.vm.Verify;
 
-public class Fibonacci { //test comment for vincent pull
-	
-	public static int dumb_fib(int num)
-	{
-		if (num == 0)
-			return 0;
-		
-		if (num == 1)
-			return 1;
-		
-		
-		return 0;
-	}
+public class Fibonacci { //test comment for vincent pull (you guys suck)
 	
 	public static int ok_fib(int num)
 	{

@@ -1,7 +1,7 @@
 
 import gov.nasa.jpf.vm.Verify;
 
-public class Fibonacci { //test comment for salvador pull
+public class Fibonacci { //test comment for vincent pull
 	
 	public static int dumb_fib(int num)
 	{

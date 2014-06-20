@@ -1,0 +1,2 @@
+target = recursive_branching_jpf
+search.class = .search.heuristic.DFSHeuristic

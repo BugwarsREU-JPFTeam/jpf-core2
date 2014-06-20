@@ -3,7 +3,7 @@ import gov.nasa.jpf.vm.Verify;
 
 public class Fibonacci { //test comment for vincent pull (you guys suck) <--Steph added to this
 						// I made a dead baby and a wet dog
-						//i like ponies
+						//RawrRawrRawr
 	public static int ok_fib(int num)
 	{
 		if (num == 0)

@@ -30,6 +30,7 @@ import gov.nasa.jpf.vm.Path;
 import gov.nasa.jpf.vm.Step;
 import gov.nasa.jpf.vm.Transition;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
@@ -372,7 +373,10 @@ public class ConsolePublisher extends Publisher {
 	// this can be used outside a publisher, to show the same info
 	public static void printStatistics(PrintWriter pw, Reporter reporter) {
 		Statistics stat = reporter.getStatistics();
-
+		//File file = new File("C:/Users/kuja/Test output/file.txt");
+		//file.getParentFile().mkdirs();
+		//PrintWriter printWriter = new PrintWriter(file);
+		
 		pw.println("elapsed time:       "
 				+ formatHMS(reporter.getElapsedTime()));
 		pw.println("states:             new=" + stat.newStates + ",visited="

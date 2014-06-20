@@ -3,6 +3,7 @@ import gov.nasa.jpf.vm.Verify;
 
 public class recursive_branching_jpf {
 	
+	
 	public static void branch_recursive (int max_val, int depth, int branch, int sum)
 	{
 		if (depth == 0)
@@ -17,7 +18,7 @@ public class recursive_branching_jpf {
 		
 		if (sum == max_val){
 			System.out.println("This is wrong!!");
-			
+			throw new IllegalArgumentException("Invalid");
 		}
 		
 		branch_recursive(max_val,depth-1,branch,sum);
@@ -26,8 +27,8 @@ public class recursive_branching_jpf {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		int depth = 3;
-		int branch = 5;
+		int depth = 6;
+		int branch = 10;
 		branch_recursive(depth*branch,depth, branch, 0);
 		
 	}

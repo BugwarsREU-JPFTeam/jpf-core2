@@ -35,7 +35,7 @@ import java.util.List;
 public abstract class HeuristicSearch extends Search {
 
 	static final String DEFAULT_HEURISTIC_PACKAGE = "gov.nasa.jpf.search.heuristic.";
-
+	protected int searchcounter;
 	protected HeuristicState parentState;
 	protected List<HeuristicState> childStates;
 
@@ -130,9 +130,14 @@ public abstract class HeuristicSearch extends Search {
 				// probably
 				// what we want for search.multiple_errors.
 
-			} else {
+			} else{
+				if(!isNewState()&&searchcounter!=0){//IF STATEMENT MOD
+				System.out.println("In Search Number "+searchcounter);
+				queueCurrentState();
+				notifyStateStored();
+			}
 
-				if (!isEndState() && !isIgnoredState()) {
+				else	if (!isEndState() && !isIgnoredState()) {//else statement mod
 					boolean isNewState = isNewState();
 
 					if (isNewState && depth >= depthLimit) {
@@ -185,9 +190,8 @@ public abstract class HeuristicSearch extends Search {
 	@Override
 	public void search() { // commented out code here is for attempting to loop
 							// a heuristic search on state space
-		// RestorableVMState nice = this.getVM().getRestorableState();//mod
-		// for(int i=0;i<5;i++){//mod
-		// System.out.println("Run number "+i);//mod
+		for(int i=0;i<5;i++){//mod
+		 System.out.println("Run number "+i);//mod
 		queueCurrentState();
 		notifyStateStored();
 
@@ -208,8 +212,8 @@ public abstract class HeuristicSearch extends Search {
 			}
 		}
 		notifySearchFinished();
-		// this.getVM().restoreState(nice);//mod
-		// }//mod
+		searchcounter++;
+		 }//mod
 	}
 
 	@Override

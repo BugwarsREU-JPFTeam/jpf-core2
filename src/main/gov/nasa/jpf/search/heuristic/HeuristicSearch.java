@@ -1,3 +1,5 @@
+
+
 //
 // Copyright (C) 2006 United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration
@@ -35,9 +37,10 @@ import java.util.List;
 public abstract class HeuristicSearch extends Search {
 
 	static final String DEFAULT_HEURISTIC_PACKAGE = "gov.nasa.jpf.search.heuristic.";
-	protected int searchcounter;
+	protected int searchcounter=0;
 	protected HeuristicState parentState;
 	protected List<HeuristicState> childStates;
+	protected HeuristicState initial;
 
 	protected boolean isPathSensitive = false;
 
@@ -130,14 +133,7 @@ public abstract class HeuristicSearch extends Search {
 				// probably
 				// what we want for search.multiple_errors.
 
-			} else{
-				if(!isNewState()&&searchcounter!=0){//IF STATEMENT MOD
-				System.out.println("In Search Number "+searchcounter);
-				queueCurrentState();
-				notifyStateStored();
-			}
-
-				else	if (!isEndState() && !isIgnoredState()) {//else statement mod
+			} else{	if (!isEndState() && !isIgnoredState()) {//else statement mod
 					boolean isNewState = isNewState();
 
 					if (isNewState && depth >= depthLimit) {
@@ -192,7 +188,8 @@ public abstract class HeuristicSearch extends Search {
 							// a heuristic search on state space
 		for(int i=0;i<5;i++){//mod
 		 System.out.println("Run number "+i);//mod
-		queueCurrentState();
+		if(searchcounter==0)initial=queueCurrentState();
+		else queueCurrentState();
 		notifyStateStored();
 
 		// kind of stupid, but we need to get it out of the queue, and we
@@ -213,6 +210,7 @@ public abstract class HeuristicSearch extends Search {
 		}
 		notifySearchFinished();
 		searchcounter++;
+		restoreState(initial);
 		 }//mod
 	}
 

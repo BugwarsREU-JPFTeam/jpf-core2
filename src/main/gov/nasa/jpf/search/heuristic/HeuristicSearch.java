@@ -135,7 +135,8 @@ public abstract class HeuristicSearch extends Search {
 
 			} else{	if (!isEndState() && !isIgnoredState()) {//else statement mod
 					boolean isNewState = isNewState();
-
+					if(searchcounter!=0)isNewState=true;//MOD MOD MOD Works!
+					
 					if (isNewState && depth >= depthLimit) {
 						// we can't do this before we actually generated the VM
 						// child state
@@ -190,6 +191,7 @@ public abstract class HeuristicSearch extends Search {
 		 System.out.println("Run number "+i);//mod
 		if(searchcounter==0)initial=queueCurrentState();
 		else queueCurrentState();
+		
 		notifyStateStored();
 
 		// kind of stupid, but we need to get it out of the queue, and we
@@ -198,19 +200,18 @@ public abstract class HeuristicSearch extends Search {
 
 		done = false;
 		notifySearchStarted();
-
 		if (!hasPropertyTermination()) {
 			generateChildren();
 
-			while (!done && (parentState = getNextQueuedState()) != null) {
+			while (!done && (parentState = getNextQueuedState()) != null) {//not hit on subsequent search loops
 				restoreState(parentState);
 
 				generateChildren();
 			}
 		}
 		notifySearchFinished();
-		searchcounter++;
-		restoreState(initial);
+		searchcounter++;//mod
+		restoreState(initial);//mod
 		 }//mod
 	}
 

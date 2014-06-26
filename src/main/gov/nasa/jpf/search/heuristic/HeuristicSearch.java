@@ -22,6 +22,7 @@ package gov.nasa.jpf.search.heuristic;
 
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.search.Search;
+import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.VM;
 
 import java.util.ArrayList;
@@ -216,7 +217,8 @@ public abstract class HeuristicSearch extends Search {
 		
 			
 			while (!done && (parentState = getNextQueuedState()) != null) {
-				
+				//Instruction goo = this.vm.getInstruction();//MOD
+				//System.out.println(goo.getByteCode());//MOD:only getting high level bytecode
 				pathTracker.set(parentState.getStateId()+1, pathTracker.get(parentState.getStateId()+1)+1);//MOD:here we increment the branch count
 				
 				restoreState(parentState);

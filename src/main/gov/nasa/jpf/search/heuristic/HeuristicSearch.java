@@ -41,7 +41,7 @@ public abstract class HeuristicSearch extends Search {
 	protected HeuristicState parentState;
 	protected List<HeuristicState> childStates;
 	protected HeuristicState initial;
-	protected ArrayList<Integer> pathTracker;
+	protected ArrayList<Integer> pathTracker=new ArrayList<Integer>();
 	protected boolean isPathSensitive = false;
 
 	/*
@@ -194,7 +194,7 @@ public abstract class HeuristicSearch extends Search {
 							// a heuristic search on state space
 		for(int i=0;i<5;i++){//mod
 		System.out.println("Run number "+i);//mod
-		for(int f=0;i<5000;i++)pathTracker.add(0);//MOD populate arraylist
+		for(int f=0;f<5000;f++)pathTracker.add(0);//MOD populate arraylist
 		if(searchcounter==0)initial=queueCurrentState();//MOD MOD
 		else queueCurrentState();
 		

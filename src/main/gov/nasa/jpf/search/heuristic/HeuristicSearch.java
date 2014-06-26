@@ -140,6 +140,7 @@ public abstract class HeuristicSearch extends Search {
 
 			} else{	if (!isEndState() && !isIgnoredState()) {//else statement mod
 					boolean isNewState = isNewState();
+					
 					if(searchcounter!=0)isNewState=true;//MOD MOD MOD Works!
 					
 					if (isNewState && depth >= depthLimit) {
@@ -193,9 +194,13 @@ public abstract class HeuristicSearch extends Search {
 	public void search() { // commented out code here is for attempting to loop
 							// a heuristic search on state space
 		for(int i=0;i<5;i++){//mod
-		System.out.println("Run number "+i);//mod
+		
+			System.out.println("Run number "+i);//mod
+		
 		for(int f=0;f<5000;f++)pathTracker.add(0);//MOD populate arraylist
+		
 		if(searchcounter==0)initial=queueCurrentState();//MOD MOD
+		
 		else queueCurrentState();
 		
 		notifyStateStored();
@@ -218,6 +223,7 @@ public abstract class HeuristicSearch extends Search {
 				generateChildren();
 			}
 		}
+	
 		notifySearchFinished();
 		searchcounter++;//mod
 		restoreState(initial);//mod

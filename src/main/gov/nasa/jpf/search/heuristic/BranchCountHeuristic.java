@@ -17,8 +17,6 @@ public class BranchCountHeuristic extends SimplePriorityHeuristic {
 
 	@Override
 	protected int computeHeuristicValue() {
-		if(goo.get(getStateId()+1)==null)
-			return 0;
 		return goo.get(getStateId()+1);
 	}
 

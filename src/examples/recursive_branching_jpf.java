@@ -22,13 +22,12 @@ public class recursive_branching_jpf {
 		}
 		
 		branch_recursive(max_val,depth-1,branch,sum);
-	
 	}
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		int depth = 4;
-		int branch = 4;
+		int depth = 5;
+		int branch = 5;
 		branch_recursive(depth*branch,depth, branch, 0);
 		
 	}

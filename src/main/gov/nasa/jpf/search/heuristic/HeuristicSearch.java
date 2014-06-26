@@ -223,7 +223,6 @@ public abstract class HeuristicSearch extends Search {
 				generateChildren();
 			}
 		}
-	
 		notifySearchFinished();
 		searchcounter++;//mod
 		restoreState(initial);//mod

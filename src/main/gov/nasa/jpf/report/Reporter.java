@@ -24,16 +24,23 @@ import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.JPFListener;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.search.SearchListenerAdapter;
+import gov.nasa.jpf.vm.ClassLoaderInfo;
+import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.VM;
 import gov.nasa.jpf.vm.Path;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.Scanner;
 import java.util.logging.Logger;
 
 /**
@@ -43,6 +50,7 @@ import java.util.logging.Logger;
  */
 
 public class Reporter extends SearchListenerAdapter {
+	
 
 	public static Logger log = JPF.getLogger("report");
 
@@ -56,6 +64,7 @@ public class Reporter extends SearchListenerAdapter {
 	protected List<Publisher> publishers = new ArrayList<Publisher>();
 
 	protected Thread probeTimer;
+	
 
 	public Reporter(Config conf, JPF jpf) {
 		this.conf = conf;
@@ -110,15 +119,135 @@ public class Reporter extends SearchListenerAdapter {
 
 		return timer;
 	}
+	
+	//MOD - Made it easier to use the elapsed time format
+	static char[] tBuf = { '0', '0', ':', '0', '0', ':', '0', '0' };
 
+	static synchronized public String formatHMS(long t) {
+		int h = (int) (t / 3600000);
+		int m = (int) ((t / 60000) % 60);
+		int s = (int) ((t / 1000) % 60);
+
+		tBuf[0] = (char) ('0' + (h / 10));
+		tBuf[1] = (char) ('0' + (h % 10));
+
+		tBuf[3] = (char) ('0' + (m / 10));
+		tBuf[4] = (char) ('0' + (m % 10));
+
+		tBuf[6] = (char) ('0' + (s / 10));
+		tBuf[7] = (char) ('0' + (s % 10));
+
+		return new String(tBuf);
+	}
+
+	
 	/**
 	 * called after the JPF run is finished. Shouldn't be public, but is called
 	 * by JPF
 	 */
-	public void cleanUp() {
+	//MOD - Added prompts and create file 
+	//By default saves in the user home /TestSaves directory
+	//This method usually does nothing
+	public void cleanUp () {
 		// nothing yet
-	}
+		
+		File dir = new File(System.getProperty("user.home") + "/TestSaves/");
+		if (!dir.exists()) {
+			if (dir.mkdir()) {
+				System.out.println("Directory is created!");
+			} else {
+				System.out.println("Failed to create directory!");
+			}
+		}
+		
+		Scanner read = new Scanner(System.in);
+		System.out.println("Please enter the name of the tested application: " );
+		String testAppName = read.next();
+		System.out.println("Please enter the test run number: " );
+		int testNumber = read.nextInt();
+		System.out.println("Please enter the date (MMddyyyy): " );
+		String testDate = read.next();
+		
+		File file = new File(System.getProperty("user.home")  + "/TestSaves/" +testAppName + "_" + testNumber + "_"+ testDate +".txt");
+		
+		try {
+			FileOutputStream fos = new FileOutputStream(file);
+			PrintStream ps = new PrintStream(fos);
+			
+			System.setOut(ps);
+			
+		
+		System.out.println("elapsed time:       "
+				+ formatHMS(getElapsedTime()));
+		System.out.println("states:             new=" + stat.newStates + ",visited="
+				+ stat.visitedStates + ",backtracked=" + stat.backtracked
+				+ ",end=" + stat.endStates);
+		System.out.println("search:             maxDepth=" + stat.maxDepth
+				+ ",constraints=" + stat.constraints);
+		System.out.println("choice generators:  thread=" + stat.threadCGs + " (signal="
+				+ stat.signalCGs + ",lock=" + stat.monitorCGs + ",sharedRef="
+				+ stat.sharedAccessCGs + ",threadApi=" + stat.threadApiCGs
+				+ ",reschedule=" + stat.breakTransitionCGs + "), data="
+				+ stat.dataCGs);
+		System.out.println("heap:               " + "new=" + stat.nNewObjects
+				+ ",released=" + stat.nReleasedObjects + ",maxLive="
+				+ stat.maxLiveObjects + ",gcCycles=" + stat.gcCycles);
+		System.out.println("instructions:       " + stat.insns);
+		System.out.println("max memory:         " + (stat.maxUsed >> 20) + "MB");
 
+		System.out.println("loaded code:        classes="
+				+ ClassLoaderInfo.getNumberOfLoadedClasses() + ",methods="
+				+ MethodInfo.getNumberOfLoadedMethods());
+		
+		
+		read.close();
+		
+		List<Error> errors = getErrors();
+
+		System.out.println(("====================================================== results"));
+
+		if (errors.isEmpty()) {
+			System.out.println("no errors detected");
+		} else {
+			for (Error e : errors) {
+				System.out.print("error #");
+				System.out.print(e.getId());
+				
+				System.out.print(" " + e.getDescription());
+
+				String s = e.getDetails();
+				if (s != null) {
+					s = s.replace('\n', ' ');
+					s = s.replace('\t', ' ');
+					s = s.replace('\r', ' ');
+					System.out.print(" \"");
+					if (s.length() > 50) {
+						s.substring(0, 50);
+						System.out.print("...");
+					} else {
+						System.out.print(s);
+					}
+					System.out.print('"');
+				}
+
+				System.out.print(e.getDetails());
+			}
+		}
+		
+		try {
+			fos.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+			
+	}
+	
 	public Statistics getRegisteredStatistics() {
 
 		if (stat == null) { // none yet, initialize

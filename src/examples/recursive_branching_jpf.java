@@ -27,8 +27,8 @@ public class recursive_branching_jpf {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		int depth = 2;
-		int branch = 2;
+		int depth = 4;
+		int branch = 4;
 		branch_recursive(depth*branch,depth, branch, 0);
 		
 	}

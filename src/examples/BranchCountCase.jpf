@@ -1,3 +1,4 @@
 target = BranchCountCase
 
 search.class = .search.heuristic.BFSHeuristic
+listener=.listener.StateSpaceDot

@@ -83,6 +83,10 @@ public abstract class HeuristicSearch extends Search {
 	public List<HeuristicState> getChildStates() {
 		return childStates;
 	}
+	
+	public ArrayList<Integer> getpathTracker(){//getter for MOD pathTracker...
+		return pathTracker;
+	}
 
 	public void setPathSensitive(boolean isPathSensitive) {
 		this.isPathSensitive = isPathSensitive;
@@ -119,6 +123,7 @@ public abstract class HeuristicSearch extends Search {
 
 			depth++;
 			System.out.println("advance!");
+			
 			notifyStateAdvanced();
 
 			if (currentError != null) {
@@ -188,8 +193,9 @@ public abstract class HeuristicSearch extends Search {
 	public void search() { // commented out code here is for attempting to loop
 							// a heuristic search on state space
 		for(int i=0;i<5;i++){//mod
-		 System.out.println("Run number "+i);//mod
-		if(searchcounter==0)initial=queueCurrentState();
+		System.out.println("Run number "+i);//mod
+		for(int f=0;i<5000;i++)pathTracker.add(0);//MOD populate arraylist
+		if(searchcounter==0)initial=queueCurrentState();//MOD MOD
 		else queueCurrentState();
 		
 		notifyStateStored();
@@ -197,15 +203,18 @@ public abstract class HeuristicSearch extends Search {
 		// kind of stupid, but we need to get it out of the queue, and we
 		// don't have to restore it since it's the first one
 		parentState = getNextQueuedState();
-
 		done = false;
 		notifySearchStarted();
 		if (!hasPropertyTermination()) {
 			generateChildren();
-
-			while (!done && (parentState = getNextQueuedState()) != null) {//not hit on subsequent search loops
+			
+		
+			
+			while (!done && (parentState = getNextQueuedState()) != null) {
+				
+				pathTracker.set(parentState.getStateId()+1, pathTracker.get(parentState.getStateId()+1)+1);//MOD:here we increment the branch count
+				
 				restoreState(parentState);
-
 				generateChildren();
 			}
 		}

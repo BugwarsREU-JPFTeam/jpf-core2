@@ -41,7 +41,7 @@ public abstract class HeuristicSearch extends Search {
 	protected HeuristicState parentState;
 	protected List<HeuristicState> childStates;
 	protected HeuristicState initial;
-
+	protected ArrayList<Integer> pathTracker;
 	protected boolean isPathSensitive = false;
 
 	/*

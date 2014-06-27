@@ -151,7 +151,7 @@ public class Reporter extends SearchListenerAdapter {
 	public void cleanUp () {
 		// nothing yet
 		
-		File dir = new File(System.getProperty("user.home") + "/TestSaves/");
+	/*	File dir = new File(System.getProperty("user.home") + "/TestSaves/");
 		if (!dir.exists()) {
 			if (dir.mkdir()) {
 				System.out.println("Directory is created!");
@@ -162,7 +162,7 @@ public class Reporter extends SearchListenerAdapter {
 		
 		Scanner read = new Scanner(System.in);
 		System.out.println("Please enter the name of the tested application: " );
-		String testAppName = read.next();
+		String testAppName = read.nextLine();
 		System.out.println("Please enter the test run number: " );
 		int testNumber = read.nextInt();
 		System.out.println("Please enter the date (MMddyyyy): " );
@@ -245,7 +245,7 @@ public class Reporter extends SearchListenerAdapter {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-			
+	*/		
 	}
 	
 	public Statistics getRegisteredStatistics() {

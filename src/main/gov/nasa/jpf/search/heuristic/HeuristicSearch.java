@@ -217,8 +217,9 @@ public abstract class HeuristicSearch extends Search {
 		
 			
 			while (!done && (parentState = getNextQueuedState()) != null) {
-				//Instruction goo = this.vm.getInstruction();//MOD
-				//System.out.println(goo.getByteCode());//MOD:only getting high level bytecode
+				Instruction goo = this.vm.getInstruction();//MOD
+				System.out.println(goo.toString());//this gives me the verify.random lol can't go deeper getting null pointers
+				System.out.println(goo.getByteCode());//MOD:only getting high level bytecode
 				pathTracker.set(parentState.getStateId()+1, pathTracker.get(parentState.getStateId()+1)+1);//MOD:here we increment the branch count
 				
 				restoreState(parentState);

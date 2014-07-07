@@ -266,7 +266,8 @@ public abstract class HeuristicSearch extends Search {
 	}
 
 	@Override
-	public boolean supportsBacktrack() {
+	public boolean supportsBacktrack() {//test comment
+		
 		// we don't do multi-level backtracks, but automatically do
 		// backtrackToParent()
 		// after each child state generation

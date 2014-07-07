@@ -199,7 +199,7 @@ public abstract class HeuristicSearch extends Search {
 			System.out.println("Run number "+i);//mod
 		
 		for(int f=0;f<5000;f++)pathTracker.add(0);//MOD populate arraylist
-		
+		//make sure can still use branch...
 		if(searchcounter==0)initial=queueCurrentState();//MOD MOD
 		
 		else queueCurrentState();

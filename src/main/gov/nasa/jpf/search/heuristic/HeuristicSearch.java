@@ -22,7 +22,6 @@ package gov.nasa.jpf.search.heuristic;
 
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.search.Search;
-import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.VM;
 
 import java.util.ArrayList;
@@ -42,8 +41,12 @@ public abstract class HeuristicSearch extends Search {
 	protected HeuristicState parentState;
 	protected List<HeuristicState> childStates;
 	protected HeuristicState initial;
-	protected ArrayList<Integer> pathTracker=new ArrayList<Integer>();
+	protected ArrayList<Integer> pathTracker=new ArrayList<Integer>();//MOD:used to keep track of branch counts
 	protected boolean isPathSensitive = false;
+	protected boolean errorfound = false;//MOD: was an error found?
+	protected boolean readytorestart=false;//MOD: are we ready to restart search?
+	protected ArrayList<CustomPathVar> paths=new ArrayList<CustomPathVar>();//MOD: list of paths encountered
+	protected ArrayList<Integer> currentpath=new ArrayList<Integer>();//MOD:the current path in search run
 
 	/*
 	 * do we use A* adaptation of state priorities, i.e. have a distance + cost
@@ -73,6 +76,7 @@ public abstract class HeuristicSearch extends Search {
 	// implementors can also reset or modify the queue
 	protected abstract HeuristicState getNextQueuedState();
 
+	public abstract void resetQueue();//MOD METHOD
 	public abstract int getQueueSize();
 
 	public abstract boolean isQueueLimitReached();
@@ -128,6 +132,7 @@ public abstract class HeuristicSearch extends Search {
 			notifyStateAdvanced();
 
 			if (currentError != null) {
+				errorfound=true;//mod
 				notifyPropertyViolated();
 				if (hasPropertyTermination()) {
 					return false;
@@ -170,14 +175,34 @@ public abstract class HeuristicSearch extends Search {
 						}// add breakpoint here
 					}
 
-				} else {
+				} else if(isEndState()) {//MOD
+					CustomPathVar goo=new CustomPathVar(deepcopy(currentpath));
+					boolean isunique=true;
+					//here check diff
+					if(paths.size()==0)isunique=true;
+					else{
+					for(int y=0;y<paths.size();y++){
+					if(!goo.isDiff(paths.get(y))) isunique=false;
+					}
+					}
+					if(!isunique){//we will keep searching if seen before....THIS IS THE PROBLEM AREA
+						currentpath.remove(currentpath.size()-1);//this does not work once hitting ids on lower depths....question is how do i make sure I have a new path for this just dequeued id that could be anywhere!?
+						System.out.println("seen before...");
+						return false;
+					}
+					else{
+					paths.add(goo);//MOD:adding path to list
+					System.out.println("added path to list");
+					done=true;//MOD
+					readytorestart=true;//MOD
+					return false;//MOD
 					// end state or ignored transition
-				}
+					}
+					}
 			}
 			System.out.println("backtrack!");
 			backtrackToParent();
 		}
-
 		return false;
 	}
 
@@ -194,11 +219,9 @@ public abstract class HeuristicSearch extends Search {
 	@Override
 	public void search() { // commented out code here is for attempting to loop
 							// a heuristic search on state space
-		for(int i=0;i<5;i++){//mod
-		
-			System.out.println("Run number "+i);//mod
-		
-		for(int f=0;f<5000;f++)pathTracker.add(0);//MOD populate arraylist
+		if(searchcounter==0){//mod
+			for(int f=0;f<5000;f++)pathTracker.add(0);//MOD populate arraylist
+		}//mod
 		
 		if(searchcounter==0)initial=queueCurrentState();//MOD MOD
 		
@@ -217,19 +240,29 @@ public abstract class HeuristicSearch extends Search {
 		
 			
 			while (!done && (parentState = getNextQueuedState()) != null) {
-				Instruction goo = this.vm.getInstruction();//MOD
-				System.out.println(goo.toString());//this gives me the verify.random lol can't go deeper getting null pointers
-				System.out.println(goo.getByteCode());//MOD:only getting high level bytecode
-				pathTracker.set(parentState.getStateId()+1, pathTracker.get(parentState.getStateId()+1)+1);//MOD:here we increment the branch count
-				
+				currentpath.add(parentState.getStateId());//MOD
+				System.out.println("added state "+parentState.stateId+" to current path");//MOD
 				restoreState(parentState);
 				generateChildren();
-			}
+				}
+				
 		}
-		notifySearchFinished();
-		searchcounter++;//mod
-		restoreState(initial);//mod
-		 }//mod
+		if(errorfound){//MOD IF
+			notifySearchFinished();
+			terminate();//will this end it?....yes!
+		}
+		else if(readytorestart){//MOD
+			depth=0;//MOD
+			searchcounter++;
+			for(int y=0;y<currentpath.size();y++){
+				pathTracker.set(currentpath.get(y)+1, pathTracker.get(currentpath.get(y)+1)+1);//MOD:here we increment the branch count
+			}
+			currentpath.clear();//make sure you have loaded the current path into path list b4 this!
+			resetQueue();
+			restoreState(initial);
+			search();
+		}//END MOD
+	
 	}
 
 	@Override
@@ -238,5 +271,13 @@ public abstract class HeuristicSearch extends Search {
 		// backtrackToParent()
 		// after each child state generation
 		return false;
+	}
+	
+	public ArrayList<Integer> deepcopy(ArrayList<Integer> list){
+		ArrayList<Integer> newlist=new ArrayList<Integer>();
+		for(int i=0;i<list.size();i++){
+			newlist.add(list.get(i));
+		}
+		return newlist;
 	}
 }

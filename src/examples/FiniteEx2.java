@@ -20,6 +20,8 @@ public class FiniteEx2 {
 			System.out.println("x,y,j:" + x + "," + y + "," + j);
 		}
 		System.out.println("------------");
+		x=0;
+		y=0;
 	}
 
 }

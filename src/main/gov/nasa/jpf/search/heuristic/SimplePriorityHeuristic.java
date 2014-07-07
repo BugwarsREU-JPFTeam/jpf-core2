@@ -77,7 +77,10 @@ public abstract class SimplePriorityHeuristic extends HeuristicSearch {
 
 		return hState;
 	}
-
+	
+	public void resetQueue(){//THIS METHOD IS MOD!
+		queue.clear();
+	}
 	@Override
 	protected HeuristicState getNextQueuedState() {
 

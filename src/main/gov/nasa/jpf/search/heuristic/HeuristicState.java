@@ -29,10 +29,12 @@ public abstract class HeuristicState {
 
 	protected RestorableVMState vmState;
 	protected int stateId;
+	protected int depth;//mod
 
 	public HeuristicState(VM vm) {
 		stateId = vm.getStateId();
 		vmState = vm.getRestorableState();
+		depth = vm.getSearch().getDepth();//mod
 	}
 
 	public RestorableVMState getVMState() {
@@ -41,5 +43,8 @@ public abstract class HeuristicState {
 
 	public int getStateId() {
 		return stateId;
+	}
+	public int getDepth(){//mod getter
+		return depth;
 	}
 }

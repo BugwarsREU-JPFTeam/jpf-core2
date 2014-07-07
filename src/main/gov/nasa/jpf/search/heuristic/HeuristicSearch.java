@@ -47,6 +47,7 @@ public abstract class HeuristicSearch extends Search {
 	protected boolean readytorestart=false;//MOD: are we ready to restart search?
 	protected ArrayList<CustomPathVar> paths=new ArrayList<CustomPathVar>();//MOD: list of paths encountered
 	protected ArrayList<Integer> currentpath=new ArrayList<Integer>();//MOD:the current path in search run
+	protected boolean repeat=false;
 
 	/*
 	 * do we use A* adaptation of state priorities, i.e. have a distance + cost
@@ -116,7 +117,7 @@ public abstract class HeuristicSearch extends Search {
 	 */
 	protected boolean generateChildren() {
 		System.out.println("Hash of parent is " + parentState.hashCode()
-				+ " and id is " + parentState.stateId);
+				+ " and id is " + parentState.stateId + " and depth is "+parentState.getDepth());
 		childStates = new ArrayList<HeuristicState>();
 
 		while (!done) {
@@ -169,7 +170,7 @@ public abstract class HeuristicSearch extends Search {
 						if (newHState != null) {
 							System.out.println("child made! Hash code is "
 									+ newHState.hashCode() + " and ID is "
-									+ newHState.stateId);
+									+ newHState.stateId+" and depth is "+newHState.getDepth());
 							childStates.add(newHState); // add breakpoint here
 							notifyStateStored();
 						}// add breakpoint here
@@ -186,7 +187,8 @@ public abstract class HeuristicSearch extends Search {
 					}
 					}
 					if(!isunique){//we will keep searching if seen before....THIS IS THE PROBLEM AREA
-						currentpath.remove(currentpath.size()-1);//this does not work once hitting ids on lower depths....question is how do i make sure I have a new path for this just dequeued id that could be anywhere!?
+						//currentpath.remove(currentpath.size()-1);//this does not work once hitting ids on lower depths....question is how do i make sure I have a new path for this just dequeued id that could be anywhere!?
+						repeat=true;//mod trying this
 						System.out.println("seen before...");
 						return false;
 					}
@@ -240,16 +242,31 @@ public abstract class HeuristicSearch extends Search {
 		
 			
 			while (!done && (parentState = getNextQueuedState()) != null) {
+				if(!repeat){//mod trying this
 				currentpath.add(parentState.getStateId());//MOD
 				System.out.println("added state "+parentState.stateId+" to current path");//MOD
 				restoreState(parentState);
 				generateChildren();
+				}
+				else{//mod trying this
+					while(currentpath.size()!=parentState.getDepth()-1){
+						currentpath.remove(currentpath.size()-1);
+					}
+					currentpath.add(parentState.getStateId());
+					depth=parentState.getDepth();
+					restoreState(parentState);
+					generateChildren();
+				}//end mod trying this
 				}
 				
 		}
 		if(errorfound){//MOD IF
 			notifySearchFinished();
 			terminate();//will this end it?....yes!
+		}
+		else if(getQueueSize()==0){
+			notifySearchFinished();
+			terminate();
 		}
 		else if(readytorestart){//MOD
 			depth=0;//MOD

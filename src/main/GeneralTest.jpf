@@ -1,3 +1,2 @@
-target=FiniteEx3
-
+target=BoundedBuffer
 search.class=.search.heuristic.BranchCountHeuristic

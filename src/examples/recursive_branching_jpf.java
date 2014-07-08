@@ -12,7 +12,7 @@ public class recursive_branching_jpf {
 			return;
 		}
 		
-		int rand_val= Verify.random(branch);
+		int rand_val= Verify.random(branch-1);
 		System.out.println("Value obtained is " + rand_val);
 		sum += rand_val;
 		
@@ -26,9 +26,10 @@ public class recursive_branching_jpf {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		int depth = 5;
-		int branch = 5;
-		branch_recursive(depth*branch,depth, branch, 0);
+		int depth = 3;
+		int branch = 2;
+		int max_val = (depth)*(branch-1);
+		branch_recursive(max_val,depth, branch, 0);
 		
 	}
 

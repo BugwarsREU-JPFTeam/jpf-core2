@@ -1,0 +1,4 @@
+target = FiniteEx2
+search.class = .search.heuristic.BFSHeuristic
+listener=.listener.PathOutputMonitor
+listener=.listener.StateSpaceDot

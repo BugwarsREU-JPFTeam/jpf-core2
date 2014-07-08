@@ -47,7 +47,7 @@ public class ProgramMaker {
 	}
 
 	public static void main(String[] args) {
-		int x = Verify.random(50);
+		int x = 5;
 
 		// the parameter ranges from 0-300 inclusive
 		gameplay(x);

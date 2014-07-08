@@ -1,4 +1,3 @@
-target = recursive_branching_jpf
+target = branching_prog
 search.class = .search.heuristic.BFSHeuristic
-listener = .listener.CoverageAnalyzer
 listener = .listener.StateSpaceDot

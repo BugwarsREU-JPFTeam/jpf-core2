@@ -22,7 +22,6 @@ package gov.nasa.jpf.search.heuristic;
 
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.search.Search;
-import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.VM;
 
 import java.util.ArrayList;
@@ -139,10 +138,8 @@ public abstract class HeuristicSearch extends Search {
 				// probably
 				// what we want for search.multiple_errors.
 
-			} else{	if (!isEndState() && !isIgnoredState()) {//else statement mod
+			} {	if (!isEndState() && !isIgnoredState()) {
 					boolean isNewState = isNewState();
-					
-					if(searchcounter!=0)isNewState=true;//MOD MOD MOD Works!
 					
 					if (isNewState && depth >= depthLimit) {
 						// we can't do this before we actually generated the VM
@@ -194,15 +191,9 @@ public abstract class HeuristicSearch extends Search {
 	@Override
 	public void search() { // commented out code here is for attempting to loop
 							// a heuristic search on state space
-		for(int i=0;i<5;i++){//mod
 		
-			System.out.println("Run number "+i);//mod
 		
-		for(int f=0;f<5000;f++)pathTracker.add(0);//MOD populate arraylist
-		
-		if(searchcounter==0)initial=queueCurrentState();//MOD MOD
-		
-		else queueCurrentState();
+		queueCurrentState();
 		
 		notifyStateStored();
 
@@ -217,19 +208,11 @@ public abstract class HeuristicSearch extends Search {
 		
 			
 			while (!done && (parentState = getNextQueuedState()) != null) {
-				Instruction goo = this.vm.getInstruction();//MOD
-				System.out.println(goo.toString());//this gives me the verify.random lol can't go deeper getting null pointers
-				System.out.println(goo.getByteCode());//MOD:only getting high level bytecode
-				pathTracker.set(parentState.getStateId()+1, pathTracker.get(parentState.getStateId()+1)+1);//MOD:here we increment the branch count
-				
 				restoreState(parentState);
 				generateChildren();
 			}
 		}
 		notifySearchFinished();
-		searchcounter++;//mod
-		restoreState(initial);//mod
-		 }//mod
 	}
 
 	@Override

@@ -1,2 +1,2 @@
-target=BoundedBuffer
+target=endStateTest
 search.class=.search.heuristic.BranchCountHeuristic

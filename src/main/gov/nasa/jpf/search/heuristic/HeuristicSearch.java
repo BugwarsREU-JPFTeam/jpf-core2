@@ -48,7 +48,7 @@ public abstract class HeuristicSearch extends Search {
 	protected ArrayList<CustomPathVar> paths=new ArrayList<CustomPathVar>();//MOD: list of paths encountered
 	protected ArrayList<Integer> currentpath=new ArrayList<Integer>();//MOD:the current path in search run
 	protected boolean repeat=false;
-
+	protected int endrun=0;
 	/*
 	 * do we use A* adaptation of state priorities, i.e. have a distance + cost
 	 * heuristic (in this context, we just use the path length as the
@@ -177,6 +177,8 @@ public abstract class HeuristicSearch extends Search {
 					}
 
 				} else if(isEndState()) {//MOD
+					endrun++;//mod
+					if(endrun>2){//mod if
 					CustomPathVar goo=new CustomPathVar(deepcopy(currentpath));
 					boolean isunique=true;
 					//here check diff
@@ -200,7 +202,7 @@ public abstract class HeuristicSearch extends Search {
 					return false;//MOD
 					// end state or ignored transition
 					}
-					}
+					}}//mod end if
 			}
 			System.out.println("backtrack!");
 			backtrackToParent();

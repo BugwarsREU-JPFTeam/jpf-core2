@@ -1,2 +1,2 @@
-target=BoundedBuffer
+target=branching_prog
 search.class=.search.heuristic.BranchCountHeuristic

@@ -31,6 +31,7 @@ import gov.nasa.jpf.util.RunRegistry;
 import gov.nasa.jpf.vm.VM;
 import gov.nasa.jpf.vm.NoOutOfMemoryErrorProperty;
 import gov.nasa.jpf.vm.VMListener;
+//import gov.nasa.jpf.Chart;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -114,7 +115,7 @@ public class JPF implements Runnable {
 
 	/** the report generator */
 	Reporter reporter;
-
+	
 	Status status = Status.NEW;
 
 	/**
@@ -687,6 +688,8 @@ public class JPF implements Runnable {
 				config.jpfRunTerminated();
 				cleanUp();
 			}
+			//generates the faults over time chart
+			//Chart chart = new Chart();
 		}
 	}
 

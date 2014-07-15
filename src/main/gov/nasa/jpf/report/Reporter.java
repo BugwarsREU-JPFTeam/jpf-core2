@@ -29,6 +29,8 @@ import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.VM;
 import gov.nasa.jpf.vm.Path;
 
+import org.apache.commons.io.*;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -65,7 +67,9 @@ public class Reporter extends SearchListenerAdapter {
 
 	protected Thread probeTimer;
 	
-
+	static int count;
+	static int countF;
+	
 	public Reporter(Config conf, JPF jpf) {
 		this.conf = conf;
 		this.jpf = jpf;
@@ -151,101 +155,259 @@ public class Reporter extends SearchListenerAdapter {
 	public void cleanUp () {
 		// nothing yet
 		
-	/*	File dir = new File(System.getProperty("user.home") + "/TestSaves/");
-		if (!dir.exists()) {
-			if (dir.mkdir()) {
-				System.out.println("Directory is created!");
-			} else {
-				System.out.println("Failed to create directory!");
-			}
-		}
+//		File dir = new File(System.getProperty("user.home") + "/TestTime/");
+//		if (!dir.exists()) {
+//			if (dir.mkdir()) {
+//				System.out.println("Directory is created!");
+//			} else {
+//				System.out.println("Failed to create directory!");
+//			}
+//		}
+//		try {
+//		File finalBFS = new File(System.getProperty("user.home") + "/TestTime/" + "BFSfinal_result.txt");
+//		if (!finalBFS.exists()) {
+//			finalBFS.createNewFile();
+//			FileOutputStream fos = new FileOutputStream(finalBFS);
+//			PrintStream ps = new PrintStream(fos);	
+//			System.setOut(ps);
+//			System.out.println(0);
+//		}
+//		File finalBFSD = new File(System.getProperty("user.home") + "/TestTime/" + "BFSfinal_Depth.txt");
+//		if (!finalBFSD.exists()) {
+//			finalBFSD.createNewFile();
+//			FileOutputStream fos = new FileOutputStream(finalBFSD);
+//			PrintStream ps = new PrintStream(fos);	
+//			System.setOut(ps);
+//			System.out.println(0);
+//		}
+//		File finalDFS = new File(System.getProperty("user.home") + "/TestTime/" + "DFSfinal_result.txt");
+//		if (!finalDFS.exists()) {
+//			finalDFS.createNewFile();
+//			FileOutputStream fos = new FileOutputStream(finalDFS);
+//			PrintStream ps = new PrintStream(fos);	
+//			System.setOut(ps);
+//			System.out.println(0);
+//		}
+//		File finalDFSD = new File(System.getProperty("user.home") + "/TestTime/" + "DFSfinal_Depth.txt");
+//		if (!finalDFSD.exists()) {
+//			finalDFSD.createNewFile();
+//			FileOutputStream fos = new FileOutputStream(finalDFSD);
+//			PrintStream ps = new PrintStream(fos);	
+//			System.setOut(ps);
+//			System.out.println(0);
+//		}
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		
+//		count=1;
+//		countF = 1;
+//		String search = jpf.getSearch().toString();
+//		List<Error> errors = getErrors();
+//		
+//		if(search.contains("gov.nasa.jpf.search.heuristic.BFSHeuristic")){
+//			File file2 = new File(System.getProperty("user.home")  + "/TestTime/" + "BFSLog" + count +".txt");
+//			File file4 = new File(System.getProperty("user.home")  + "/TestTime/" + "BFSDepth" + count +".txt");
+//			
+//			while(file2.exists()){
+//				count++;
+//				file2 = new File(System.getProperty("user.home")  + "/TestTime/" + "BFSLog" + count +".txt");
+//				file4 = new File(System.getProperty("user.home")  + "/TestTime/" + "BFSDepth" + count +".txt");
+//			}	
+//			
+//			try {
+//				FileOutputStream fos = new FileOutputStream(file2);
+//				PrintStream ps = new PrintStream(fos);
+//				
+//				System.setOut(ps);
+//				
+//					if (!errors.isEmpty()) {
+//						System.out.println((getElapsedTime()));
+//					}
+//					if (errors.isEmpty()) {
+//						int n = 0;
+//						System.out.print(n);
+//					}
+//			
+//			try {
+//				fos.close();
+//			} catch (IOException e) {
+//				
+//				e.printStackTrace();
+//			}
+//			
+//			} catch (FileNotFoundException e) {
+//				
+//				e.printStackTrace();
+//			}
+//			
+//			
+//			try {
+//				
+//				FileOutputStream fos;
+//				fos = new FileOutputStream(file4);
+//				PrintStream ps = new PrintStream(fos);
+//				System.setOut(ps);
+//				
+//				if (!errors.isEmpty()) {
+//					System.out.println(stat.maxDepth);
+//				}
+//				if (errors.isEmpty()) {
+//					int n = 0;
+//					System.out.print(n);
+//				}
+//				
+//				
+//			} catch (FileNotFoundException e1) {
+//				// TODO Auto-generated catch block
+//				e1.printStackTrace();
+//			}
+//			
+//			
+//			
+//			
+//			
+//			// read the file as string
+//			try {
+//				
+//				// files to read
+//				File file = new File(System.getProperty("user.home")  + "/TestTime/" + "BFSLog"+ countF +".txt");
+//				File file3 = new File(System.getProperty("user.home")  + "/TestTime/" + "BFSDepth"+ countF +".txt");
+//				// file to write
+//				File catFile = new File(System.getProperty("user.home")  + "/TestTime/" + "BFSfinal_result.txt");
+//				File catFile3 = new File(System.getProperty("user.home")  + "/TestTime/" + "BFSfinal_Depth.txt"); 
+//				
+//				String fileStr = FileUtils.readFileToString(file);
+//				String fileStr3 = FileUtils.readFileToString(file3);
+//				
+//				FileUtils.write(catFile, fileStr);
+//				FileUtils.write(catFile3, fileStr3);
+//				
+//				while(file.exists()){
+//					
+//					countF++;
+//					file = new File(System.getProperty("user.home")  + "/TestTime/" + "BFSLog" + countF +".txt");
+//					file3 = new File(System.getProperty("user.home")  + "/TestTime/" + "BFSDepth" + countF +".txt");
+//					
+//					if(!file.exists()){	
+//						break;
+//					}
+//					fileStr = FileUtils.readFileToString(file);
+//					fileStr3 = FileUtils.readFileToString(file3);
+//					
+//					FileUtils.write(catFile, fileStr, true);
+//					FileUtils.write(catFile3, fileStr3, true);
+//					
+//				}
+//
+//			} catch (IOException e) {
+//				System.err.println("An IOException was caught!");
+//				e.printStackTrace();
+//			}
+//		}
+//		
+//		if(search.contains("gov.nasa.jpf.search.heuristic.DFSHeuristic")){
+//			File file2 = new File(System.getProperty("user.home")  + "/TestTime/" + "DFSLog" + count +".txt");
+//			File file4 = new File(System.getProperty("user.home")  + "/TestTime/" + "DFSDepth" + count +".txt");
+//			
+//			while(file2.exists()){
+//				count++;
+//				file2 = new File(System.getProperty("user.home")  + "/TestTime/" + "DFSLog" + count +".txt");
+//				file4 = new File(System.getProperty("user.home")  + "/TestTime/" + "DFSDepth" + count +".txt");
+//			}	
+//			
+//			try {
+//				FileOutputStream fos = new FileOutputStream(file2);
+//				PrintStream ps = new PrintStream(fos);
+//				
+//				System.setOut(ps);
+//				
+//					if (!errors.isEmpty()) {
+//						System.out.println((getElapsedTime()));
+//					}
+//					if (errors.isEmpty()) {
+//						int n = 0;
+//						System.out.print(n);
+//					}
+//			
+//			try {
+//				fos.close();
+//			} catch (IOException e) {
+//				
+//				e.printStackTrace();
+//			}
+//			
+//			} catch (FileNotFoundException e) {
+//				
+//				e.printStackTrace();
+//			}
+//			
+//			
+//			try {
+//				
+//				FileOutputStream fos;
+//				fos = new FileOutputStream(file4);
+//				PrintStream ps = new PrintStream(fos);
+//				System.setOut(ps);
+//				
+//				if (!errors.isEmpty()) {
+//					System.out.println(stat.maxDepth);
+//				}
+//				if (errors.isEmpty()) {
+//					int n = 0;
+//					System.out.print(n);
+//				}
+//				
+//				
+//			} catch (FileNotFoundException e1) {
+//				// TODO Auto-generated catch block
+//				e1.printStackTrace();
+//			}
+//			
+//			
+//			
+//			
+//			
+//			// read the file as string
+//			try {
+//				
+//				// files to read
+//				File file = new File(System.getProperty("user.home")  + "/TestTime/" + "DFSLog"+ countF +".txt");
+//				File file3 = new File(System.getProperty("user.home")  + "/TestTime/" + "DFSDepth"+ countF +".txt");
+//				// file to write
+//				File catFile = new File(System.getProperty("user.home")  + "/TestTime/" + "DFSfinal_result.txt");
+//				File catFile3 = new File(System.getProperty("user.home")  + "/TestTime/" + "DFSfinal_Depth.txt"); 
+//				
+//				String fileStr = FileUtils.readFileToString(file);
+//				String fileStr3 = FileUtils.readFileToString(file3);
+//				
+//				FileUtils.write(catFile, fileStr);
+//				FileUtils.write(catFile3, fileStr3);
+//				
+//				while(file.exists()){
+//					
+//					countF++;
+//					file = new File(System.getProperty("user.home")  + "/TestTime/" + "DFSLog" + countF +".txt");
+//					file3 = new File(System.getProperty("user.home")  + "/TestTime/" + "DFSDepth" + countF +".txt");
+//					
+//					if(!file.exists()){	
+//						break;
+//					}
+//					fileStr = FileUtils.readFileToString(file);
+//					fileStr3 = FileUtils.readFileToString(file3);
+//					
+//					FileUtils.write(catFile, fileStr, true);
+//					FileUtils.write(catFile3, fileStr3, true);
+//					
+//				}
+//
+//			} catch (IOException e) {
+//				System.err.println("An IOException was caught!");
+//				e.printStackTrace();
+//			}
+//		}
 		
-		Scanner read = new Scanner(System.in);
-		System.out.println("Please enter the name of the tested application: " );
-		String testAppName = read.nextLine();
-		System.out.println("Please enter the test run number: " );
-		int testNumber = read.nextInt();
-		System.out.println("Please enter the date (MMddyyyy): " );
-		String testDate = read.next();
-		
-		File file = new File(System.getProperty("user.home")  + "/TestSaves/" +testAppName + "_" + testNumber + "_"+ testDate +".txt");
-		
-		try {
-			FileOutputStream fos = new FileOutputStream(file);
-			PrintStream ps = new PrintStream(fos);
-			
-			System.setOut(ps);
-			
-		
-		System.out.println("elapsed time:       "
-				+ formatHMS(getElapsedTime()));
-		System.out.println("states:             new=" + stat.newStates + ",visited="
-				+ stat.visitedStates + ",backtracked=" + stat.backtracked
-				+ ",end=" + stat.endStates);
-		System.out.println("search:             maxDepth=" + stat.maxDepth
-				+ ",constraints=" + stat.constraints);
-		System.out.println("choice generators:  thread=" + stat.threadCGs + " (signal="
-				+ stat.signalCGs + ",lock=" + stat.monitorCGs + ",sharedRef="
-				+ stat.sharedAccessCGs + ",threadApi=" + stat.threadApiCGs
-				+ ",reschedule=" + stat.breakTransitionCGs + "), data="
-				+ stat.dataCGs);
-		System.out.println("heap:               " + "new=" + stat.nNewObjects
-				+ ",released=" + stat.nReleasedObjects + ",maxLive="
-				+ stat.maxLiveObjects + ",gcCycles=" + stat.gcCycles);
-		System.out.println("instructions:       " + stat.insns);
-		System.out.println("max memory:         " + (stat.maxUsed >> 20) + "MB");
-
-		System.out.println("loaded code:        classes="
-				+ ClassLoaderInfo.getNumberOfLoadedClasses() + ",methods="
-				+ MethodInfo.getNumberOfLoadedMethods());
-		
-		
-		read.close();
-		
-		List<Error> errors = getErrors();
-
-		System.out.println(("====================================================== results"));
-
-		if (errors.isEmpty()) {
-			System.out.println("no errors detected");
-		} else {
-			for (Error e : errors) {
-				System.out.print("error #");
-				System.out.print(e.getId());
-				
-				System.out.print(" " + e.getDescription());
-
-				String s = e.getDetails();
-				if (s != null) {
-					s = s.replace('\n', ' ');
-					s = s.replace('\t', ' ');
-					s = s.replace('\r', ' ');
-					System.out.print(" \"");
-					if (s.length() > 50) {
-						s.substring(0, 50);
-						System.out.print("...");
-					} else {
-						System.out.print(s);
-					}
-					System.out.print('"');
-				}
-
-				System.out.print(e.getDetails());
-			}
-		}
-		
-		try {
-			fos.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	*/		
 	}
 	
 	public Statistics getRegisteredStatistics() {

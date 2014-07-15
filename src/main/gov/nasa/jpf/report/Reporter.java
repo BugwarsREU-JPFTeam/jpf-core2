@@ -29,20 +29,18 @@ import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.VM;
 import gov.nasa.jpf.vm.Path;
 
-import org.apache.commons.io.*;
+//import org.apache.commons.io.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-import java.util.Scanner;
 import java.util.logging.Logger;
 
 /**

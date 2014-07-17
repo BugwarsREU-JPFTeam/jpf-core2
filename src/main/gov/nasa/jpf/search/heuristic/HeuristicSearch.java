@@ -20,12 +20,15 @@
 //
 package gov.nasa.jpf.search.heuristic;
 
+import edu.unt.cs.coverage.CoveringArrayTuplesRankingArray;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.vm.VM;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * a search strategy class that computes all immediate successors of a given
@@ -49,6 +52,12 @@ public abstract class HeuristicSearch extends Search {
 	protected ArrayList<Integer> currentpath=new ArrayList<Integer>();//MOD:the current path in search run
 	protected boolean repeat=false;
 	protected int endrun=0;
+	protected Map<Integer,Integer> manual=new HashMap<Integer,Integer>();//Emod map
+	protected int[]factors=new int[4];//Emod for manual exploration
+	protected int[]names=new int[4];//Emod name list for manual exploration
+	protected CoveringArrayTuplesRankingArray strength2;//EMOD
+	protected String[]namesstrings=new String[4];
+	
 	/*
 	 * do we use A* adaptation of state priorities, i.e. have a distance + cost
 	 * heuristic (in this context, we just use the path length as the
@@ -85,6 +94,9 @@ public abstract class HeuristicSearch extends Search {
 	public HeuristicState getParentState() {
 		return parentState;
 	}
+	public ArrayList<Integer> getcurrentpath(){//getter for MOD currentpath
+		return currentpath;
+	}
 
 	public List<HeuristicState> getChildStates() {
 		return childStates;
@@ -93,7 +105,9 @@ public abstract class HeuristicSearch extends Search {
 	public ArrayList<Integer> getpathTracker(){//getter for MOD pathTracker...
 		return pathTracker;
 	}
-
+	public CoveringArrayTuplesRankingArray getStrength2(){// getter for EMOD strength2...
+		return strength2;
+	}
 	public void setPathSensitive(boolean isPathSensitive) {
 		this.isPathSensitive = isPathSensitive;
 	}
@@ -197,6 +211,8 @@ public abstract class HeuristicSearch extends Search {
 					else{
 					paths.add(goo);//MOD:adding path to list
 					System.out.println("added path to list");
+					int[] stuff=loadable(goo);//start EMOD
+					strength2.updateTupleCoverage(stuff);//end EMOD
 					done=true;//MOD
 					readytorestart=true;//MOD
 					return false;//MOD
@@ -225,6 +241,10 @@ public abstract class HeuristicSearch extends Search {
 							// a heuristic search on state space
 		if(searchcounter==0){//mod
 			for(int f=0;f<5000;f++)pathTracker.add(0);//MOD populate arraylist
+			makeMap();//start EMOD
+			makeFactors();
+			makeNames();
+			strength2=new CoveringArrayTuplesRankingArray(2, manual, namesstrings, factors);
 		}//mod
 		
 		if(searchcounter==0)initial=queueCurrentState();//MOD MOD
@@ -300,4 +320,38 @@ public abstract class HeuristicSearch extends Search {
 		}
 		return newlist;
 	}
+
+public void makeMap(){//EMOD METHOD TO POPULATE MAP
+		manual.put(4, 3);
+	}
+public void makeFactors(){//EMOD METHOD TO POPULATE FACTORS
+	for (int i=0;i<factors.length;i++){
+		factors[i]=3;
+	}
 }
+public void makeNames(){//EMOD METHOD TO POPULATE NAMES
+	for(int i=0;i<names.length;i++){
+		names[i]=i;
+	}
+}
+public void makeStringNames(){//EMOD Method to populate NamesStrings to satisfy coveringarraytuplesrankingarray object....
+	for(int i=0;i<namesstrings.length;i++){
+		namesstrings[i]="State "+i;
+	}
+}
+
+public int[] loadable(CustomPathVar x){//EMOD METHOD TO MAKE LOADABLE ARRAY
+	int[] path =new int[names.length];//will return path
+	for(int i=0;i<names.length;i++){
+		int ind=x.binaryfindindex(names[i]);
+		if(ind!=-1){//if it is there
+			path[i]=x.getIDs().get(ind+1);
+		}
+		else path[i]=-1;
+	}
+	return path;
+}
+
+}
+
+	

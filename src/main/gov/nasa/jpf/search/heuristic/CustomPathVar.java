@@ -27,6 +27,20 @@ public ArrayList<Integer> getIDs() {
 	return IDs;
 }
 
-
-
+public int binaryfindindex(int x){//will work since path will always be in ascending order....
+int lo=0;
+int hi=IDs.size()-1;
+while(hi>=lo){
+	int mid= (hi+lo)/2;
+	if(IDs.get(mid)==x) return mid;
+	
+	if(IDs.get(mid)>x){
+		hi=mid-1;
+	}
+	if(IDs.get(mid)<x){
+		lo=mid+1;
+	}
+}
+return -1;//not found
+}
 }

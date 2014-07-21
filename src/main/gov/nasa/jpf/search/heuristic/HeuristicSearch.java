@@ -227,7 +227,11 @@ public abstract class HeuristicSearch extends Search {
 					}
 					else{
 					paths.add(goo);//MOD:adding path to list
-					System.out.println("added path to list");
+					System.out.println("added following path to list");
+					for(int i=0;i<currentpath.size();i++){
+						if(i==currentpath.size()-1)System.out.print(currentpath.get(i)+"\n");
+						else System.out.print(currentpath.get(i)+"-->");
+					}
 					int[] stuff=loadable(goo);//start EMOD
 					System.out.println("loaded row was...(view next line) ");
 					if(stuff!=null){

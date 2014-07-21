@@ -38,28 +38,34 @@ public class CombinatorialBranchCountHeuristic extends SimplePriorityHeuristic  
 		
 		
 		if(current.size()<strengthdesired+1){//cannot make tuple of size desired....so we just do normal branch counting
-			System.out.println("Heuristic computed is "+(TreePath.get(getStateId()+1)-depth));
+			System.out.println("Heuristic computed is "+(TreePath.get(getStateId()+1)-depth));//uncommment for branch count combo
+			//System.out.println("Heuristic computed is "+(0-depth));//uncomment for vanilla combinatorial branch counting...
 			current.remove(current.size()-1);//removing...
-			return TreePath.get(getStateId()+1)-depth;
+			return TreePath.get(getStateId()+1)-depth;//uncomment for branch count combo
+			//return 0-depth; //uncomment for vanilla combinatorial branch counting....acts weird cause we need to be greedy!
 		}
 		else{//we can make a tuple!
 			CustomPathVar goo= new CustomPathVar(current);
 			int[] partialrow= loadable(goo);
 		
 			if (partialrow==null){//do normal branch counting if we have not seen this choice b4....
-				System.out.println("semi-special... Heuristic computed is "+(TreePath.get(getStateId()+1)-depth));
+				System.out.println("semi-special... Heuristic computed is "+(TreePath.get(getStateId()+1)-depth));// uncomment for branch count combo
+				//System.out.println("semi-special.... Heuristic computed is "+(0-depth));//uncomment for vanilla combinatorial branch counting...
 				current.remove(current.size()-1);//removing...
-				return TreePath.get(getStateId()+1)-depth;
+				return TreePath.get(getStateId()+1)-depth;//uncomment for branch count combo
+				//return 0-depth;//uncomment for vanilla combinatorial branch counting....
 			}
 			System.out.println("partial row is (see below)");
 			for(int i=0;i<4;i++){
 				System.out.print(partialrow[i]+" ");
 			}
 			tuples=getRankingArray();
-			int count = tuples.rankcount(partialrow);//now the problem is with retrieval....hitting null pointer here!! Not even hitting method!
-			System.out.println("Special!!!! Heuristic computed is "+(TreePath.get(getStateId()+1)-depth+count));
+			int count = tuples.rankcount(partialrow);
+			//System.out.println("Special!!! Heuristic computed is "+(count-depth));//uncomment for vanilla combinatorial branch counting...
+			System.out.println("Special!!!! Heuristic computed is "+(TreePath.get(getStateId()+1)-depth+count));//uncomment for branch count combo
 			current.remove(current.size()-1);//removing
-			return TreePath.get(getStateId()+1)-depth+count;
+			return TreePath.get(getStateId()+1)-depth+count;//uncomment for branch count combo
+			//return count-depth;//uncomment for vanilla combinatorial branch counting....
 		}
 	}
 

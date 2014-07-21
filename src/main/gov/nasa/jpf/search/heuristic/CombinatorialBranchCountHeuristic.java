@@ -2,6 +2,7 @@ package gov.nasa.jpf.search.heuristic;
 
 import java.util.ArrayList;
 
+import edu.unt.cs.coverage.CoveringArrayTuplesRanking;
 import edu.unt.cs.coverage.CoveringArrayTuplesRankingArray;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.search.Search;
@@ -9,10 +10,10 @@ import gov.nasa.jpf.vm.VM;
 
 public class CombinatorialBranchCountHeuristic extends SimplePriorityHeuristic  {
 	ArrayList<Integer> TreePath = getpathTracker();
-	CoveringArrayTuplesRankingArray tuples = getStrength2();
 	ArrayList<Integer> current = getcurrentpath();
 	int[][] choices= getFactorChoices();
 	int strengthdesired=2;
+	CoveringArrayTuplesRankingArray tuples;
 	public CombinatorialBranchCountHeuristic(Config config, VM vm) {
 		super(config, vm);
 		Search.log.info("Combinatorial Branch Counting Heuristic");
@@ -44,12 +45,22 @@ public class CombinatorialBranchCountHeuristic extends SimplePriorityHeuristic  
 		else{//we can make a tuple!
 			CustomPathVar goo= new CustomPathVar(current);
 			int[] partialrow= loadable(goo);
-			int count = tuples.rankcount(partialrow);
+		
+			if (partialrow==null){//do normal branch counting if we have not seen this choice b4....
+				System.out.println("semi-special... Heuristic computed is "+(TreePath.get(getStateId()+1)-depth));
+				current.remove(current.size()-1);//removing...
+				return TreePath.get(getStateId()+1)-depth;
+			}
+			System.out.println("partial row is (see below)");
+			for(int i=0;i<4;i++){
+				System.out.print(partialrow[i]+" ");
+			}
+			tuples=getRankingArray();
+			int count = tuples.rankcount(partialrow);//now the problem is with retrieval....hitting null pointer here!! Not even hitting method!
 			System.out.println("Special!!!! Heuristic computed is "+(TreePath.get(getStateId()+1)-depth+count));
 			current.remove(current.size()-1);//removing
 			return TreePath.get(getStateId()+1)-depth+count;
-		}//problem is we are hitting the choices in loadable call before this current hstate is added to the choices....what we can do is simply add this the choice list if it is the first time we are generating this state.....
-		//we could also hardcode the choices....whichever works...tho the former is more automated....
+		}
 	}
 
 }

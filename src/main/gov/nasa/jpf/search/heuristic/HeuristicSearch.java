@@ -55,7 +55,7 @@ public abstract class HeuristicSearch extends Search {
 	protected Map<Integer,Integer> manual=new HashMap<Integer,Integer>();//Emod map
 	protected int[]factors=new int[4];//Emod for manual exploration
 	protected int[]names=new int[4];//Emod name list for manual exploration
-	protected CoveringArrayTuplesRankingArray strength2;//EMOD
+	protected CoveringArrayTuplesRankingArray rankingarray;//EMOD
 	protected String[]namesstrings=new String[4];//EMOD
 	protected int[][] factorchoices;//EMODthis will map child states to factor choices for row generation...
 	protected ArrayList<Integer>IDsthisRun=new ArrayList<Integer>();//EMOD used to guess next state generated for heuristic computation....
@@ -113,8 +113,8 @@ public abstract class HeuristicSearch extends Search {
 	public ArrayList<Integer> getpathTracker(){//getter for MOD pathTracker...
 		return pathTracker;
 	}
-	public CoveringArrayTuplesRankingArray getStrength2(){// getter for EMOD strength2...
-		return strength2;
+	public CoveringArrayTuplesRankingArray getRankingArray(){// getter for EMOD strength2...
+		return rankingarray;
 	}
 	public void setPathSensitive(boolean isPathSensitive) {
 		this.isPathSensitive = isPathSensitive;
@@ -195,6 +195,7 @@ public abstract class HeuristicSearch extends Search {
 									+ newHState.stateId+" and depth is "+newHState.getDepth());
 							childStates.add(newHState); // add breakpoint here
 							IDsthisRun.add(newHState.stateId);//EMOD
+							System.out.println("added " +IDsthisRun.get(IDsthisRun.size()-1)+" to list of ids this run");
 							if(parentState.stateId<factors.length && parentState.stateId!=-1){//EMOD: parent is a factor
 								int i=0;
 								while(factorchoices[parentState.stateId][i]!=0){
@@ -229,10 +230,12 @@ public abstract class HeuristicSearch extends Search {
 					System.out.println("added path to list");
 					int[] stuff=loadable(goo);//start EMOD
 					System.out.println("loaded row was...(view next line) ");
+					if(stuff!=null){
 					for(int k=0;k<stuff.length;k++){
 						System.out.print(stuff[k]+" ");
 					}
-					strength2.updateTupleCoverage(stuff);//end EMOD
+					rankingarray.updateTupleCoverage(stuff);//end EMOD
+					}
 					done=true;//MOD
 					readytorestart=true;//MOD
 					return false;//MOD
@@ -264,7 +267,7 @@ public abstract class HeuristicSearch extends Search {
 			makeMap();//start EMOD
 			makeFactors();
 			makeNames();
-			strength2=new CoveringArrayTuplesRankingArray(2, manual, namesstrings, factors);
+			rankingarray=new CoveringArrayTuplesRankingArray(2, manual, namesstrings, factors);
 			factorchoices= new int[factors.length][3];//initialization of factorchoices EMOD
 		}//mod
 		
@@ -374,6 +377,9 @@ public int[] loadable(CustomPathVar x){//EMOD METHOD TO MAKE LOADABLE ARRAY
 			while(factorchoices[x.getIDs().get(ind)][j]!=input){
 				System.out.println("a choice is "+factorchoices[ind][j]);
 				j++;
+				if(j==3){//so we know if we are dealing with first choice generation...
+					return null;
+				}
 			}
 			path[i]=j;
 		}

@@ -24,8 +24,13 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.vm.VM;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 /**
  * a search strategy class that computes all immediate successors of a given
@@ -36,6 +41,7 @@ import java.util.List;
  */
 public abstract class HeuristicSearch extends Search {
 
+	protected ArrayList<Integer> list_vals; //WILL OBTAIN INFO FROM A FILE
 	static final String DEFAULT_HEURISTIC_PACKAGE = "gov.nasa.jpf.search.heuristic.";
 	protected int searchcounter=0;
 	protected HeuristicState parentState;
@@ -63,12 +69,27 @@ public abstract class HeuristicSearch extends Search {
 	 * fetching the next state from the queue)
 	 */
 	protected boolean isBeamSearch;
+	private String INPUT_PATH;
 
-	public HeuristicSearch(Config config, VM vm) {
+	public HeuristicSearch(Config config, VM vm) throws IOException {
 		super(config, vm);
 
 		useAstar = config.getBoolean("search.heuristic.astar");
 		isBeamSearch = config.getBoolean("search.heuristic.beam_search");
+		INPUT_PATH = config.getString("File.choose");
+	
+		create_list(INPUT_PATH);
+		
+		System.out.println("Contents are: " + list_vals + "\n");
+	}
+	
+	private void create_list(String input) throws IOException {
+		list_vals = new ArrayList<Integer>();
+		Scanner scanner = new Scanner(new File(input));
+		
+		while(scanner.hasNextInt()){
+			list_vals.add(scanner.nextInt());
+		}	
 	}
 
 	// add the current state to the queue
@@ -195,6 +216,13 @@ public abstract class HeuristicSearch extends Search {
 						return false;
 					}
 					else{
+						System.out.println("added following path to list");
+						for(int i=0;i<goo.getIDs().size();i++){
+							if(i==goo.getIDs().size()-1){
+								System.out.print(goo.getIDs().get(i)+"\n");
+							}
+							else System.out.println(goo.getIDs().get(i)+"-->");
+						}
 					paths.add(goo);//MOD:adding path to list
 					System.out.println("added path to list");
 					done=true;//MOD

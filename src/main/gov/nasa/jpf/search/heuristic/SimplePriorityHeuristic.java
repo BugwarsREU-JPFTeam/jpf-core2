@@ -18,6 +18,8 @@
 //
 package gov.nasa.jpf.search.heuristic;
 
+import java.io.IOException;
+
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.util.Predicate;
 import gov.nasa.jpf.vm.ThreadInfo;
@@ -33,7 +35,7 @@ public abstract class SimplePriorityHeuristic extends HeuristicSearch {
 
 	protected Predicate<ThreadInfo> aliveThread;
 
-	public SimplePriorityHeuristic(Config config, VM vm) {
+	public SimplePriorityHeuristic(Config config, VM vm) throws IOException {
 		super(config, vm);
 
 		queue = new StaticPriorityQueue(config);

@@ -21,6 +21,7 @@ package gov.nasa.jpf.search.heuristic;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.vm.VM;
 
+import java.io.IOException;
 import java.util.Random;
 
 /**
@@ -30,7 +31,7 @@ public class RandomHeuristic extends SimplePriorityHeuristic {
 
 	protected Random random;
 
-	public RandomHeuristic(Config config, VM vm) {
+	public RandomHeuristic(Config config, VM vm) throws IOException {
 		super(config, vm);
 
 		random = new Random(config.getInt("choice.seed", 42));

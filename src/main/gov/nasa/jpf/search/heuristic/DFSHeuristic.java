@@ -18,6 +18,8 @@
 //
 package gov.nasa.jpf.search.heuristic;
 
+import java.io.IOException;
+
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.vm.VM;
 
@@ -26,7 +28,7 @@ import gov.nasa.jpf.vm.VM;
  */
 public class DFSHeuristic extends SimplePriorityHeuristic {
 
-	public DFSHeuristic(Config conf, VM vm) {
+	public DFSHeuristic(Config conf, VM vm) throws IOException {
 		super(conf, vm);
 	}
 

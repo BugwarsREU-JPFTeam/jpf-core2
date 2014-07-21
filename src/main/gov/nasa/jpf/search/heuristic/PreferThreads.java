@@ -18,6 +18,8 @@
 //
 package gov.nasa.jpf.search.heuristic;
 
+import java.io.IOException;
+
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.vm.VM;
 import gov.nasa.jpf.vm.Transition;
@@ -32,7 +34,7 @@ import gov.nasa.jpf.vm.Transition;
 public class PreferThreads extends SimplePriorityHeuristic {
 	String[] preferredThreads;
 
-	public PreferThreads(Config config, VM vm) {
+	public PreferThreads(Config config, VM vm) throws IOException {
 		super(config, vm);
 
 		preferredThreads = config

@@ -1,2 +1,2 @@
-target=branching_prog
-search.class=.search.heuristic.BranchCountHeuristic
+target=FiniteEx3
+search.class=.search.heuristic.CombinatorialBranchCountHeuristic

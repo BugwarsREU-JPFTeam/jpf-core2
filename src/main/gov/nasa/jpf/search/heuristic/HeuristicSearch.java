@@ -56,7 +56,9 @@ public abstract class HeuristicSearch extends Search {
 	protected int[]factors=new int[4];//Emod for manual exploration
 	protected int[]names=new int[4];//Emod name list for manual exploration
 	protected CoveringArrayTuplesRankingArray strength2;//EMOD
-	protected String[]namesstrings=new String[4];
+	protected String[]namesstrings=new String[4];//EMOD
+	protected int[][] factorchoices;//EMODthis will map child states to factor choices for row generation...
+	protected ArrayList<Integer>IDsthisRun=new ArrayList<Integer>();//EMOD used to guess next state generated for heuristic computation....
 	
 	/*
 	 * do we use A* adaptation of state priorities, i.e. have a distance + cost
@@ -91,6 +93,12 @@ public abstract class HeuristicSearch extends Search {
 
 	public abstract boolean isQueueLimitReached();
 
+	public int[][] getFactorChoices(){//EMOD Getter
+		return factorchoices;
+	}
+	public ArrayList<Integer> getIDsthisRun(){//EMOD GETTER
+		return IDsthisRun;
+	}
 	public HeuristicState getParentState() {
 		return parentState;
 	}
@@ -186,6 +194,15 @@ public abstract class HeuristicSearch extends Search {
 									+ newHState.hashCode() + " and ID is "
 									+ newHState.stateId+" and depth is "+newHState.getDepth());
 							childStates.add(newHState); // add breakpoint here
+							IDsthisRun.add(newHState.stateId);//EMOD
+							if(parentState.stateId<factors.length && parentState.stateId!=-1){//EMOD: parent is a factor
+								int i=0;
+								while(factorchoices[parentState.stateId][i]!=0){
+									if(factorchoices[parentState.stateId][i]!=newHState.stateId) i++;
+									else break;
+								}
+								factorchoices[parentState.stateId][i]=newHState.stateId;
+							}//end EMOD if....
 							notifyStateStored();
 						}// add breakpoint here
 					}
@@ -202,8 +219,7 @@ public abstract class HeuristicSearch extends Search {
 					if(!goo.isDiff(paths.get(y))) isunique=false;
 					}
 					}
-					if(!isunique){//we will keep searching if seen before....THIS IS THE PROBLEM AREA
-						//currentpath.remove(currentpath.size()-1);//this does not work once hitting ids on lower depths....question is how do i make sure I have a new path for this just dequeued id that could be anywhere!?
+					if(!isunique){
 						repeat=true;//mod trying this
 						System.out.println("seen before...");
 						return false;
@@ -212,6 +228,10 @@ public abstract class HeuristicSearch extends Search {
 					paths.add(goo);//MOD:adding path to list
 					System.out.println("added path to list");
 					int[] stuff=loadable(goo);//start EMOD
+					System.out.println("loaded row was...(view next line) ");
+					for(int k=0;k<stuff.length;k++){
+						System.out.print(stuff[k]+" ");
+					}
 					strength2.updateTupleCoverage(stuff);//end EMOD
 					done=true;//MOD
 					readytorestart=true;//MOD
@@ -245,6 +265,7 @@ public abstract class HeuristicSearch extends Search {
 			makeFactors();
 			makeNames();
 			strength2=new CoveringArrayTuplesRankingArray(2, manual, namesstrings, factors);
+			factorchoices= new int[factors.length][3];//initialization of factorchoices EMOD
 		}//mod
 		
 		if(searchcounter==0)initial=queueCurrentState();//MOD MOD
@@ -297,6 +318,7 @@ public abstract class HeuristicSearch extends Search {
 				pathTracker.set(currentpath.get(y)+1, pathTracker.get(currentpath.get(y)+1)+1);//MOD:here we increment the branch count
 			}
 			currentpath.clear();//make sure you have loaded the current path into path list b4 this!
+			IDsthisRun.clear();//EMOD
 			resetQueue();
 			restoreState(initial);
 			search();
@@ -344,8 +366,16 @@ public int[] loadable(CustomPathVar x){//EMOD METHOD TO MAKE LOADABLE ARRAY
 	int[] path =new int[names.length];//will return path
 	for(int i=0;i<names.length;i++){
 		int ind=x.binaryfindindex(names[i]);
+		System.out.println("ind is "+ind);
 		if(ind!=-1){//if it is there
-			path[i]=x.getIDs().get(ind+1);
+			int input=x.getIDs().get(ind+1);
+			int j=0;
+			System.out.println("input is "+input);
+			while(factorchoices[x.getIDs().get(ind)][j]!=input){
+				System.out.println("a choice is "+factorchoices[ind][j]);
+				j++;
+			}
+			path[i]=j;
 		}
 		else path[i]=-1;
 	}

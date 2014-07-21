@@ -178,7 +178,7 @@ public abstract class HeuristicSearch extends Search {
 					}
 
 				} else if(isEndState()) {//MOD
-					if(endstaterun>2){//here we need to put in the number of possible branches to endstate
+					//if(endstaterun>2){//here we need to put in the number of possible branches to endstate
 					CustomPathVar goo=new CustomPathVar(deepcopy(currentpath));
 					boolean isunique=true;
 					//here check diff
@@ -202,7 +202,7 @@ public abstract class HeuristicSearch extends Search {
 					return false;//MOD
 					// end state or ignored transition
 					}
-					}}
+					}//}
 			}
 			System.out.println("backtrack!");
 			backtrackToParent();

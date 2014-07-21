@@ -8,7 +8,7 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.vm.VM;
 
-public class CombinatorialBranchCountHeuristic extends SimplePriorityHeuristic  {
+public class CombinatorialBranchCountHeuristic extends SimplePriorityHeuristic  {//not automated.....
 	ArrayList<Integer> TreePath = getpathTracker();
 	ArrayList<Integer> current = getcurrentpath();
 	int[][] choices= getFactorChoices();

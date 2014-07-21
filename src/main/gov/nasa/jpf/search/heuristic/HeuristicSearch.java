@@ -53,10 +53,10 @@ public abstract class HeuristicSearch extends Search {
 	protected boolean repeat=false;
 	protected int endrun=0;
 	protected Map<Integer,Integer> manual=new HashMap<Integer,Integer>();//Emod map
-	protected int[]factors=new int[4];//Emod for manual exploration
-	protected int[]names=new int[4];//Emod name list for manual exploration
+	protected int[]factors=new int[4];//Emod for manual exploration //not automated
+	protected int[]names=new int[4];//Emod name list for manual exploration //not automated
 	protected CoveringArrayTuplesRankingArray rankingarray;//EMOD
-	protected String[]namesstrings=new String[4];//EMOD
+	protected String[]namesstrings=new String[4];//EMOD not automated
 	protected int[][] factorchoices;//EMODthis will map child states to factor choices for row generation...
 	protected ArrayList<Integer>IDsthisRun=new ArrayList<Integer>();//EMOD used to guess next state generated for heuristic computation....
 	
@@ -113,7 +113,7 @@ public abstract class HeuristicSearch extends Search {
 	public ArrayList<Integer> getpathTracker(){//getter for MOD pathTracker...
 		return pathTracker;
 	}
-	public CoveringArrayTuplesRankingArray getRankingArray(){// getter for EMOD strength2...
+	public CoveringArrayTuplesRankingArray getRankingArray(){// getter for EMOD rankingarray...
 		return rankingarray;
 	}
 	public void setPathSensitive(boolean isPathSensitive) {
@@ -211,6 +211,7 @@ public abstract class HeuristicSearch extends Search {
 				} else if(isEndState()) {//MOD
 					endrun++;//mod
 					if(endrun>2){//mod if
+					truncatepath(currentpath);//EMOD cutting down path....
 					CustomPathVar goo=new CustomPathVar(deepcopy(currentpath));
 					boolean isunique=true;
 					//here check diff
@@ -271,8 +272,8 @@ public abstract class HeuristicSearch extends Search {
 			makeMap();//start EMOD
 			makeFactors();
 			makeNames();
-			rankingarray=new CoveringArrayTuplesRankingArray(2, manual, namesstrings, factors);
-			factorchoices= new int[factors.length][3];//initialization of factorchoices EMOD
+			rankingarray=new CoveringArrayTuplesRankingArray(2, manual, namesstrings, factors); //not automated
+			factorchoices= new int[factors.length][3];//initialization of factorchoices EMOD not automated
 		}//mod
 		
 		if(searchcounter==0)initial=queueCurrentState();//MOD MOD
@@ -350,26 +351,38 @@ public abstract class HeuristicSearch extends Search {
 		return newlist;
 	}
 
-public void makeMap(){//EMOD METHOD TO POPULATE MAP
+public void makeMap(){//EMOD METHOD TO POPULATE MAP not automated
 		manual.put(4, 3);
 	}
-public void makeFactors(){//EMOD METHOD TO POPULATE FACTORS
+public void makeFactors(){//EMOD METHOD TO POPULATE FACTORS not automated
 	for (int i=0;i<factors.length;i++){
 		factors[i]=3;
 	}
 }
-public void makeNames(){//EMOD METHOD TO POPULATE NAMES
+public void makeNames(){//EMOD METHOD TO POPULATE NAMES not automated
 	for(int i=0;i<names.length;i++){
 		names[i]=i;
 	}
 }
-public void makeStringNames(){//EMOD Method to populate NamesStrings to satisfy coveringarraytuplesrankingarray object....
+public void makeStringNames(){//EMOD Method to populate NamesStrings to satisfy coveringarraytuplesrankingarray object.... not automated
 	for(int i=0;i<namesstrings.length;i++){
 		namesstrings[i]="State "+i;
 	}
 }
+public void truncatepath(ArrayList<Integer> foo){//not automated
+	int i=1;//goal is to cut down to most recent node of each depth....
+	int j=2;
+	while (true){
+		while(foo.get(i+1)<4){
+			foo.remove(i);
+		}
+		if(j==foo.size()-1) break;
+		else foo.remove(j);
+	}
+	
+}
 
-public int[] loadable(CustomPathVar x){//EMOD METHOD TO MAKE LOADABLE ARRAY
+public int[] loadable(CustomPathVar x){//EMOD METHOD TO MAKE LOADABLE ARRAY Not automated
 	int[] path =new int[names.length];//will return path
 	for(int i=0;i<names.length;i++){
 		int ind=x.binaryfindindex(names[i]);

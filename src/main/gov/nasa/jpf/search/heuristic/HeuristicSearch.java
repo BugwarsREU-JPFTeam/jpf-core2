@@ -252,7 +252,7 @@ public abstract class HeuristicSearch extends Search {
 	public void search() { // commented out code here is for attempting to loop
 							// a heuristic search on state space
 		if(searchcounter==0){//mod
-			for(int f=0;f<5000;f++)pathTracker.add(0);//MOD populate arraylist
+			for(int f=0;f<10000;f++)pathTracker.add(0);//MOD populate arraylist
 		}//mod
 		
 		if(searchcounter==0)initial=queueCurrentState();//MOD MOD

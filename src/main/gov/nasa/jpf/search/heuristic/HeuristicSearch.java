@@ -222,7 +222,7 @@ public abstract class HeuristicSearch extends Search {
 							if(i==goo.getIDs().size()-1){
 								System.out.print(goo.getIDs().get(i)+"\n");
 							}
-							else System.out.println(goo.getIDs().get(i)+"-->");
+							else System.out.print(goo.getIDs().get(i)+"-->");
 						}
 					paths.add(goo);//MOD:adding path to list
 					System.out.println("added path to list");

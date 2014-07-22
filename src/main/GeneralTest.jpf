@@ -1,2 +1,3 @@
-target=endStateTest
+target=FiniteEx3
+File.choose = C:\\Users\\Salvador\\Desktop\\test.txt
 search.class=.search.heuristic.BranchCountHeuristic

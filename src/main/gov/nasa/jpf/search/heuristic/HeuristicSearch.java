@@ -200,7 +200,7 @@ public abstract class HeuristicSearch extends Search {
 
 				} else if(isEndState()) {//MOD
 					endstaterun++;
-					if(endstaterun>2){//here we need to put in the number of possible branches to endstate
+					if(endstaterun>1){//here we need to put in the number of possible branches to endstate
 					CustomPathVar goo=new CustomPathVar(deepcopy(currentpath));
 					boolean isunique=true;
 					//here check diff
@@ -217,6 +217,7 @@ public abstract class HeuristicSearch extends Search {
 						return false;
 					}
 					else{
+						System.out.println("the path we encountered is unique!");
 						System.out.println("added following path to list");
 						for(int i=0;i<goo.getIDs().size();i++){
 							if(i==goo.getIDs().size()-1){

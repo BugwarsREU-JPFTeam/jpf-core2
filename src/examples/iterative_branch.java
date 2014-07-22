@@ -34,7 +34,7 @@ public class iterative_branch {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		int depth = 3;
-		int branch = 2;
+		int branch = 3;
 		
 		iterative_branch(depth, branch);
 	}

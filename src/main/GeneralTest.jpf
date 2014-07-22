@@ -1,2 +1,3 @@
-target=endStateTest
+target=FiniteEx3
 search.class=.search.heuristic.BranchCountHeuristic
+File.choose=C:\\Users\\Maxwell\\Desktop\\stuff.txt

@@ -210,7 +210,8 @@ public abstract class HeuristicSearch extends Search {
 
 				} else if(isEndState()) {//MOD
 					endrun++;//mod
-					if(endrun>2){//mod if
+					System.out.println("endrun is "+endrun);
+					if(endrun>2){//mod if Note:this will change based on program....
 					truncatepath(currentpath);//EMOD cutting down path....
 					CustomPathVar goo=new CustomPathVar(deepcopy(currentpath));
 					boolean isunique=true;
@@ -243,6 +244,7 @@ public abstract class HeuristicSearch extends Search {
 					}
 					done=true;//MOD
 					readytorestart=true;//MOD
+					endrun=0;
 					return false;//MOD
 					// end state or ignored transition
 					}

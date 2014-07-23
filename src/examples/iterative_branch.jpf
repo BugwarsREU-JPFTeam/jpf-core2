@@ -1,0 +1,2 @@
+target = iterative_branch
+search.class = .search.heuristic.DFSHeuristic

@@ -1,0 +1,4 @@
+target = iterative_branch
+File.choose = C:\\Users\\Salvador\\Desktop\\test.txt
+search.class = .search.heuristic.BranchCountHeuristic
+listener = .listener.StateSpaceDot

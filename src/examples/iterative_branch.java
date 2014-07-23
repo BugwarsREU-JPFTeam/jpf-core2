@@ -14,7 +14,7 @@ public class iterative_branch {
 				sum += rand_val;
 			}
 
-			if (sum == (depth * (branch - 1))) {
+			if (sum == 50) { //(depth * (branch - 1))
 				System.out.println("Error encountered!");
 				throw new IllegalArgumentException("Invalid");
 			}
@@ -26,8 +26,8 @@ public class iterative_branch {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		int depth = 3;
-		int branch = 3;
+		int depth = 10;
+		int branch = 10;
 		iterative_branch(depth, branch);
 	}
 

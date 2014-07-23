@@ -18,6 +18,8 @@
 //
 package gov.nasa.jpf.search.heuristic;
 
+import java.io.IOException;
+
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.vm.VM;
@@ -28,7 +30,7 @@ import gov.nasa.jpf.vm.VM;
 public class BFSHeuristic extends SimplePriorityHeuristic {// put breakpoint
 															// here
 
-	public BFSHeuristic(Config config, VM vm) {
+	public BFSHeuristic(Config config, VM vm) throws IOException {
 		super(config, vm);
 		Search.log.info("BFS Search");
 	}

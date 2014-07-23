@@ -1,5 +1,6 @@
 package gov.nasa.jpf.search.heuristic;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import edu.unt.cs.coverage.CoveringArrayTuplesRanking;
@@ -14,7 +15,7 @@ public class CombinatorialBranchCountHeuristic extends SimplePriorityHeuristic  
 	int[][] choices= getFactorChoices();
 	int strengthdesired=2;
 	CoveringArrayTuplesRankingArray tuples;
-	public CombinatorialBranchCountHeuristic(Config config, VM vm) {
+	public CombinatorialBranchCountHeuristic(Config config, VM vm) throws IOException {
 		super(config, vm);
 		Search.log.info("Combinatorial Branch Counting Heuristic");
 		// TODO Auto-generated constructor stub

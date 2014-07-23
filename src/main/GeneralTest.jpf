@@ -1,2 +1,3 @@
 target=FiniteEx3
 search.class=.search.heuristic.CombinatorialBranchCountHeuristic
+File.choose=C:\\Users\\Maxwell\\Desktop\\stuff.txt

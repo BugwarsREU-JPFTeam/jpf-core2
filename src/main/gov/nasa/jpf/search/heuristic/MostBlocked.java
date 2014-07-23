@@ -18,6 +18,8 @@
 //
 package gov.nasa.jpf.search.heuristic;
 
+import java.io.IOException;
+
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.vm.VM;
 
@@ -28,7 +30,7 @@ import gov.nasa.jpf.vm.VM;
  */
 public class MostBlocked extends SimplePriorityHeuristic {
 
-	public MostBlocked(Config config, VM vm) {
+	public MostBlocked(Config config, VM vm) throws IOException {
 		super(config, vm);
 	}
 

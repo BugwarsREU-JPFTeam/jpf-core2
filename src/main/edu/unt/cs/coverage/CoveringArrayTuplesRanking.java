@@ -70,6 +70,7 @@ public class CoveringArrayTuplesRanking extends AbstractCoveringArrayTuples impl
 //	}
 	
 	Object setLevelTupleValueFromRow(int[] row, int[] factorTuple, int factorIndex){
+		if(row[factorTuple[factorIndex]-1]==-1) return null;//FMOD
 		return row[factorTuple[factorIndex]-1]+factorSymbolOffset[factorTuple[factorIndex]]+1;
 	}
 	

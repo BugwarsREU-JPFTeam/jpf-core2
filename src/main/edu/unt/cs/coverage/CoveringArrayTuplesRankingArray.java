@@ -17,6 +17,8 @@ public class CoveringArrayTuplesRankingArray extends CoveringArrayTuplesRanking 
 		//mark covered
 	    Integer[] lTuple = Arrays.copyOf(levelTuple, levelTuple.length, Integer[].class);
 	    int rank =  kSubsetLexRank(lTuple, numSymbols);
+	    System.out.println("numsymbols is "+numSymbols);
+	    System.out.println("rank computed is "+rank);//trying to find dontcares....
 	    if(rank >= tuplesCovered.length){
 	    	System.out.println("Rank is greater than array length: " + rank + " " + tuplesCovered.length);
 	    }
@@ -41,18 +43,29 @@ public class CoveringArrayTuplesRankingArray extends CoveringArrayTuplesRanking 
 	@Override
 	public int rankcount(int[]row){//EMOD: *here might want to copy whole update method....did...
 		int[] factorTuple = new int[strength+1];
+		boolean dontcare=false;
 		Object[] levelTuple = new Object[strength+1]; //can be either DD or int
 		for(int i = 1; i <= strength; i++){
 			factorTuple[i]=i;
 			levelTuple[i]=setLevelTupleValueFromRow(row, factorTuple,i);
+			if(levelTuple[i]==null){
+				dontcare=true;
+				break;
+			}
 		}
 		int returnable=0;//EMOD:this is the part that i changed...normally i would return next line instead i add up all tuple counts....
-		returnable+=getCount(factorTuple,levelTuple);
+		if(!dontcare)returnable+=getCount(factorTuple,levelTuple);
+		
+		dontcare=false;
 		while(kSubsetLexSuccessor(factorTuple,numFactors)){//get rest of factor tuples
 			for(int i = 1;i<=strength;i++){
 				levelTuple[i]=setLevelTupleValueFromRow(row, factorTuple, i);
+				if(levelTuple[i]==null){
+					dontcare=true;
+					break;
+				}
 			}
-			returnable+=getCount(factorTuple,levelTuple);
+			if(!dontcare)returnable+=getCount(factorTuple,levelTuple);
 		}
 		return returnable;
 	}

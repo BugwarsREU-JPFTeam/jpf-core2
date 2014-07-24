@@ -200,23 +200,31 @@ public abstract class AbstractCoveringArrayTuples {
 		return flag;
 	}
 
-	public boolean updateTupleCoverage(int[] row){
+	public boolean updateTupleCoverage(int[] row){//FMOD
 		int[] factorTuple = new int[strength+1];
 		Object[] levelTuple = new Object[strength+1]; //can be either DD or int
+		boolean dontcare=false;
 		for(int i = 1; i <= strength; i++){
 			factorTuple[i]=i;
 			levelTuple[i]=setLevelTupleValueFromRow(row, factorTuple,i);
+			if(levelTuple[i]==null){
+				dontcare=true;
+				break;
+			}
 		}
-
-
-		markCovered(factorTuple, levelTuple);
-
+		if(!dontcare) markCovered(factorTuple, levelTuple);
+		
 		//get rest of factor tuples
+		dontcare=false;
 		while(kSubsetLexSuccessor(factorTuple, numFactors)){						
 			for(int i = 1; i <= strength; i++){
 				levelTuple[i]=setLevelTupleValueFromRow(row, factorTuple, i);
+				if(levelTuple[i]==null){
+					dontcare=true;
+					break;
+				}
 			}
-			markCovered(factorTuple, levelTuple);		
+				if(!dontcare) markCovered(factorTuple, levelTuple);	
 		}
 		return numCoveredTuples == numTuples;
 

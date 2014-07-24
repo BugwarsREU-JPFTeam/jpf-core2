@@ -10,7 +10,7 @@ public class branch_prog_2 {
 		
 		int sum = num1 + num2 + num3;
 		
-		if (sum == 6){
+		if (num1 == 0 && num2 ==1 && num3 ==0){
 			throw new IllegalArgumentException("Found it");
 		}
 	}

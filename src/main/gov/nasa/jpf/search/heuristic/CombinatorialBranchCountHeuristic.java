@@ -9,11 +9,12 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.vm.VM;
 
-public class CombinatorialBranchCountHeuristic extends SimplePriorityHeuristic  {//not automated.....
+public class CombinatorialBranchCountHeuristic extends SimplePriorityHeuristic  {
 	ArrayList<Integer> TreePath = getpathTracker();
 	ArrayList<Integer> current = getcurrentpath();
+	ArrayList<Integer> values = getlist_vals();
 	int[][] choices= getFactorChoices();
-	int strengthdesired=2;
+	int strengthdesired=2;//auto:need to change for diff strength
 	CoveringArrayTuplesRankingArray tuples;
 	public CombinatorialBranchCountHeuristic(Config config, VM vm) throws IOException {
 		super(config, vm);
@@ -31,8 +32,8 @@ public class CombinatorialBranchCountHeuristic extends SimplePriorityHeuristic  
 		
 		else {//now pretend to have a path with this yet to be computed heuristic state.....
 			lastID=getIDsthisRun().get(getIDsthisRun().size()-1);
-			if(lastID==6){
-				current.add(8);
+			if(lastID==values.get(2)){
+				current.add(values.get(2)+2);
 			}
 			else current.add(lastID+1);
 		}
@@ -57,7 +58,7 @@ public class CombinatorialBranchCountHeuristic extends SimplePriorityHeuristic  
 				//return 0-depth;//uncomment for vanilla combinatorial branch counting....
 			}
 			System.out.println("partial row is (see below)");
-			for(int i=0;i<4;i++){
+			for(int i=0;i<values.get(0);i++){
 				System.out.print(partialrow[i]+" ");
 			}
 			tuples=getRankingArray();

@@ -56,10 +56,10 @@ public abstract class HeuristicSearch extends Search {
 	protected boolean repeat=false;
 	protected int endrun=0;
 	protected Map<Integer,Integer> manual=new HashMap<Integer,Integer>();//Emod map
-	protected int[]factors=new int[4];//Emod for manual exploration //not automated
-	protected int[]names=new int[4];//Emod name list for manual exploration //not automated
+	protected int[]factors;
+	protected int[]names;
 	protected CoveringArrayTuplesRankingArray rankingarray;//EMOD
-	protected String[]namesstrings=new String[4];//EMOD not automated
+	protected String[]namesstrings;
 	protected int[][] factorchoices;//EMODthis will map child states to factor choices for row generation...
 	protected ArrayList<Integer>IDsthisRun=new ArrayList<Integer>();//EMOD used to guess next state generated for heuristic computation....
 	
@@ -85,6 +85,7 @@ public abstract class HeuristicSearch extends Search {
 		isBeamSearch = config.getBoolean("search.heuristic.beam_search");
 		INPUT_PATH= config.getString("File.choose");
 		create_list(INPUT_PATH);
+		getReady();
 		
 		System.out.println("Contents are: " + list_vals + "\n");
 	}
@@ -97,6 +98,13 @@ public abstract class HeuristicSearch extends Search {
 			list_vals.add(scanner.nextInt());
 		}	
 	}
+	private void getReady(){
+		makeMap(list_vals.get(0), list_vals.get(1));
+		makeFactors(list_vals.get(0),list_vals.get(1));
+		makeNames(list_vals.get(0));
+		makeStringNames();
+		makefactorchoices(list_vals.get(1));
+	}
 	// add the current state to the queue
 	protected abstract HeuristicState queueCurrentState();
 
@@ -107,6 +115,9 @@ public abstract class HeuristicSearch extends Search {
 	public abstract void resetQueue();//MOD METHOD
 	public abstract int getQueueSize();
 
+	public ArrayList<Integer> getlist_vals(){
+		return list_vals;
+	}
 	public abstract boolean isQueueLimitReached();
 
 	public int[][] getFactorChoices(){//EMOD Getter
@@ -227,8 +238,8 @@ public abstract class HeuristicSearch extends Search {
 				} else if(isEndState()) {//MOD
 					endrun++;//mod
 					System.out.println("endrun is "+endrun);
-					if(endrun>2){//mod if Note:this will change based on program....
-					truncatepath(currentpath);//EMOD cutting down path....
+					if(endrun>(list_vals.get(1)-1)){//mod if Note:this will change based on program....hopefully this does it...
+					//truncatepath(currentpath);//EMOD cutting down path.... commenting out for now....
 					CustomPathVar goo=new CustomPathVar(deepcopy(currentpath));
 					boolean isunique=true;
 					//here check diff
@@ -286,12 +297,8 @@ public abstract class HeuristicSearch extends Search {
 	public void search() { // commented out code here is for attempting to loop
 							// a heuristic search on state space
 		if(searchcounter==0){//mod
-			for(int f=0;f<5000;f++)pathTracker.add(0);//MOD populate arraylist
-			makeMap();//start EMOD
-			makeFactors();
-			makeNames();
+			for(int f=0;f<10000;f++)pathTracker.add(0);//MOD populate arraylist
 			rankingarray=new CoveringArrayTuplesRankingArray(2, manual, namesstrings, factors); //not automated
-			factorchoices= new int[factors.length][3];//initialization of factorchoices EMOD not automated
 		}//mod
 		
 		if(searchcounter==0)initial=queueCurrentState();//MOD MOD
@@ -369,25 +376,28 @@ public abstract class HeuristicSearch extends Search {
 		return newlist;
 	}
 
-public void makeMap(){//EMOD METHOD TO POPULATE MAP not automated
-		manual.put(4, 3);
+public void makeMap(int x, int y){//EMOD METHOD TO POPULATE MAP not automated
+		manual.put(x, y);
 	}
-public void makeFactors(){//EMOD METHOD TO POPULATE FACTORS not automated
+public void makeFactors(int x, int y){//EMOD METHOD TO POPULATE FACTORS not automated
+	factors= new int[x];
 	for (int i=0;i<factors.length;i++){
-		factors[i]=3;
+		factors[i]=y;
 	}
 }
-public void makeNames(){//EMOD METHOD TO POPULATE NAMES not automated
+public void makeNames(int x){//EMOD METHOD TO POPULATE NAMES not automated
+	names=new int[x];
 	for(int i=0;i<names.length;i++){
 		names[i]=i;
 	}
 }
 public void makeStringNames(){//EMOD Method to populate NamesStrings to satisfy coveringarraytuplesrankingarray object.... not automated
-	for(int i=0;i<namesstrings.length;i++){
+	namesstrings=new String[names.length];
+	for(int i=0;i<names.length;i++){
 		namesstrings[i]="State "+i;
 	}
 }
-public void truncatepath(ArrayList<Integer> foo){//not automated
+public void truncatepath(ArrayList<Integer> foo){//not automated but for now not using....
 	int i=1;//goal is to cut down to most recent node of each depth....
 	int j=2;
 	while (true){
@@ -398,6 +408,9 @@ public void truncatepath(ArrayList<Integer> foo){//not automated
 		else foo.remove(j);
 	}
 	
+}
+public void makefactorchoices(int x){
+	factorchoices=new int[names.length][x];
 }
 
 public int[] loadable(CustomPathVar x){//EMOD METHOD TO MAKE LOADABLE ARRAY Not automated
@@ -412,7 +425,7 @@ public int[] loadable(CustomPathVar x){//EMOD METHOD TO MAKE LOADABLE ARRAY Not 
 			while(factorchoices[x.getIDs().get(ind)][j]!=input){
 				System.out.println("a choice is "+factorchoices[ind][j]);
 				j++;
-				if(j==3){//so we know if we are dealing with first choice generation...
+				if(j==list_vals.get(1)){//so we know if we are dealing with first choice generation...
 					return null;
 				}
 			}

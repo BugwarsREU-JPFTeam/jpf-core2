@@ -13,6 +13,7 @@ this.IDs=IDs;
 public boolean isDiff(CustomPathVar x){
 	if(IDs.size()!=x.IDs.size()){
 		System.out.println("sizes not same!?");
+		System.exit(0);
 		return true;
 	}
 	else{

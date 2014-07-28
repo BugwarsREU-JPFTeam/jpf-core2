@@ -8,7 +8,7 @@ import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.vm.VM;
 
 public class BranchCountHeuristic extends SimplePriorityHeuristic {
-	ArrayList<Integer> goo = getpathTracker();
+	ArrayList<BranchCountState> goo=getsuperpathTracker();
 	
 	public BranchCountHeuristic(Config config, VM vm) throws IOException {
 		super(config, vm);
@@ -18,9 +18,17 @@ public class BranchCountHeuristic extends SimplePriorityHeuristic {
 
 	@Override
 	protected int computeHeuristicValue() {
-		System.out.println("Heuristic computed is "+(goo.get(getStateId()+1)-depth));
-		System.out.println("That is because depth is "+depth+" and this state has been visited "+goo.get(getStateId()+1)+" times.");
-		return goo.get(getStateId()+1)-depth;
-	}
+		if(getStateId()<1)return 0;
+		else{
+			System.out.println(getStateId());
+			for(int z=0;z<goo.size();z++){
+				if(goo.get(z).canbeassigned(depth, (Integer) vm.getChoiceGenerator().getNextChoice())){
+					System.out.println("heuristic value computed is "+(goo.get(z).count-depth)+" because depth is "+depth+" and count is "+goo.get(z).count);
+					return goo.get(z).count-depth;
+				}
+			}
+		}
+		System.out.println("ERROR!");
+		return 500;
 
-}
+}	}

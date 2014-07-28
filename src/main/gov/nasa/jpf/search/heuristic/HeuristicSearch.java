@@ -47,7 +47,7 @@ public abstract class HeuristicSearch extends Search {
 	protected HeuristicState parentState;
 	protected List<HeuristicState> childStates;
 	protected HeuristicState initial;
-	protected ArrayList<Integer> pathTracker=new ArrayList<Integer>();//MOD:used to keep track of branch counts
+	//protected ArrayList<Integer> pathTracker=new ArrayList<Integer>();//MOD:used to keep track of branch counts
 	protected boolean isPathSensitive = false;
 	protected boolean errorfound = false;//MOD: was an error found?
 	protected boolean readytorestart=false;//MOD: are we ready to restart search?
@@ -55,7 +55,8 @@ public abstract class HeuristicSearch extends Search {
 	protected ArrayList<Integer> currentpath=new ArrayList<Integer>();//MOD:the current path in search run
 	protected boolean repeat=false;
 	protected int endstaterun=0;
-
+	protected ArrayList<BranchCountState>superpathTracker=new ArrayList<BranchCountState>();
+	protected ArrayList<Integer> seenstates=new ArrayList<Integer>();
 	/*
 	 * do we use A* adaptation of state priorities, i.e. have a distance + cost
 	 * heuristic (in this context, we just use the path length as the
@@ -112,8 +113,8 @@ public abstract class HeuristicSearch extends Search {
 		return childStates;
 	}
 	
-	public ArrayList<Integer> getpathTracker(){//getter for MOD pathTracker...
-		return pathTracker;
+	public ArrayList<BranchCountState> getsuperpathTracker(){//getter for MOD pathTracker...
+		return superpathTracker;
 	}
 
 	public void setPathSensitive(boolean isPathSensitive) {
@@ -148,7 +149,6 @@ public abstract class HeuristicSearch extends Search {
 				notifyStateProcessed();
 				return true;
 			}
-			System.out.println(vm.getChoiceGenerator().getNextChoice());//DMOD:have verify value...now to work on the depth!
 
 			depth++;
 			System.out.println("advance!");
@@ -189,8 +189,28 @@ public abstract class HeuristicSearch extends Search {
 									+ getQueueSize());
 						}
 
+						if(parentState.getStateId()!=-1){//DMOD: block for adding to superpathtracker
+							if(superpathTracker.isEmpty()){
+								superpathTracker.add(new BranchCountState(depth,(Integer) vm.getChoiceGenerator().getNextChoice()));//loading first
+								superpathTracker.get(0).addID(nextID(seenstates.get(seenstates.size()-1)));
+							}
+							else{
+								boolean canbeassigned=false;
+								for(int i=superpathTracker.size()-1;i>=0;i--){
+									if(superpathTracker.get(i).canbeassigned(depth,(Integer) vm.getChoiceGenerator().getNextChoice())){
+										canbeassigned=true;
+										superpathTracker.get(i).addID(nextID(seenstates.get(seenstates.size()-1)));
+										break;
+									}
+								}
+								if(!canbeassigned){
+									superpathTracker.add(new BranchCountState(depth,(Integer)vm.getChoiceGenerator().getNextChoice()));
+									superpathTracker.get(superpathTracker.size()-1).addID(nextID(seenstates.get(seenstates.size()-1)));
+								}
+							}
+						}//end DMOD
 						HeuristicState newHState = queueCurrentState();
-						System.out.println(newHState.getValueChosen());//have it here!
+						seenstates.add(newHState.getStateId());//DMOD
 						if (newHState != null) {
 							System.out.println("child made! Hash code is "
 									+ newHState.hashCode() + " and ID is "
@@ -257,7 +277,7 @@ public abstract class HeuristicSearch extends Search {
 	public void search() { // commented out code here is for attempting to loop
 							// a heuristic search on state space
 		if(searchcounter==0){//mod
-			for(int f=0;f<10000;f++)pathTracker.add(0);//MOD populate arraylist
+			//for(int f=0;f<10000;f++)pathTracker.add(0);//MOD populate arraylist
 		}//mod
 		
 		if(searchcounter==0)initial=queueCurrentState();//MOD MOD
@@ -306,8 +326,14 @@ public abstract class HeuristicSearch extends Search {
 		else if(readytorestart){//MOD
 			depth=0;//MOD
 			searchcounter++;
-			for(int y=0;y<currentpath.size();y++){
-				pathTracker.set(currentpath.get(y)+1, pathTracker.get(currentpath.get(y)+1)+1);//MOD:here we increment the branch count
+			boolean found=false;
+			for(int y=1;y<currentpath.size();y++){//DMOD:branch counting???
+				for(int z=0;z<superpathTracker.size();z++){
+					if(superpathTracker.get(z).getIDs().contains(currentpath.get(y))){
+						superpathTracker.get(z).incrementcount();
+						break;
+					}
+				}
 			}
 			currentpath.clear();//make sure you have loaded the current path into path list b4 this!
 			resetQueue();
@@ -332,5 +358,9 @@ public abstract class HeuristicSearch extends Search {
 			newlist.add(list.get(i));
 		}
 		return newlist;
+	}
+	public int nextID(int x){
+		if(x==list_vals.get(2))return x+2;
+		return x+1;
 	}
 }

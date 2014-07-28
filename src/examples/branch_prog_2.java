@@ -3,8 +3,8 @@ import gov.nasa.jpf.vm.Verify;
 
 public class branch_prog_2 {
 	
-	public static void branching(){
-		int num1 = Verify.random(3);
+	public static void branching(){ //be sure to adjust depth with number of vars
+		int num1 = Verify.random(3); //and branch with the verify tag - 1
 		int num2 = Verify.random(3);
 		int num3 = Verify.random(3);
 		int num4 = Verify.random(3);

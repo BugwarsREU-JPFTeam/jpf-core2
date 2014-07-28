@@ -7,11 +7,11 @@ public class FiniteEx3 {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		int x = Verify.random(2);
+		int x = Verify.getInt(0,2);
 		System.out.println("chose a x! Value is " + x);
-		int y = Verify.random(2);
+		int y = Verify.getInt(0, 2);
 		System.out.println("chose a y! Value is " + y);
-		int z = Verify.random(2);
+		int z = Verify.getInt(0, 2);
 		System.out.println("chose a z! Value is " + z);
 		for (int i = 0; i < x; i++) {
 			System.out.println(i + "th run of first loop");

@@ -148,6 +148,7 @@ public abstract class HeuristicSearch extends Search {
 				notifyStateProcessed();
 				return true;
 			}
+			System.out.println(vm.getChoiceGenerator().getNextChoice());//DMOD:have verify value...now to work on the depth!
 
 			depth++;
 			System.out.println("advance!");
@@ -200,7 +201,7 @@ public abstract class HeuristicSearch extends Search {
 
 				} else if(isEndState()) {//MOD
 					endstaterun++;
-					if(endstaterun>3){//here we need to put in the number of possible branches to endstate
+					if(endstaterun>list_vals.get(1)-1){//here we need to put in the number of possible branches to endstate
 					CustomPathVar goo=new CustomPathVar(deepcopy(currentpath));
 					boolean isunique=true;
 					//here check diff

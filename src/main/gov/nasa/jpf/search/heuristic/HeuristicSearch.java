@@ -190,6 +190,7 @@ public abstract class HeuristicSearch extends Search {
 						}
 
 						HeuristicState newHState = queueCurrentState();
+						System.out.println(newHState.getValueChosen());//have it here!
 						if (newHState != null) {
 							System.out.println("child made! Hash code is "
 									+ newHState.hashCode() + " and ID is "

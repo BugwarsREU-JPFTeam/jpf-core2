@@ -47,4 +47,8 @@ public abstract class HeuristicState {
 	public int getDepth(){//mod getter
 		return depth;
 	}
+	public Object getValueChosen(){
+		//if(stateId>0)
+		return VM.getVM().getChoiceGenerator().getNextChoice();
+	}
 }

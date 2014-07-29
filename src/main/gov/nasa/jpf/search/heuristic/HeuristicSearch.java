@@ -56,7 +56,6 @@ public abstract class HeuristicSearch extends Search {
 	protected boolean repeat=false;
 	protected int endstaterun=0;
 	protected ArrayList<BranchCountState>superpathTracker=new ArrayList<BranchCountState>();
-	protected ArrayList<Integer> seenstates=new ArrayList<Integer>();
 	/*
 	 * do we use A* adaptation of state priorities, i.e. have a distance + cost
 	 * heuristic (in this context, we just use the path length as the
@@ -181,36 +180,35 @@ public abstract class HeuristicSearch extends Search {
 						// that have only visited or end state children
 						notifySearchConstraintHit("depth limit reached: "
 								+ depthLimit);
-
+						
 					} else if (isNewState || isPathSensitive) {
 
 						if (isQueueLimitReached()) {
 							notifySearchConstraintHit("queue limit reached: "
 									+ getQueueSize());
 						}
-
+						System.out.println(getStateId());
 						if(parentState.getStateId()!=-1){//DMOD: block for adding to superpathtracker
 							if(superpathTracker.isEmpty()){
 								superpathTracker.add(new BranchCountState(depth,(Integer) vm.getChoiceGenerator().getNextChoice()));//loading first
-								superpathTracker.get(0).addID(nextID(seenstates.get(seenstates.size()-1)));
+								superpathTracker.get(0).addID(getStateId());
 							}
 							else{
 								boolean canbeassigned=false;
 								for(int i=superpathTracker.size()-1;i>=0;i--){
 									if(superpathTracker.get(i).canbeassigned(depth,(Integer) vm.getChoiceGenerator().getNextChoice())){
 										canbeassigned=true;
-										superpathTracker.get(i).addID(nextID(seenstates.get(seenstates.size()-1)));
+										superpathTracker.get(i).addID(getStateId());
 										break;
 									}
 								}
 								if(!canbeassigned){
 									superpathTracker.add(new BranchCountState(depth,(Integer)vm.getChoiceGenerator().getNextChoice()));
-									superpathTracker.get(superpathTracker.size()-1).addID(nextID(seenstates.get(seenstates.size()-1)));
+									superpathTracker.get(superpathTracker.size()-1).addID(getStateId());
 								}
 							}
 						}//end DMOD
 						HeuristicState newHState = queueCurrentState();
-						seenstates.add(newHState.getStateId());//DMOD
 						if (newHState != null) {
 							System.out.println("child made! Hash code is "
 									+ newHState.hashCode() + " and ID is "
@@ -358,9 +356,5 @@ public abstract class HeuristicSearch extends Search {
 			newlist.add(list.get(i));
 		}
 		return newlist;
-	}
-	public int nextID(int x){
-		if(x==list_vals.get(2))return x+2;
-		return x+1;
 	}
 }

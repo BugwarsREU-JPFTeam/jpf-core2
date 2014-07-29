@@ -17,7 +17,7 @@
 // DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE.
 //
 package gov.nasa.jpf.search.heuristic;
-
+//DMOD
 import gov.nasa.jpf.vm.VM;
 import gov.nasa.jpf.vm.RestorableVMState;
 
@@ -46,5 +46,9 @@ public abstract class HeuristicState {
 	}
 	public int getDepth(){//mod getter
 		return depth;
+	}
+	public Object getValueChosen(){//DMOD
+		//if(stateId>0)
+		return VM.getVM().getChoiceGenerator().getNextChoice();
 	}
 }

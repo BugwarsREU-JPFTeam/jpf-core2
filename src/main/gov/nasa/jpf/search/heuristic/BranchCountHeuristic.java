@@ -29,6 +29,7 @@ public class BranchCountHeuristic extends SimplePriorityHeuristic {
 			}
 		}
 		System.out.println("ERROR!");
+		System.exit(0);
 		return 500;
 
 }	}

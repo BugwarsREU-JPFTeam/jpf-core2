@@ -7,11 +7,11 @@ public class BranchCountExplanationExample {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		int a = Verify.random(1);
+		int a = Verify.getInt(0,1);
 		System.out.println("chose a a! Value is " + a);
-		int b = Verify.random(1);
+		int b = Verify.getInt(0,1);
 		System.out.println("chose a b! Value is " + b);
-		int c = Verify.random(1);
+		int c = Verify.getInt(0,1);
 		System.out.println("chose a c! Value is " + c);
 		for (int i = 0; i < a; i++) {
 			System.out.println(i + "th run of first loop");

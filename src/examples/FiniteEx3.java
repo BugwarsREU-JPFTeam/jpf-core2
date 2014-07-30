@@ -13,6 +13,10 @@ public class FiniteEx3 {
 		System.out.println("chose a y! Value is " + y);
 		int z = Verify.random(2);
 		System.out.println("chose a z! Value is " + z);
+		int l = Verify.random(2);
+		System.out.println("chose a l! Value is "+l);
+		int o = Verify.random(2);
+		System.out.println("chose a o! Value is "+o);
 		for (int i = 0; i < x; i++) {
 			System.out.println(i + "th run of first loop");
 			System.out.println("x,y,i:" + x + "," + y + "," + z + "," + i);

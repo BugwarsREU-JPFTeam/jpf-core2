@@ -4,10 +4,26 @@ import java.util.ArrayList;
 
 public class CustomPathVar {
 private ArrayList<Integer> IDs = new ArrayList<Integer>();
+private int[] loadrow;
 
 public CustomPathVar(ArrayList<Integer> IDs){
-this.IDs=IDs;	
+this.IDs=IDs;
+
 }
+public CustomPathVar(int[] x){
+	loadrow=new int[x.length];
+	for(int i=0;i<loadrow.length;i++){
+		loadrow[i]=x[i];
+	}
+}
+
+public boolean isDiffRow(CustomPathVar x){
+	for(int i=0;i<loadrow.length;i++){
+		if(loadrow[i]!=x.getLoadRow()[i]) return true;
+		}
+	return false;
+}
+	
 
 
 public boolean isDiff(CustomPathVar x){
@@ -25,6 +41,9 @@ public boolean isDiff(CustomPathVar x){
 
 public ArrayList<Integer> getIDs() {
 	return IDs;
+}
+public int[] getLoadRow(){
+	return loadrow;
 }
 
 public int binaryfindindex(int x){//will work since path will always be in ascending order....

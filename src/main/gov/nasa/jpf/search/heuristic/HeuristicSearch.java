@@ -47,22 +47,18 @@ public abstract class HeuristicSearch extends Search {
 	protected HeuristicState parentState;
 	protected List<HeuristicState> childStates;
 	protected HeuristicState initial;
-	protected ArrayList<Integer> pathTracker=new ArrayList<Integer>();//MOD:used to keep track of branch counts
 	protected boolean isPathSensitive = false;
 	protected boolean errorfound = false;//MOD: was an error found?
 	protected boolean readytorestart=false;//MOD: are we ready to restart search?
 	protected ArrayList<CustomPathVar> paths=new ArrayList<CustomPathVar>();//MOD: list of paths encountered
-	protected ArrayList<Integer> currentpath=new ArrayList<Integer>();//MOD:the current path in search run
+	protected ArrayList<HeuristicState>currentstatelist= new ArrayList<HeuristicState>();//using to make sure we are truncating....
 	protected boolean repeat=false;
 	protected int endrun=0;
 	protected Map<Integer,Integer> manual=new HashMap<Integer,Integer>();//Emod map
 	protected int[]factors;
-	protected int[]names;
 	protected CoveringArrayTuplesRankingArray rankingarray;//EMOD
 	protected String[]namesstrings;
-	protected int[][] factorchoices;//EMODthis will map child states to factor choices for row generation...
-	protected ArrayList<Integer>IDsthisRun=new ArrayList<Integer>();//EMOD used to guess next state generated for heuristic computation....
-	
+	protected int[] Row;
 	/*
 	 * do we use A* adaptation of state priorities, i.e. have a distance + cost
 	 * heuristic (in this context, we just use the path length as the
@@ -101,9 +97,7 @@ public abstract class HeuristicSearch extends Search {
 	private void getReady(){
 		makeMap(list_vals.get(0), list_vals.get(1));
 		makeFactors(list_vals.get(0),list_vals.get(1));
-		makeNames(list_vals.get(0));
 		makeStringNames();
-		makefactorchoices(list_vals.get(1));
 	}
 	// add the current state to the queue
 	protected abstract HeuristicState queueCurrentState();
@@ -119,26 +113,16 @@ public abstract class HeuristicSearch extends Search {
 		return list_vals;
 	}
 	public abstract boolean isQueueLimitReached();
-
-	public int[][] getFactorChoices(){//EMOD Getter
-		return factorchoices;
-	}
-	public ArrayList<Integer> getIDsthisRun(){//EMOD GETTER
-		return IDsthisRun;
+	
+	public int[] getRow(){
+		return Row;
 	}
 	public HeuristicState getParentState() {
 		return parentState;
 	}
-	public ArrayList<Integer> getcurrentpath(){//getter for MOD currentpath
-		return currentpath;
-	}
 
 	public List<HeuristicState> getChildStates() {
 		return childStates;
-	}
-	
-	public ArrayList<Integer> getpathTracker(){//getter for MOD pathTracker...
-		return pathTracker;
 	}
 	public CoveringArrayTuplesRankingArray getRankingArray(){// getter for EMOD rankingarray...
 		return rankingarray;
@@ -175,7 +159,6 @@ public abstract class HeuristicSearch extends Search {
 				notifyStateProcessed();
 				return true;
 			}
-
 			depth++;
 			System.out.println("advance!");
 			
@@ -221,16 +204,6 @@ public abstract class HeuristicSearch extends Search {
 									+ newHState.hashCode() + " and ID is "
 									+ newHState.stateId+" and depth is "+newHState.getDepth());
 							childStates.add(newHState); // add breakpoint here
-							IDsthisRun.add(newHState.stateId);//EMOD
-							System.out.println("added " +IDsthisRun.get(IDsthisRun.size()-1)+" to list of ids this run");
-							if(parentState.stateId<factors.length && parentState.stateId!=-1){//EMOD: parent is a factor
-								int i=0;
-								while(factorchoices[parentState.stateId][i]!=0){
-									if(factorchoices[parentState.stateId][i]!=newHState.stateId) i++;
-									else break;
-								}
-								factorchoices[parentState.stateId][i]=newHState.stateId;
-							}//end EMOD if....
 							notifyStateStored();
 						}// add breakpoint here
 					}
@@ -238,15 +211,14 @@ public abstract class HeuristicSearch extends Search {
 				} else if(isEndState()) {//MOD
 					endrun++;//mod
 					System.out.println("endrun is "+endrun);
-					if(endrun>(list_vals.get(1)-1)){//mod if Note:this will change based on program....hopefully this does it...
-					//truncatepath(currentpath);//EMOD cutting down path.... commenting out for now....
-					CustomPathVar goo=new CustomPathVar(deepcopy(currentpath));
+					if(endrun>(list_vals.get(1)-1)){
+					CustomPathVar goo=new CustomPathVar(Row);
 					boolean isunique=true;
 					//here check diff
 					if(paths.size()==0)isunique=true;
 					else{
 					for(int y=0;y<paths.size();y++){
-					if(!goo.isDiff(paths.get(y))) isunique=false;
+					if(!goo.isDiffRow(paths.get(y))) isunique=false;
 					}
 					}
 					if(!isunique){
@@ -257,18 +229,11 @@ public abstract class HeuristicSearch extends Search {
 					else{
 					paths.add(goo);//MOD:adding path to list
 					System.out.println("added following path to list");
-					for(int i=0;i<currentpath.size();i++){
-						if(i==currentpath.size()-1)System.out.print(currentpath.get(i)+"\n");
-						else System.out.print(currentpath.get(i)+"-->");
-					}
-					int[] stuff=loadable(goo);//start EMOD
 					System.out.println("loaded row was...(view next line) ");
-					if(stuff!=null){
-					for(int k=0;k<stuff.length;k++){
-						System.out.print(stuff[k]+" ");
+					for(int k=0;k<Row.length;k++){
+						System.out.print(Row[k]+" ");
 					}
-					rankingarray.updateTupleCoverage(stuff);//end EMOD
-					}
+					rankingarray.updateTupleCoverage(Row);//end EMOD
 					done=true;//MOD
 					readytorestart=true;//MOD
 					endrun=0;
@@ -297,7 +262,10 @@ public abstract class HeuristicSearch extends Search {
 	public void search() { // commented out code here is for attempting to loop
 							// a heuristic search on state space
 		if(searchcounter==0){//mod
-			for(int f=0;f<10000;f++)pathTracker.add(0);//MOD populate arraylist
+			Row=new int[list_vals.get(0)];
+			for(int z=0;z<Row.length;z++){
+				Row[z]=-1;
+			}
 			rankingarray=new CoveringArrayTuplesRankingArray(2, manual, namesstrings, factors); //not automated
 		}//mod
 		
@@ -319,17 +287,39 @@ public abstract class HeuristicSearch extends Search {
 			
 			while (!done && (parentState = getNextQueuedState()) != null) {
 				if(!repeat){//mod trying this
-				currentpath.add(parentState.getStateId());//MOD
+					if((!currentstatelist.isEmpty())&&currentstatelist.get(currentstatelist.size()-1).depth>parentState.depth-1&&parentState.getStateId()>0){
+						System.out.println("woah! trying to add "+parentState.getStateId()+" with depth "+parentState.getDepth());
+						int j=0;
+						while(currentstatelist.get(currentstatelist.size()-1).getDepth()!=parentState.getDepth()){
+							System.out.println(j);
+							currentstatelist.remove(currentstatelist.size()-1);
+							j++;
+						}
+						currentstatelist.remove(currentstatelist.size()-1);
+						for(int u=Row.length-1;u>parentState.getDepth()-2;u--){//resetting...
+							Row[u]=-1;
+						}
+					}
+				currentstatelist.add(parentState);
 				System.out.println("added state "+parentState.stateId+" to current path");//MOD
+				if(parentState.stateId>0){
+					Row[parentState.getDepth()-2]=(int) parentState.getValueChosen();
+				}
 				restoreState(parentState);
 				generateChildren();
 				}
 				else{//mod trying this
-					while(currentpath.size()!=parentState.getDepth()-1){
-						currentpath.remove(currentpath.size()-1);
+					if((!currentstatelist.isEmpty())&&currentstatelist.get(currentstatelist.size()-1).depth>parentState.depth-1&&parentState.getStateId()>0){
+					while(currentstatelist.get(currentstatelist.size()-1).getDepth()!=parentState.getDepth()){
+						currentstatelist.remove(currentstatelist.size()-1);
 					}
-					currentpath.add(parentState.getStateId());
+					currentstatelist.remove(currentstatelist.size()-1);
+					currentstatelist.add(parentState);
 					depth=parentState.getDepth();
+					for(int u=Row.length-1;u>parentState.getDepth()-2;u--){//resetting...
+						Row[u]=-1;
+					}}
+					if(parentState.stateId>0) Row[parentState.getDepth()-2]=(int) parentState.getValueChosen();
 					restoreState(parentState);
 					generateChildren();
 				}//end mod trying this
@@ -347,12 +337,11 @@ public abstract class HeuristicSearch extends Search {
 		else if(readytorestart){//MOD
 			depth=0;//MOD
 			searchcounter++;
-			for(int y=0;y<currentpath.size();y++){
-				pathTracker.set(currentpath.get(y)+1, pathTracker.get(currentpath.get(y)+1)+1);//MOD:here we increment the branch count
-			}
-			currentpath.clear();//make sure you have loaded the current path into path list b4 this!
-			IDsthisRun.clear();//EMOD
+			currentstatelist.clear();
 			resetQueue();
+			for(int y=0;y<Row.length;y++){
+				Row[y]=-1;
+			}
 			restoreState(initial);
 			search();
 		}//END MOD
@@ -385,55 +374,13 @@ public void makeFactors(int x, int y){//EMOD METHOD TO POPULATE FACTORS not auto
 		factors[i]=y;
 	}
 }
-public void makeNames(int x){//EMOD METHOD TO POPULATE NAMES not automated
-	names=new int[x];
-	for(int i=0;i<names.length;i++){
-		names[i]=i;
-	}
-}
 public void makeStringNames(){//EMOD Method to populate NamesStrings to satisfy coveringarraytuplesrankingarray object.... not automated
-	namesstrings=new String[names.length];
-	for(int i=0;i<names.length;i++){
-		namesstrings[i]="State "+i;
+	namesstrings=new String[list_vals.get(0)];
+	for(int i=0;i<list_vals.get(0);i++){
+		namesstrings[i]="Variable "+i;
 	}
-}
-public void truncatepath(ArrayList<Integer> foo){//not automated but for now not using....
-	int i=1;//goal is to cut down to most recent node of each depth....
-	int j=2;
-	while (true){
-		while(foo.get(i+1)<4){
-			foo.remove(i);
-		}
-		if(j==foo.size()-1) break;
-		else foo.remove(j);
-	}
-	
-}
-public void makefactorchoices(int x){
-	factorchoices=new int[names.length][x];
-}
 
-public int[] loadable(CustomPathVar x){//EMOD METHOD TO MAKE LOADABLE ARRAY Not automated
-	int[] path =new int[names.length];//will return path
-	for(int i=0;i<names.length;i++){
-		int ind=x.binaryfindindex(names[i]);
-		System.out.println("ind is "+ind);
-		if(ind!=-1){//if it is there
-			int input=x.getIDs().get(ind+1);
-			int j=0;
-			System.out.println("input is "+input);
-			while(factorchoices[x.getIDs().get(ind)][j]!=input){
-				System.out.println("a choice is "+factorchoices[ind][j]);
-				j++;
-				if(j==list_vals.get(1)){//so we know if we are dealing with first choice generation...
-					return null;
-				}
-			}
-			path[i]=j;
-		}
-		else path[i]=-1;
-	}
-	return path;
+	
 }
 
 }

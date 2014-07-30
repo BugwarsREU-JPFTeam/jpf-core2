@@ -27,6 +27,7 @@ import gov.nasa.jpf.vm.RestorableVMState;
  */
 public abstract class HeuristicState {
 
+	protected Object choice;
 	protected RestorableVMState vmState;
 	protected int stateId;
 	protected int depth;//mod
@@ -35,6 +36,7 @@ public abstract class HeuristicState {
 		stateId = vm.getStateId();
 		vmState = vm.getRestorableState();
 		depth = vm.getSearch().getDepth();//mod
+		if(stateId>0) choice=vm.getVM().getChoiceGenerator().getNextChoice();
 	}
 
 	public RestorableVMState getVMState() {
@@ -49,6 +51,6 @@ public abstract class HeuristicState {
 	}
 	public Object getValueChosen(){//DMOD
 		//if(stateId>0)
-		return VM.getVM().getChoiceGenerator().getNextChoice();
+		return choice;
 	}
 }

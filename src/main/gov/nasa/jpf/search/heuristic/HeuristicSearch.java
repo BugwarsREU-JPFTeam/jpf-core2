@@ -274,6 +274,7 @@ public abstract class HeuristicSearch extends Search {
 	@Override
 	public void search() { // commented out code here is for attempting to loop
 							// a heuristic search on state space
+		System.out.println("searchcounter is "+searchcounter);
 		if(searchcounter==0){//mod
 			//for(int f=0;f<10000;f++)pathTracker.add(0);//MOD populate arraylist
 		}//mod
@@ -283,7 +284,7 @@ public abstract class HeuristicSearch extends Search {
 		else queueCurrentState();
 		
 		notifyStateStored();
-
+		
 		// kind of stupid, but we need to get it out of the queue, and we
 		// don't have to restore it since it's the first one
 		parentState = getNextQueuedState();
@@ -316,6 +317,10 @@ public abstract class HeuristicSearch extends Search {
 		if(errorfound){//MOD IF
 			notifySearchFinished();
 			terminate();//will this end it?....yes!
+		}
+		else if(searchcounter>3000){
+			notifySearchFinished();
+			terminate();
 		}
 		else if(getQueueSize()==0){
 			notifySearchFinished();

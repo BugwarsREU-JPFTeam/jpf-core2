@@ -8,7 +8,7 @@ import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.vm.VM;
 
 public class BranchCountHeuristic extends SimplePriorityHeuristic {
-	ArrayList<Integer> goo = getpathTracker();
+	//ArrayList<Integer> goo = getpathTracker();
 	
 	public BranchCountHeuristic(Config config, VM vm) throws IOException {
 		super(config, vm);
@@ -18,8 +18,8 @@ public class BranchCountHeuristic extends SimplePriorityHeuristic {
 
 	@Override
 	protected int computeHeuristicValue() {
-		System.out.println("Heuristic computed is "+(goo.get(getStateId()+1)-depth));
-		return goo.get(getStateId()+1)-depth;
+		System.out.println("Heuristic computed is ");
+		return 5;
 	}
 
 }
